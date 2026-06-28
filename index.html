@@ -705,13 +705,20 @@ if(window.gsap&&window.ScrollTrigger){
     document.querySelectorAll('.deck').forEach(function(d){var dep=+d.dataset.depth||.1;
       gsap.fromTo(d,{y:60*dep*6,opacity:0},{y:0,opacity:.9,duration:1.2,ease:'power3.out',delay:.4});
       gsap.to(d,{yPercent:-30*dep*10,ease:'none',scrollTrigger:{trigger:'.hero',start:'top top',end:'bottom top',scrub:true}});});
-    /* kinetic headings: split into words that rise on scroll */
+    /* kinetic headings: split into words, reveal via IntersectionObserver (robust against tab throttling) */
     function wrapWords(text,parent){text.split(/(\s+)/).forEach(function(p){if(p==='')return;if(p.trim()===''){parent.appendChild(document.createTextNode(p));return;}var w=document.createElement('span');w.className='rw';var inner=document.createElement('span');inner.textContent=p;w.appendChild(inner);parent.appendChild(w);});}
+    var hio=new IntersectionObserver(function(es){es.forEach(function(e){if(!e.isIntersecting)return;hio.unobserve(e.target);
+      var sp=e.target.querySelectorAll('.rw>span');
+      if(document.visibilityState!=='visible'){gsap.set(sp,{yPercent:0});return;}
+      gsap.fromTo(sp,{yPercent:110},{yPercent:0,duration:.9,ease:'power4.out',stagger:.05});
+    });},{threshold:.16});
     document.querySelectorAll('.title, .cta h2, .studio h3').forEach(function(h){
       var nodes=[].slice.call(h.childNodes);h.innerHTML='';
       nodes.forEach(function(n){if(n.nodeType===3){wrapWords(n.textContent,h);}else if(n.nodeType===1){var c=n.cloneNode(false);h.appendChild(c);wrapWords(n.textContent,c);}});
-      gsap.to(h.querySelectorAll('.rw>span'),{yPercent:0,duration:.9,ease:'power4.out',stagger:.05,scrollTrigger:{trigger:h,start:'top 86%'}});
+      hio.observe(h);
     });
+    /* safety net: never leave an in-view heading hidden */
+    addEventListener('load',function(){setTimeout(function(){document.querySelectorAll('.title, .cta h2, .studio h3').forEach(function(h){var r=h.getBoundingClientRect();if(r.top<innerHeight&&r.bottom>0){gsap.set(h.querySelectorAll('.rw>span'),{yPercent:0});}});},1400);});
   }
   /* horizontal work: pin on desktop with motion, native swipe-scroll otherwise */
   var wtrack=document.getElementById('workTrack'),wstage=document.querySelector('.work-stage');
@@ -876,15 +883,4 @@ if(window.gsap&&window.ScrollTrigger){
   function open(){
     panel.classList.add('open');launch.style.display='none';
     if(!started){started=true;renderChips();
-      botReply("Hi, I'm Zaak AI, Ishaque's assistant. Ask me about his work, services, pricing or turnaround, and I'll connect you straight to Ishaque on WhatsApp for anything detailed.",0);}
-    setTimeout(function(){input.focus();},320);
-  }
-  function close(){panel.classList.remove('open');launch.style.display='grid';}
-  launch.addEventListener('click',open);
-  closeBtn.addEventListener('click',close);
-  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&panel.classList.contains('open'))close();});
-  form.addEventListener('submit',function(e){e.preventDefault();var v=input.value.trim();if(!v)return;input.value='';send(v);});
-})();
-</script>
-</body>
-</html>
+      botReply("Hi, I'm Zaak AI, Ishaque's assist
