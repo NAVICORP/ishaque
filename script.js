@@ -181,6 +181,7 @@ const projectStatus = document.querySelector('[data-project-status]');
 const projectPagination = document.querySelector('[data-project-pagination]');
 const projectGrid = document.querySelector('#project-grid');
 const projectPageSize = 10;
+const compactPagination = window.matchMedia('(max-width: 620px)');
 let activeProjectFilter = 'all';
 let activeProjectPage = 1;
 
@@ -207,19 +208,38 @@ function renderProjectPagination(totalPages) {
   projectPagination.hidden = totalPages <= 1;
   if (totalPages <= 1) return;
 
-  projectPagination.append(makePageButton('<', Math.max(1, activeProjectPage - 1), {
+  const previousButton = makePageButton('<', Math.max(1, activeProjectPage - 1), {
     ariaLabel: 'Previous project page',
     direction: 'previous',
     disabled: activeProjectPage === 1
-  }));
-  for (let page = 1; page <= totalPages; page += 1) {
-    projectPagination.append(makePageButton(String(page), page, { current: page === activeProjectPage }));
+  });
+  const pageGroup = document.createElement('div');
+  pageGroup.className = 'pagination-pages';
+  pageGroup.setAttribute('role', 'group');
+  pageGroup.setAttribute('aria-label', `Page ${activeProjectPage} of ${totalPages}`);
+  let pageSequence = Array.from({ length: totalPages }, (_, index) => index + 1);
+  if (compactPagination.matches && totalPages > 5) {
+    pageSequence = activeProjectPage <= 3
+      ? [1, 2, 3, 'ellipsis', totalPages]
+      : [1, 'ellipsis', totalPages - 2, totalPages - 1, totalPages];
   }
-  projectPagination.append(makePageButton('>', Math.min(totalPages, activeProjectPage + 1), {
+  pageSequence.forEach(page => {
+    if (page === 'ellipsis') {
+      const ellipsis = document.createElement('span');
+      ellipsis.className = 'pagination-ellipsis';
+      ellipsis.setAttribute('aria-hidden', 'true');
+      ellipsis.textContent = '…';
+      pageGroup.append(ellipsis);
+      return;
+    }
+    pageGroup.append(makePageButton(String(page), page, { current: page === activeProjectPage }));
+  });
+  const nextButton = makePageButton('>', Math.min(totalPages, activeProjectPage + 1), {
     ariaLabel: 'Next project page',
     direction: 'next',
     disabled: activeProjectPage === totalPages
-  }));
+  });
+  projectPagination.append(previousButton, pageGroup, nextButton);
 }
 
 function updatePortfolioVisibility() {
@@ -252,6 +272,7 @@ projectFilters.forEach(button => {
   });
 });
 updatePortfolioVisibility();
+compactPagination.addEventListener?.('change', updatePortfolioVisibility);
 
 const pageSections = [...document.querySelectorAll('section[id]')];
 const navigationLinks = [...document.querySelectorAll('.desktop-nav a')];
