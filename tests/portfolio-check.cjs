@@ -66,6 +66,22 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     const whatsapp = page.locator('.whatsapp-float');
     const whatsappHref = await whatsapp.getAttribute('href');
     const whatsappIconOnly = await whatsapp.evaluate(element => element.textContent.trim() === '' && Boolean(element.querySelector('svg')));
+    const whatsappScrollStability = await page.evaluate(async () => {
+      const element = document.querySelector('.whatsapp-float');
+      const gaps = [];
+      const sample = async y => {
+        window.scrollTo(0, y);
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        gaps.push(Math.round(window.innerHeight - element.getBoundingClientRect().bottom));
+      };
+      for (const y of [0, 320, 900, 1500, document.body.scrollHeight]) await sample(y);
+      const style = getComputedStyle(element);
+      return {
+        range: Math.max(...gaps) - Math.min(...gaps),
+        composited: style.willChange.includes('transform'),
+        mobileShadowCompact: window.innerWidth > 620 || !style.boxShadow.includes('34px')
+      };
+    });
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.waitForTimeout(120);
     const whatsappPosition = await whatsapp.evaluate(element => {
@@ -86,12 +102,12 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
       await page.locator('.menu-toggle').click();
       const menuOpen = await page.locator('.mobile-menu').getAttribute('aria-hidden') === 'false';
       await page.keyboard.press('Escape');
-      results.push({ page: 'home', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, menuOpen, whatsappHref, whatsappPosition, whatsappIconOnly, overallRatingVisible, exploreWorksVisible, exploreIconIsFile, viewAllProjectsIsButton, viewAllProjectsWidthMatches, projectIconsValid, cvHref, cvDownload, cvAvailable, ogImage, twitterCard, heroImageCurrentSrc, heroLedeVisible, heroEyebrowVisible, heroStageHeight, heroActionGap, heroBottomGap });
+      results.push({ page: 'home', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, menuOpen, whatsappHref, whatsappPosition, whatsappIconOnly, whatsappScrollStability, overallRatingVisible, exploreWorksVisible, exploreIconIsFile, viewAllProjectsIsButton, viewAllProjectsWidthMatches, projectIconsValid, cvHref, cvDownload, cvAvailable, ogImage, twitterCard, heroImageCurrentSrc, heroLedeVisible, heroEyebrowVisible, heroStageHeight, heroActionGap, heroBottomGap });
     } else {
       await page.locator('.service-trigger').nth(1).click();
       await page.waitForTimeout(420);
       const secondServiceOpen = await page.locator('.service-trigger').nth(1).getAttribute('aria-expanded') === 'true';
-      results.push({ page: 'home', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, secondServiceOpen, whatsappHref, whatsappPosition, whatsappIconOnly, overallRatingVisible, exploreWorksVisible, exploreIconIsFile, viewAllProjectsIsButton, viewAllProjectsWidthMatches, projectIconsValid, cvHref, cvDownload, cvAvailable, ogImage, twitterCard, heroImageCurrentSrc, heroLedeVisible, heroEyebrowVisible, heroStageHeight, heroActionGap, heroBottomGap });
+      results.push({ page: 'home', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, secondServiceOpen, whatsappHref, whatsappPosition, whatsappIconOnly, whatsappScrollStability, overallRatingVisible, exploreWorksVisible, exploreIconIsFile, viewAllProjectsIsButton, viewAllProjectsWidthMatches, projectIconsValid, cvHref, cvDownload, cvAvailable, ogImage, twitterCard, heroImageCurrentSrc, heroLedeVisible, heroEyebrowVisible, heroStageHeight, heroActionGap, heroBottomGap });
     }
 
     for (const item of await page.locator('.reveal:not([hidden])').all()) {
@@ -174,7 +190,7 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     if (result.errors.length || !result.headingVisible || result.horizontalOverflow) return true;
     if (result.whatsappHref !== 'https://wa.me/917827087878') return true;
     if (result.ogImage !== 'https://ishaquenv.com/assets/portfolio/og-image.png' || result.twitterCard !== 'summary_large_image') return true;
-    if (result.page === 'home') return result.projectCount !== 6 || result.menuOpen === false || result.secondServiceOpen === false || !result.whatsappPosition.visible || !result.whatsappPosition.rightAligned || !result.whatsappPosition.fixed || !result.whatsappPosition.withinViewport || !result.whatsappIconOnly || !result.exploreWorksVisible || !result.exploreIconIsFile || !result.viewAllProjectsIsButton || !result.projectIconsValid || result.cvHref !== '/assets/portfolio/Muhammed-Ishaque-CV.pdf' || result.cvDownload !== 'Muhammed-Ishaque-CV.pdf' || !result.cvAvailable || (result.viewport !== 'desktop' ? !result.viewAllProjectsWidthMatches || result.overallRatingVisible || result.heroLedeVisible || result.heroEyebrowVisible || result.heroStageHeight > 502 || result.heroActionGap < 22 || result.heroActionGap > 26 || result.heroBottomGap < 16 || result.heroBottomGap > 20 || !result.heroImageCurrentSrc.endsWith('/assets/portfolio/ishaque-hero-mobile.png') : !result.overallRatingVisible || !result.heroLedeVisible || !result.heroEyebrowVisible || !result.heroImageCurrentSrc.endsWith('/assets/portfolio/ishaque-hero.png'));
+    if (result.page === 'home') return result.projectCount !== 6 || result.menuOpen === false || result.secondServiceOpen === false || !result.whatsappPosition.visible || !result.whatsappPosition.rightAligned || !result.whatsappPosition.fixed || !result.whatsappPosition.withinViewport || !result.whatsappIconOnly || result.whatsappScrollStability.range > 1 || !result.whatsappScrollStability.composited || !result.whatsappScrollStability.mobileShadowCompact || !result.exploreWorksVisible || !result.exploreIconIsFile || !result.viewAllProjectsIsButton || !result.projectIconsValid || result.cvHref !== '/assets/portfolio/Muhammed-Ishaque-CV.pdf' || result.cvDownload !== 'Muhammed-Ishaque-CV.pdf' || !result.cvAvailable || (result.viewport !== 'desktop' ? !result.viewAllProjectsWidthMatches || result.overallRatingVisible || result.heroLedeVisible || result.heroEyebrowVisible || result.heroStageHeight > 502 || result.heroActionGap < 22 || result.heroActionGap > 26 || result.heroBottomGap < 16 || result.heroBottomGap > 20 || !result.heroImageCurrentSrc.endsWith('/assets/portfolio/ishaque-hero-mobile.png') : !result.overallRatingVisible || !result.heroLedeVisible || !result.heroEyebrowVisible || !result.heroImageCurrentSrc.endsWith('/assets/portfolio/ishaque-hero.png'));
     return result.projectCount !== 52 || result.uniqueLinks < 47 || result.missingImages !== 0 || result.initialVisibleCount !== 10 || !result.paginationVisibleInitially || result.initialPageCount !== (result.viewport === 'mobile' ? 4 : 6) || result.paginationGroups !== 3 || result.initialCurrentPage !== '1' || result.secondPageVisibleCount !== 10 || result.secondPageCurrent !== '2' || result.initialPitchCount !== 10 || result.secondPitchPageCount !== 2 || result.initialWebsiteCount !== 10 || result.secondWebsitePageCount !== 6 || result.visibleFiverrCount !== 7 || !result.fiverrPaginationHidden || !result.behanceButtonValid || !result.portfolioIconsValid;
   });
   if (failed) process.exit(1);
