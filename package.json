@@ -1,0 +1,14 @@
+{
+  "name": "ishaque-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "check": "node tests/portfolio-check.cjs"
+  },
+  "devDependencies": {
+    "vite": "^7.1.2"
+  }
+}
