@@ -28,12 +28,19 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     const heroImageCurrentSrc = await page.locator('.hero-picture img').evaluate(image => image.currentSrc);
     const heroLedeVisible = await page.locator('.hero-lede').isVisible();
     const heroEyebrowVisible = await page.locator('.hero-copy .eyebrow').isVisible();
+    const heroStageHeight = await page.locator('.hero-stage').evaluate(element => Math.round(element.getBoundingClientRect().height));
+    const heroActionGap = await page.evaluate(() => {
+      const title = document.querySelector('.hero h1').getBoundingClientRect();
+      const actions = document.querySelector('.hero-actions').getBoundingClientRect();
+      return Math.round(actions.top - title.bottom);
+    });
     const ogImage = await page.locator('meta[property="og:image"]').getAttribute('content');
     const twitterCard = await page.locator('meta[name="twitter:card"]').getAttribute('content');
     const horizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
     const projectCount = await page.locator('.project-card').count();
     const overallRatingVisible = await page.getByText('Overall rating', { exact: true }).isVisible();
     const exploreWorksVisible = await page.getByRole('link', { name: /Explore Works/i }).isVisible();
+    const exploreIconIsFile = await page.getByRole('link', { name: /Explore Works/i }).locator('.action-icon-file').count() === 1;
     const cvLink = page.getByRole('link', { name: /Download CV/i });
     const cvHref = await cvLink.getAttribute('href');
     const cvDownload = await cvLink.getAttribute('download');
@@ -62,12 +69,12 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
       await page.locator('.menu-toggle').click();
       const menuOpen = await page.locator('.mobile-menu').getAttribute('aria-hidden') === 'false';
       await page.keyboard.press('Escape');
-      results.push({ page: 'home', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, menuOpen, whatsappHref, whatsappPosition, whatsappIconOnly, overallRatingVisible, exploreWorksVisible, cvHref, cvDownload, cvAvailable, ogImage, twitterCard, heroImageCurrentSrc, heroLedeVisible, heroEyebrowVisible });
+      results.push({ page: 'home', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, menuOpen, whatsappHref, whatsappPosition, whatsappIconOnly, overallRatingVisible, exploreWorksVisible, exploreIconIsFile, cvHref, cvDownload, cvAvailable, ogImage, twitterCard, heroImageCurrentSrc, heroLedeVisible, heroEyebrowVisible, heroStageHeight, heroActionGap });
     } else {
       await page.locator('.service-trigger').nth(1).click();
       await page.waitForTimeout(420);
       const secondServiceOpen = await page.locator('.service-trigger').nth(1).getAttribute('aria-expanded') === 'true';
-      results.push({ page: 'home', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, secondServiceOpen, whatsappHref, whatsappPosition, whatsappIconOnly, overallRatingVisible, exploreWorksVisible, cvHref, cvDownload, cvAvailable, ogImage, twitterCard, heroImageCurrentSrc, heroLedeVisible, heroEyebrowVisible });
+      results.push({ page: 'home', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, secondServiceOpen, whatsappHref, whatsappPosition, whatsappIconOnly, overallRatingVisible, exploreWorksVisible, exploreIconIsFile, cvHref, cvDownload, cvAvailable, ogImage, twitterCard, heroImageCurrentSrc, heroLedeVisible, heroEyebrowVisible, heroStageHeight, heroActionGap });
     }
 
     for (const item of await page.locator('.reveal:not([hidden])').all()) {
@@ -147,7 +154,7 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     if (result.errors.length || !result.headingVisible || result.horizontalOverflow) return true;
     if (result.whatsappHref !== 'https://wa.me/917827087878') return true;
     if (result.ogImage !== 'https://ishaquenv.com/assets/portfolio/og-image.png' || result.twitterCard !== 'summary_large_image') return true;
-    if (result.page === 'home') return result.projectCount !== 6 || result.menuOpen === false || result.secondServiceOpen === false || !result.whatsappPosition.visible || !result.whatsappPosition.rightAligned || !result.whatsappPosition.fixed || !result.whatsappPosition.withinViewport || !result.whatsappIconOnly || !result.exploreWorksVisible || result.cvHref !== '/assets/portfolio/Muhammed-Ishaque-CV.pdf' || result.cvDownload !== 'Muhammed-Ishaque-CV.pdf' || !result.cvAvailable || (result.viewport !== 'desktop' ? result.overallRatingVisible || result.heroLedeVisible || result.heroEyebrowVisible || !result.heroImageCurrentSrc.endsWith('/assets/portfolio/ishaque-hero-mobile.png') : !result.overallRatingVisible || !result.heroLedeVisible || !result.heroEyebrowVisible || !result.heroImageCurrentSrc.endsWith('/assets/portfolio/ishaque-hero.png'));
+    if (result.page === 'home') return result.projectCount !== 6 || result.menuOpen === false || result.secondServiceOpen === false || !result.whatsappPosition.visible || !result.whatsappPosition.rightAligned || !result.whatsappPosition.fixed || !result.whatsappPosition.withinViewport || !result.whatsappIconOnly || !result.exploreWorksVisible || !result.exploreIconIsFile || result.cvHref !== '/assets/portfolio/Muhammed-Ishaque-CV.pdf' || result.cvDownload !== 'Muhammed-Ishaque-CV.pdf' || !result.cvAvailable || (result.viewport !== 'desktop' ? result.overallRatingVisible || result.heroLedeVisible || result.heroEyebrowVisible || result.heroStageHeight > 542 || result.heroActionGap > 22 || !result.heroImageCurrentSrc.endsWith('/assets/portfolio/ishaque-hero-mobile.png') : !result.overallRatingVisible || !result.heroLedeVisible || !result.heroEyebrowVisible || !result.heroImageCurrentSrc.endsWith('/assets/portfolio/ishaque-hero.png'));
     return result.projectCount !== 52 || result.uniqueLinks < 47 || result.missingImages !== 0 || result.initialVisibleCount !== 10 || !result.paginationVisibleInitially || result.initialPageCount !== (result.viewport === 'mobile' ? 4 : 6) || result.paginationGroups !== 3 || result.initialCurrentPage !== '1' || result.secondPageVisibleCount !== 10 || result.secondPageCurrent !== '2' || result.initialPitchCount !== 10 || result.secondPitchPageCount !== 2 || result.initialWebsiteCount !== 10 || result.secondWebsitePageCount !== 6 || result.visibleFiverrCount !== 7 || !result.fiverrPaginationHidden;
   });
   if (failed) process.exit(1);
