@@ -25,6 +25,14 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     if (isMobile) await page.screenshot({ path: `_artifacts/portfolio-${viewport.name}-fold.jpg`, type: 'jpeg', quality: 90 });
 
     const headingVisible = await page.getByRole('heading', { name: /Ideas, made/i }).isVisible();
+    const mobileContentImmediate = !isMobile || await page.locator('.reveal').evaluateAll(elements => elements.every(element => {
+      const style = getComputedStyle(element);
+      const transformIsIdentity = style.transform === 'none' || style.transform === 'matrix(1, 0, 0, 1, 0, 0)';
+      return style.opacity === '1' && transformIsIdentity && style.transitionDuration.split(',').every(duration => Number.parseFloat(duration) === 0);
+    }));
+    const statusOpenToWork = await page.getByText('Open to Work', { exact: true }).isVisible();
+    const servicesCollapsedInitially = await page.locator('.service-trigger').evaluateAll(triggers => triggers.every(trigger => trigger.getAttribute('aria-expanded') === 'false')) && await page.locator('.service-panel').evaluateAll(panels => panels.every(panel => panel.hidden));
+    const mobileFontScale = !isMobile || await page.locator('body').evaluate(element => Number.parseFloat(getComputedStyle(element).fontSize) <= 15);
     const heroImageCurrentSrc = await page.locator('.hero-picture img').evaluate(image => image.currentSrc);
     const heroLedeVisible = await page.locator('.hero-lede').isVisible();
     const heroEyebrowVisible = await page.locator('.hero-copy .eyebrow').isVisible();
@@ -43,6 +51,11 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     const twitterCard = await page.locator('meta[name="twitter:card"]').getAttribute('content');
     const horizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
     const projectCount = await page.locator('.project-card').count();
+    const projectImagesWidescreen = await page.locator('.project-card .project-media').evaluateAll(elements => elements.length === 6 && elements.every(element => {
+      const rect = element.getBoundingClientRect();
+      return getComputedStyle(element).aspectRatio === '16 / 9' && Math.abs(rect.width / rect.height - 16 / 9) < .02;
+    }));
+    const mobileProjectImagesEager = !isMobile || await page.locator('.project-card img').evaluateAll(images => images.length === 6 && images.every(image => image.loading === 'eager'));
     const overallRatingVisible = await page.getByText('Overall rating', { exact: true }).isVisible();
     const exploreWorksVisible = await page.getByRole('link', { name: /Explore Works/i }).isVisible();
     const exploreIconIsFile = await page.getByRole('link', { name: /Explore Works/i }).locator('.action-icon-file').count() === 1;
@@ -92,7 +105,13 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
         rightAligned: edgeGap >= 12 && edgeGap <= 40,
         edgeGap,
         fixed: getComputedStyle(element).position === 'fixed',
-        withinViewport: rect.bottom <= window.innerHeight && rect.top >= 0
+        withinViewport: rect.bottom <= window.innerHeight && rect.top >= 0,
+        dynamicViewportAnchored: window.innerWidth > 620 || (Boolean(element.style.top) && element.style.bottom === 'auto'),
+        computedTop: getComputedStyle(element).top,
+        computedBottom: getComputedStyle(element).bottom,
+        inlineTop: element.style.top,
+        inlineBottom: element.style.bottom,
+        viewportWidth: window.innerWidth
       };
     });
     await page.evaluate(() => window.scrollTo(0, 0));
@@ -102,12 +121,12 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
       await page.locator('.menu-toggle').click();
       const menuOpen = await page.locator('.mobile-menu').getAttribute('aria-hidden') === 'false';
       await page.keyboard.press('Escape');
-      results.push({ page: 'home', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, menuOpen, whatsappHref, whatsappPosition, whatsappIconOnly, whatsappScrollStability, overallRatingVisible, exploreWorksVisible, exploreIconIsFile, viewAllProjectsIsButton, viewAllProjectsWidthMatches, projectIconsValid, cvHref, cvDownload, cvAvailable, ogImage, twitterCard, heroImageCurrentSrc, heroLedeVisible, heroEyebrowVisible, heroStageHeight, heroActionGap, heroBottomGap });
+      results.push({ page: 'home', viewport: viewport.name, errors, headingVisible, mobileContentImmediate, statusOpenToWork, servicesCollapsedInitially, mobileFontScale, horizontalOverflow, projectCount, projectImagesWidescreen, mobileProjectImagesEager, menuOpen, whatsappHref, whatsappPosition, whatsappIconOnly, whatsappScrollStability, overallRatingVisible, exploreWorksVisible, exploreIconIsFile, viewAllProjectsIsButton, viewAllProjectsWidthMatches, projectIconsValid, cvHref, cvDownload, cvAvailable, ogImage, twitterCard, heroImageCurrentSrc, heroLedeVisible, heroEyebrowVisible, heroStageHeight, heroActionGap, heroBottomGap });
     } else {
       await page.locator('.service-trigger').nth(1).click();
       await page.waitForTimeout(420);
       const secondServiceOpen = await page.locator('.service-trigger').nth(1).getAttribute('aria-expanded') === 'true';
-      results.push({ page: 'home', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, secondServiceOpen, whatsappHref, whatsappPosition, whatsappIconOnly, whatsappScrollStability, overallRatingVisible, exploreWorksVisible, exploreIconIsFile, viewAllProjectsIsButton, viewAllProjectsWidthMatches, projectIconsValid, cvHref, cvDownload, cvAvailable, ogImage, twitterCard, heroImageCurrentSrc, heroLedeVisible, heroEyebrowVisible, heroStageHeight, heroActionGap, heroBottomGap });
+      results.push({ page: 'home', viewport: viewport.name, errors, headingVisible, mobileContentImmediate, statusOpenToWork, servicesCollapsedInitially, mobileFontScale, horizontalOverflow, projectCount, projectImagesWidescreen, mobileProjectImagesEager, secondServiceOpen, whatsappHref, whatsappPosition, whatsappIconOnly, whatsappScrollStability, overallRatingVisible, exploreWorksVisible, exploreIconIsFile, viewAllProjectsIsButton, viewAllProjectsWidthMatches, projectIconsValid, cvHref, cvDownload, cvAvailable, ogImage, twitterCard, heroImageCurrentSrc, heroLedeVisible, heroEyebrowVisible, heroStageHeight, heroActionGap, heroBottomGap });
     }
 
     for (const item of await page.locator('.reveal:not([hidden])').all()) {
@@ -131,6 +150,12 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     if (viewport.name === 'mobile') await page.screenshot({ path: '_artifacts/projects-mobile-fold.jpg', type: 'jpeg', quality: 90 });
 
     const initialVisibleCount = await page.locator('.portfolio-card:not([hidden])').count();
+    const visibleProjectImagesEager = await page.locator('.portfolio-card:not([hidden]) img').evaluateAll(images => images.length === 10 && images.every(image => image.loading === 'eager'));
+    const projectsContentImmediate = viewport.name !== 'mobile' || await page.locator('.portfolio-card:not([hidden])').evaluateAll(cards => cards.every(card => {
+      const style = getComputedStyle(card);
+      const transformIsIdentity = style.transform === 'none' || style.transform === 'matrix(1, 0, 0, 1, 0, 0)';
+      return style.opacity === '1' && transformIsIdentity && style.transitionDuration.split(',').every(duration => Number.parseFloat(duration) === 0);
+    }));
     const paginationVisibleInitially = await page.locator('[data-project-pagination]').isVisible();
     const initialPageCount = await page.locator('[data-project-pagination] button[aria-label^="Page "]').count();
     const paginationGroups = await page.locator('[data-project-pagination] > *').count();
@@ -157,6 +182,10 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     const projectCount = await page.locator('.portfolio-card').count();
     const uniqueLinks = await page.locator('.portfolio-card').evaluateAll(cards => new Set(cards.map(card => card.href)).size);
     const missingImages = await page.locator('.portfolio-image img').evaluateAll(images => images.filter(image => !image.complete || image.naturalWidth === 0).length);
+    const portfolioImagesWidescreen = await page.locator('.portfolio-image').evaluateAll(elements => elements.length === 52 && elements.every(element => getComputedStyle(element).aspectRatio === '16 / 9') && elements.filter(element => !element.closest('.portfolio-card').hidden).every(element => {
+      const rect = element.getBoundingClientRect();
+      return Math.abs(rect.width / rect.height - 16 / 9) < .02;
+    }));
     const whatsappHref = await page.locator('.whatsapp-float').getAttribute('href');
     const portfolioIconsValid = await page.locator('.portfolio-meta i').evaluateAll(elements => elements.length === 52 && elements.every(element => getComputedStyle(element, '::before').maskImage !== 'none'));
     const behanceButton = page.getByRole('link', { name: 'Follow on Behance', exact: true });
@@ -187,7 +216,7 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     await page.locator('[data-project-filter="fiverr"]').click();
     const visibleFiverrCount = await page.locator('.portfolio-card:not([hidden])').count();
     const fiverrPaginationHidden = !(await page.locator('[data-project-pagination]').isVisible());
-    results.push({ page: 'projects', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, uniqueLinks, missingImages, initialVisibleCount, paginationVisibleInitially, initialPageCount, paginationGroups, initialCurrentPage, secondPageVisibleCount, secondPageCurrent, initialPitchCount, secondPitchPageCount, initialWebsiteCount, secondWebsitePageCount, visibleFiverrCount, fiverrPaginationHidden, whatsappHref, ogImage, twitterCard, behanceButtonValid, portfolioIconsValid, projectsLayoutAlignment });
+    results.push({ page: 'projects', viewport: viewport.name, errors, headingVisible, projectsContentImmediate, horizontalOverflow, projectCount, uniqueLinks, missingImages, portfolioImagesWidescreen, initialVisibleCount, visibleProjectImagesEager, paginationVisibleInitially, initialPageCount, paginationGroups, initialCurrentPage, secondPageVisibleCount, secondPageCurrent, initialPitchCount, secondPitchPageCount, initialWebsiteCount, secondWebsitePageCount, visibleFiverrCount, fiverrPaginationHidden, whatsappHref, ogImage, twitterCard, behanceButtonValid, portfolioIconsValid, projectsLayoutAlignment });
 
     await page.locator('[data-project-filter="all"]').click();
     for (const item of await page.locator('.reveal:not([hidden])').all()) {
@@ -204,8 +233,8 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     if (result.errors.length || !result.headingVisible || result.horizontalOverflow) return true;
     if (result.whatsappHref !== 'https://wa.me/917827087878') return true;
     if (result.ogImage !== 'https://ishaquenv.com/assets/portfolio/og-image.png' || result.twitterCard !== 'summary_large_image') return true;
-    if (result.page === 'home') return result.projectCount !== 6 || result.menuOpen === false || result.secondServiceOpen === false || !result.whatsappPosition.visible || !result.whatsappPosition.rightAligned || !result.whatsappPosition.fixed || !result.whatsappPosition.withinViewport || !result.whatsappIconOnly || result.whatsappScrollStability.range > 1 || !result.whatsappScrollStability.composited || !result.whatsappScrollStability.mobileShadowCompact || !result.exploreWorksVisible || !result.exploreIconIsFile || !result.viewAllProjectsIsButton || !result.projectIconsValid || result.cvHref !== '/assets/portfolio/Muhammed-Ishaque-CV.pdf' || result.cvDownload !== 'Muhammed-Ishaque-CV.pdf' || !result.cvAvailable || (result.viewport !== 'desktop' ? !result.viewAllProjectsWidthMatches || result.overallRatingVisible || result.heroLedeVisible || result.heroEyebrowVisible || result.heroStageHeight > 502 || result.heroActionGap < 22 || result.heroActionGap > 26 || result.heroBottomGap < 16 || result.heroBottomGap > 20 || !result.heroImageCurrentSrc.endsWith('/assets/portfolio/ishaque-hero-mobile.png') : !result.overallRatingVisible || !result.heroLedeVisible || !result.heroEyebrowVisible || !result.heroImageCurrentSrc.endsWith('/assets/portfolio/ishaque-hero.png'));
-    return result.projectCount !== 52 || result.uniqueLinks < 47 || result.missingImages !== 0 || result.initialVisibleCount !== 10 || !result.paginationVisibleInitially || result.initialPageCount !== (result.viewport === 'mobile' ? 4 : 6) || result.paginationGroups !== 3 || result.initialCurrentPage !== '1' || result.secondPageVisibleCount !== 10 || result.secondPageCurrent !== '2' || result.initialPitchCount !== 10 || result.secondPitchPageCount !== 2 || result.initialWebsiteCount !== 10 || result.secondWebsitePageCount !== 6 || result.visibleFiverrCount !== 7 || !result.fiverrPaginationHidden || !result.behanceButtonValid || !result.portfolioIconsValid || !result.projectsLayoutAlignment.withinViewport || result.projectsLayoutAlignment.leftDelta > 1 || result.projectsLayoutAlignment.rightDelta > 1;
+    if (result.page === 'home') return result.projectCount !== 6 || !result.projectImagesWidescreen || !result.mobileContentImmediate || !result.mobileProjectImagesEager || !result.statusOpenToWork || !result.servicesCollapsedInitially || !result.mobileFontScale || result.menuOpen === false || result.secondServiceOpen === false || !result.whatsappPosition.visible || !result.whatsappPosition.rightAligned || !result.whatsappPosition.fixed || !result.whatsappPosition.withinViewport || !result.whatsappPosition.dynamicViewportAnchored || !result.whatsappIconOnly || result.whatsappScrollStability.range > 1 || !result.whatsappScrollStability.composited || !result.whatsappScrollStability.mobileShadowCompact || !result.exploreWorksVisible || !result.exploreIconIsFile || !result.viewAllProjectsIsButton || !result.projectIconsValid || result.cvHref !== '/assets/portfolio/Muhammed-Ishaque-CV.pdf' || result.cvDownload !== 'Muhammed-Ishaque-CV.pdf' || !result.cvAvailable || (result.viewport !== 'desktop' ? !result.viewAllProjectsWidthMatches || result.overallRatingVisible || result.heroLedeVisible || result.heroEyebrowVisible || result.heroStageHeight > 502 || result.heroActionGap < 22 || result.heroActionGap > 26 || result.heroBottomGap < 16 || result.heroBottomGap > 20 || !result.heroImageCurrentSrc.endsWith('/assets/portfolio/ishaque-hero-mobile.png') : !result.overallRatingVisible || !result.heroLedeVisible || !result.heroEyebrowVisible || !result.heroImageCurrentSrc.endsWith('/assets/portfolio/ishaque-hero.png'));
+    return result.projectCount !== 52 || result.uniqueLinks < 47 || result.missingImages !== 0 || !result.portfolioImagesWidescreen || !result.projectsContentImmediate || result.initialVisibleCount !== 10 || !result.visibleProjectImagesEager || !result.paginationVisibleInitially || result.initialPageCount !== (result.viewport === 'mobile' ? 4 : 6) || result.paginationGroups !== 3 || result.initialCurrentPage !== '1' || result.secondPageVisibleCount !== 10 || result.secondPageCurrent !== '2' || result.initialPitchCount !== 10 || result.secondPitchPageCount !== 2 || result.initialWebsiteCount !== 10 || result.secondWebsitePageCount !== 6 || result.visibleFiverrCount !== 7 || !result.fiverrPaginationHidden || !result.behanceButtonValid || !result.portfolioIconsValid || !result.projectsLayoutAlignment.withinViewport || result.projectsLayoutAlignment.leftDelta > 1 || result.projectsLayoutAlignment.rightDelta > 1;
   });
   if (failed) process.exit(1);
 })().catch(error => { console.error(error); process.exit(1); });
