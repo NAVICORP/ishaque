@@ -175,6 +175,46 @@ document.querySelectorAll('[data-copy]').forEach(button => {
   });
 });
 
+const contactForm = document.querySelector('[data-contact-form]');
+if (contactForm) {
+  const submitButton = contactForm.querySelector('button[type="submit"]');
+  const submitLabel = contactForm.querySelector('[data-contact-submit-label]');
+  const formStatus = contactForm.querySelector('[data-contact-form-status]');
+
+  contactForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    submitButton.disabled = true;
+    submitButton.setAttribute('aria-busy', 'true');
+    submitLabel.textContent = 'Sending...';
+    formStatus.className = 'contact-form-status';
+    formStatus.setAttribute('role', 'status');
+    formStatus.textContent = 'Sending your project brief...';
+
+    try {
+      const formData = new FormData(contactForm);
+      const response = await fetch(contactForm.action, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(Object.fromEntries(formData))
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || payload.success === false) throw new Error(payload.message || payload.body?.message || 'Unable to send your message.');
+      contactForm.reset();
+      formStatus.classList.add('is-success');
+      formStatus.textContent = 'Thanks. Your project brief has been sent.';
+      showToast('Project brief sent successfully');
+    } catch (error) {
+      formStatus.classList.add('is-error');
+      formStatus.setAttribute('role', 'alert');
+      formStatus.textContent = error.message || 'Something went wrong. Please try again.';
+    } finally {
+      submitButton.disabled = false;
+      submitButton.removeAttribute('aria-busy');
+      submitLabel.textContent = 'Send project brief';
+    }
+  });
+}
+
 const cursor = document.querySelector('.cursor-label');
 if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
   document.querySelectorAll('[data-cursor]').forEach(card => {

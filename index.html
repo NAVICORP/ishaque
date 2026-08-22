@@ -215,6 +215,24 @@
           <a class="button button-invert" href="mailto:ishaquenv@gmail.com">ishaquenv@gmail.com <span class="action-icon action-icon-up-right" aria-hidden="true"></span></a>
           <button class="copy-button" type="button" data-copy="ishaquenv@gmail.com"><span>Copy email</span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"></rect><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path></svg></button>
         </div>
+        <form class="contact-form" action="https://api.web3forms.com/submit" method="POST" data-contact-form>
+          <input type="hidden" name="access_key" value="44e58263-9bb0-4c59-98ec-e9c82910ddf9">
+          <input type="hidden" name="subject" value="New project enquiry from ishaquenv.com">
+          <input type="hidden" name="from_name" value="Ishaque Nv. Portfolio">
+          <div class="contact-form-heading">
+            <div><span>Start a conversation</span><h3>Tell me what you’re building.</h3></div>
+            <p>A few clear details are enough. I’ll reply with the best next step.</p>
+          </div>
+          <div class="contact-form-grid">
+            <label class="contact-field" for="contact-name"><span>Your name</span><input id="contact-name" type="text" name="name" autocomplete="name" placeholder="Your name" required></label>
+            <label class="contact-field" for="contact-email"><span>Email address</span><input id="contact-email" type="email" name="email" autocomplete="email" inputmode="email" placeholder="you@company.com" required></label>
+            <label class="contact-field contact-field-message" for="contact-message"><span>Project details</span><textarea id="contact-message" name="message" rows="5" placeholder="What do you need, who is it for, and when do you need it?" required></textarea></label>
+          </div>
+          <div class="contact-form-footer-row">
+            <p class="contact-form-status" data-contact-form-status role="status" aria-live="polite"></p>
+            <button class="contact-submit" type="submit"><span data-contact-submit-label>Send project brief</span><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m5 12 14-7-4 14-3-5-7-2Z"></path><path d="m12 14 3-3"></path></svg></button>
+          </div>
+        </form>
       </div>
       <div class="contact-footer">
         <span>© 2026 Ishaque Nv.</span>
