@@ -173,6 +173,22 @@ if (heroStage && !prefersReducedMotion && window.matchMedia('(hover: hover)').ma
   });
 }
 
+const projectFilters = [...document.querySelectorAll('[data-project-filter]')];
+const portfolioCards = [...document.querySelectorAll('.portfolio-card[data-category]')];
+projectFilters.forEach(button => {
+  button.addEventListener('click', () => {
+    const selectedCategory = button.dataset.projectFilter;
+    projectFilters.forEach(filter => {
+      const isSelected = filter === button;
+      filter.classList.toggle('is-active', isSelected);
+      filter.setAttribute('aria-pressed', String(isSelected));
+    });
+    portfolioCards.forEach(card => {
+      card.hidden = selectedCategory !== 'all' && card.dataset.category !== selectedCategory;
+    });
+  });
+});
+
 const pageSections = [...document.querySelectorAll('section[id]')];
 const navigationLinks = [...document.querySelectorAll('.desktop-nav a')];
 if ('IntersectionObserver' in window) {
