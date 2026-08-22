@@ -160,7 +160,21 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     const whatsappHref = await page.locator('.whatsapp-float').getAttribute('href');
     const portfolioIconsValid = await page.locator('.portfolio-meta i').evaluateAll(elements => elements.length === 52 && elements.every(element => getComputedStyle(element, '::before').maskImage !== 'none'));
     const behanceButton = page.getByRole('link', { name: 'Follow on Behance', exact: true });
-    const behanceButtonValid = await behanceButton.isVisible() && await behanceButton.evaluate(element => element.classList.contains('button') && Boolean(element.querySelector('.behance-mark')));
+    const behanceButtonValid = await behanceButton.isVisible() && await behanceButton.evaluate(element => {
+      const logo = element.querySelector('.behance-mark svg');
+      return element.classList.contains('button') && logo?.getAttribute('viewBox') === '0 0 24 24' && Boolean(logo.querySelector('path'));
+    });
+    const projectsLayoutAlignment = await page.evaluate(() => {
+      const filters = document.querySelector('.project-filters').getBoundingClientRect();
+      const image = document.querySelector('.portfolio-card:not([hidden]) .portfolio-image').getBoundingClientRect();
+      const grid = document.querySelector('.portfolio-grid').getBoundingClientRect();
+      const reference = window.innerWidth <= 620 ? image : grid;
+      return {
+        leftDelta: Math.abs(filters.left - reference.left),
+        rightDelta: Math.abs(filters.right - reference.right),
+        withinViewport: filters.left >= 0 && filters.right <= window.innerWidth
+      };
+    });
 
     await page.locator('[data-project-filter="pitch"]').click();
     const initialPitchCount = await page.locator('.portfolio-card:not([hidden])').count();
@@ -173,7 +187,7 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     await page.locator('[data-project-filter="fiverr"]').click();
     const visibleFiverrCount = await page.locator('.portfolio-card:not([hidden])').count();
     const fiverrPaginationHidden = !(await page.locator('[data-project-pagination]').isVisible());
-    results.push({ page: 'projects', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, uniqueLinks, missingImages, initialVisibleCount, paginationVisibleInitially, initialPageCount, paginationGroups, initialCurrentPage, secondPageVisibleCount, secondPageCurrent, initialPitchCount, secondPitchPageCount, initialWebsiteCount, secondWebsitePageCount, visibleFiverrCount, fiverrPaginationHidden, whatsappHref, ogImage, twitterCard, behanceButtonValid, portfolioIconsValid });
+    results.push({ page: 'projects', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, uniqueLinks, missingImages, initialVisibleCount, paginationVisibleInitially, initialPageCount, paginationGroups, initialCurrentPage, secondPageVisibleCount, secondPageCurrent, initialPitchCount, secondPitchPageCount, initialWebsiteCount, secondWebsitePageCount, visibleFiverrCount, fiverrPaginationHidden, whatsappHref, ogImage, twitterCard, behanceButtonValid, portfolioIconsValid, projectsLayoutAlignment });
 
     await page.locator('[data-project-filter="all"]').click();
     for (const item of await page.locator('.reveal:not([hidden])').all()) {
@@ -191,7 +205,7 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     if (result.whatsappHref !== 'https://wa.me/917827087878') return true;
     if (result.ogImage !== 'https://ishaquenv.com/assets/portfolio/og-image.png' || result.twitterCard !== 'summary_large_image') return true;
     if (result.page === 'home') return result.projectCount !== 6 || result.menuOpen === false || result.secondServiceOpen === false || !result.whatsappPosition.visible || !result.whatsappPosition.rightAligned || !result.whatsappPosition.fixed || !result.whatsappPosition.withinViewport || !result.whatsappIconOnly || result.whatsappScrollStability.range > 1 || !result.whatsappScrollStability.composited || !result.whatsappScrollStability.mobileShadowCompact || !result.exploreWorksVisible || !result.exploreIconIsFile || !result.viewAllProjectsIsButton || !result.projectIconsValid || result.cvHref !== '/assets/portfolio/Muhammed-Ishaque-CV.pdf' || result.cvDownload !== 'Muhammed-Ishaque-CV.pdf' || !result.cvAvailable || (result.viewport !== 'desktop' ? !result.viewAllProjectsWidthMatches || result.overallRatingVisible || result.heroLedeVisible || result.heroEyebrowVisible || result.heroStageHeight > 502 || result.heroActionGap < 22 || result.heroActionGap > 26 || result.heroBottomGap < 16 || result.heroBottomGap > 20 || !result.heroImageCurrentSrc.endsWith('/assets/portfolio/ishaque-hero-mobile.png') : !result.overallRatingVisible || !result.heroLedeVisible || !result.heroEyebrowVisible || !result.heroImageCurrentSrc.endsWith('/assets/portfolio/ishaque-hero.png'));
-    return result.projectCount !== 52 || result.uniqueLinks < 47 || result.missingImages !== 0 || result.initialVisibleCount !== 10 || !result.paginationVisibleInitially || result.initialPageCount !== (result.viewport === 'mobile' ? 4 : 6) || result.paginationGroups !== 3 || result.initialCurrentPage !== '1' || result.secondPageVisibleCount !== 10 || result.secondPageCurrent !== '2' || result.initialPitchCount !== 10 || result.secondPitchPageCount !== 2 || result.initialWebsiteCount !== 10 || result.secondWebsitePageCount !== 6 || result.visibleFiverrCount !== 7 || !result.fiverrPaginationHidden || !result.behanceButtonValid || !result.portfolioIconsValid;
+    return result.projectCount !== 52 || result.uniqueLinks < 47 || result.missingImages !== 0 || result.initialVisibleCount !== 10 || !result.paginationVisibleInitially || result.initialPageCount !== (result.viewport === 'mobile' ? 4 : 6) || result.paginationGroups !== 3 || result.initialCurrentPage !== '1' || result.secondPageVisibleCount !== 10 || result.secondPageCurrent !== '2' || result.initialPitchCount !== 10 || result.secondPitchPageCount !== 2 || result.initialWebsiteCount !== 10 || result.secondWebsitePageCount !== 6 || result.visibleFiverrCount !== 7 || !result.fiverrPaginationHidden || !result.behanceButtonValid || !result.portfolioIconsValid || !result.projectsLayoutAlignment.withinViewport || result.projectsLayoutAlignment.leftDelta > 1 || result.projectsLayoutAlignment.rightDelta > 1;
   });
   if (failed) process.exit(1);
 })().catch(error => { console.error(error); process.exit(1); });
