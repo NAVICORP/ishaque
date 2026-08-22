@@ -18,6 +18,7 @@ function updateScrollUI() {
   if (!document.body.classList.contains('menu-open')) {
     const scrollingDown = currentY > lastScrollY && currentY > 220;
     header.classList.toggle('is-hidden', scrollingDown);
+    document.body.classList.toggle('header-hidden', scrollingDown);
   }
   lastScrollY = currentY;
 }
@@ -39,6 +40,7 @@ function setMenu(open) {
   mobileMenu.setAttribute('aria-hidden', String(!open));
   mobileMenu.classList.toggle('is-open', open);
   document.body.classList.toggle('menu-open', open);
+  document.body.classList.remove('header-hidden');
   header.classList.remove('is-hidden');
 }
 
@@ -175,19 +177,43 @@ if (heroStage && !prefersReducedMotion && window.matchMedia('(hover: hover)').ma
 
 const projectFilters = [...document.querySelectorAll('[data-project-filter]')];
 const portfolioCards = [...document.querySelectorAll('.portfolio-card[data-category]')];
+const loadMoreButton = document.querySelector('[data-load-more]');
+const loadMoreLabel = document.querySelector('[data-load-more-label]');
+const projectRemaining = document.querySelector('[data-project-remaining]');
+const projectStatus = document.querySelector('[data-project-status]');
+let activeProjectFilter = 'all';
+let visibleProjectLimit = 10;
+
+function updatePortfolioVisibility() {
+  const matchingCards = portfolioCards.filter(card => activeProjectFilter === 'all' || card.dataset.category === activeProjectFilter);
+  portfolioCards.forEach(card => { card.hidden = true; });
+  matchingCards.forEach((card, index) => { card.hidden = index >= visibleProjectLimit; });
+
+  const shownCount = Math.min(visibleProjectLimit, matchingCards.length);
+  const remainingCount = Math.max(0, matchingCards.length - shownCount);
+  if (projectStatus) projectStatus.textContent = `Showing ${shownCount} of ${matchingCards.length} projects`;
+  if (projectRemaining) projectRemaining.textContent = `${remainingCount} remaining`;
+  if (loadMoreLabel) loadMoreLabel.textContent = `Load next ${Math.min(10, remainingCount)}`;
+  if (loadMoreButton) loadMoreButton.hidden = remainingCount === 0;
+}
+
 projectFilters.forEach(button => {
   button.addEventListener('click', () => {
-    const selectedCategory = button.dataset.projectFilter;
+    activeProjectFilter = button.dataset.projectFilter;
+    visibleProjectLimit = 10;
     projectFilters.forEach(filter => {
       const isSelected = filter === button;
       filter.classList.toggle('is-active', isSelected);
       filter.setAttribute('aria-pressed', String(isSelected));
     });
-    portfolioCards.forEach(card => {
-      card.hidden = selectedCategory !== 'all' && card.dataset.category !== selectedCategory;
-    });
+    updatePortfolioVisibility();
   });
 });
+loadMoreButton?.addEventListener('click', () => {
+  visibleProjectLimit += 10;
+  updatePortfolioVisibility();
+});
+updatePortfolioVisibility();
 
 const pageSections = [...document.querySelectorAll('section[id]')];
 const navigationLinks = [...document.querySelectorAll('.desktop-nav a')];

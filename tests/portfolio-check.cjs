@@ -37,7 +37,7 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
       results.push({ page: 'home', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, secondServiceOpen });
     }
 
-    for (const item of await page.locator('.reveal').all()) {
+    for (const item of await page.locator('.reveal:not([hidden])').all()) {
       await item.scrollIntoViewIfNeeded();
       await page.waitForTimeout(45);
     }
@@ -56,7 +56,15 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     await page.goto(`${testUrl}/projects.html`, { waitUntil: 'networkidle' });
     await page.waitForTimeout(800);
 
-    for (const card of await page.locator('.portfolio-card').all()) {
+    const initialVisibleCount = await page.locator('.portfolio-card:not([hidden])').count();
+    const loadMoreVisibleInitially = await page.locator('[data-load-more]').isVisible();
+    await page.locator('[data-load-more]').click();
+    const afterFirstLoadCount = await page.locator('.portfolio-card:not([hidden])').count();
+    for (let loadIndex = 0; loadIndex < 5 && await page.locator('[data-load-more]').isVisible(); loadIndex += 1) {
+      await page.locator('[data-load-more]').click();
+    }
+
+    for (const card of await page.locator('.portfolio-card:not([hidden])').all()) {
       await card.scrollIntoViewIfNeeded();
       await page.waitForTimeout(25);
     }
@@ -70,15 +78,20 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     const missingImages = await page.locator('.portfolio-image img').evaluateAll(images => images.filter(image => !image.complete || image.naturalWidth === 0).length);
 
     await page.locator('[data-project-filter="pitch"]').click();
+    const initialPitchCount = await page.locator('.portfolio-card:not([hidden])').count();
+    await page.locator('[data-load-more]').click();
     const visiblePitchCount = await page.locator('.portfolio-card:not([hidden])').count();
     await page.locator('[data-project-filter="website"]').click();
+    const initialWebsiteCount = await page.locator('.portfolio-card:not([hidden])').count();
+    await page.locator('[data-load-more]').click();
     const visibleWebsiteCount = await page.locator('.portfolio-card:not([hidden])').count();
     await page.locator('[data-project-filter="fiverr"]').click();
     const visibleFiverrCount = await page.locator('.portfolio-card:not([hidden])').count();
-    results.push({ page: 'projects', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, uniqueLinks, missingImages, visiblePitchCount, visibleWebsiteCount, visibleFiverrCount });
+    const fiverrLoadMoreHidden = !(await page.locator('[data-load-more]').isVisible());
+    results.push({ page: 'projects', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, uniqueLinks, missingImages, initialVisibleCount, loadMoreVisibleInitially, afterFirstLoadCount, initialPitchCount, visiblePitchCount, initialWebsiteCount, visibleWebsiteCount, visibleFiverrCount, fiverrLoadMoreHidden });
 
     await page.locator('[data-project-filter="all"]').click();
-    for (const item of await page.locator('.reveal').all()) {
+    for (const item of await page.locator('.reveal:not([hidden])').all()) {
       await item.scrollIntoViewIfNeeded();
       await page.waitForTimeout(35);
     }
@@ -90,8 +103,8 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
   console.log(JSON.stringify(results, null, 2));
   const failed = results.some(result => {
     if (result.errors.length || !result.headingVisible || result.horizontalOverflow) return true;
-    if (result.page === 'home') return result.projectCount !== 4 || result.menuOpen === false || result.secondServiceOpen === false;
-    return result.projectCount !== 52 || result.uniqueLinks < 47 || result.missingImages !== 0 || result.visiblePitchCount !== 12 || result.visibleWebsiteCount !== 16 || result.visibleFiverrCount !== 7;
+    if (result.page === 'home') return result.projectCount !== 6 || result.menuOpen === false || result.secondServiceOpen === false;
+    return result.projectCount !== 52 || result.uniqueLinks < 47 || result.missingImages !== 0 || result.initialVisibleCount !== 10 || !result.loadMoreVisibleInitially || result.afterFirstLoadCount !== 20 || result.initialPitchCount !== 10 || result.visiblePitchCount !== 12 || result.initialWebsiteCount !== 10 || result.visibleWebsiteCount !== 16 || result.visibleFiverrCount !== 7 || !result.fiverrLoadMoreHidden;
   });
   if (failed) process.exit(1);
 })().catch(error => { console.error(error); process.exit(1); });
