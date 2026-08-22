@@ -48,6 +48,16 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     const exploreIconIsFile = await page.getByRole('link', { name: /Explore Works/i }).locator('.action-icon-file').count() === 1;
     const viewAllProjectsButton = page.getByRole('link', { name: 'View all Projects', exact: true });
     const viewAllProjectsIsButton = await viewAllProjectsButton.isVisible() && await viewAllProjectsButton.evaluate(element => element.classList.contains('button'));
+    const projectIconsValid = await page.locator('.project-card .arrow-button').evaluateAll(elements => elements.length === 6 && elements.every(element => {
+      const pseudo = getComputedStyle(element, '::before');
+      const rect = element.getBoundingClientRect();
+      return pseudo.maskImage !== 'none' && rect.width >= 44 && rect.height >= 44;
+    }));
+    const viewAllProjectsWidthMatches = await page.evaluate(() => {
+      const button = document.querySelector('.button-all-projects').getBoundingClientRect();
+      const media = document.querySelector('.project-card .project-media').getBoundingClientRect();
+      return Math.abs(button.width - media.width) <= 2;
+    });
     const cvLink = page.getByRole('link', { name: /Download CV/i });
     const cvHref = await cvLink.getAttribute('href');
     const cvDownload = await cvLink.getAttribute('download');
@@ -76,12 +86,12 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
       await page.locator('.menu-toggle').click();
       const menuOpen = await page.locator('.mobile-menu').getAttribute('aria-hidden') === 'false';
       await page.keyboard.press('Escape');
-      results.push({ page: 'home', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, menuOpen, whatsappHref, whatsappPosition, whatsappIconOnly, overallRatingVisible, exploreWorksVisible, exploreIconIsFile, viewAllProjectsIsButton, cvHref, cvDownload, cvAvailable, ogImage, twitterCard, heroImageCurrentSrc, heroLedeVisible, heroEyebrowVisible, heroStageHeight, heroActionGap, heroBottomGap });
+      results.push({ page: 'home', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, menuOpen, whatsappHref, whatsappPosition, whatsappIconOnly, overallRatingVisible, exploreWorksVisible, exploreIconIsFile, viewAllProjectsIsButton, viewAllProjectsWidthMatches, projectIconsValid, cvHref, cvDownload, cvAvailable, ogImage, twitterCard, heroImageCurrentSrc, heroLedeVisible, heroEyebrowVisible, heroStageHeight, heroActionGap, heroBottomGap });
     } else {
       await page.locator('.service-trigger').nth(1).click();
       await page.waitForTimeout(420);
       const secondServiceOpen = await page.locator('.service-trigger').nth(1).getAttribute('aria-expanded') === 'true';
-      results.push({ page: 'home', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, secondServiceOpen, whatsappHref, whatsappPosition, whatsappIconOnly, overallRatingVisible, exploreWorksVisible, exploreIconIsFile, viewAllProjectsIsButton, cvHref, cvDownload, cvAvailable, ogImage, twitterCard, heroImageCurrentSrc, heroLedeVisible, heroEyebrowVisible, heroStageHeight, heroActionGap, heroBottomGap });
+      results.push({ page: 'home', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, secondServiceOpen, whatsappHref, whatsappPosition, whatsappIconOnly, overallRatingVisible, exploreWorksVisible, exploreIconIsFile, viewAllProjectsIsButton, viewAllProjectsWidthMatches, projectIconsValid, cvHref, cvDownload, cvAvailable, ogImage, twitterCard, heroImageCurrentSrc, heroLedeVisible, heroEyebrowVisible, heroStageHeight, heroActionGap, heroBottomGap });
     }
 
     for (const item of await page.locator('.reveal:not([hidden])').all()) {
@@ -132,6 +142,9 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     const uniqueLinks = await page.locator('.portfolio-card').evaluateAll(cards => new Set(cards.map(card => card.href)).size);
     const missingImages = await page.locator('.portfolio-image img').evaluateAll(images => images.filter(image => !image.complete || image.naturalWidth === 0).length);
     const whatsappHref = await page.locator('.whatsapp-float').getAttribute('href');
+    const portfolioIconsValid = await page.locator('.portfolio-meta i').evaluateAll(elements => elements.length === 52 && elements.every(element => getComputedStyle(element, '::before').maskImage !== 'none'));
+    const behanceButton = page.getByRole('link', { name: 'Follow on Behance', exact: true });
+    const behanceButtonValid = await behanceButton.isVisible() && await behanceButton.evaluate(element => element.classList.contains('button') && Boolean(element.querySelector('.behance-mark')));
 
     await page.locator('[data-project-filter="pitch"]').click();
     const initialPitchCount = await page.locator('.portfolio-card:not([hidden])').count();
@@ -144,7 +157,7 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     await page.locator('[data-project-filter="fiverr"]').click();
     const visibleFiverrCount = await page.locator('.portfolio-card:not([hidden])').count();
     const fiverrPaginationHidden = !(await page.locator('[data-project-pagination]').isVisible());
-    results.push({ page: 'projects', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, uniqueLinks, missingImages, initialVisibleCount, paginationVisibleInitially, initialPageCount, paginationGroups, initialCurrentPage, secondPageVisibleCount, secondPageCurrent, initialPitchCount, secondPitchPageCount, initialWebsiteCount, secondWebsitePageCount, visibleFiverrCount, fiverrPaginationHidden, whatsappHref, ogImage, twitterCard });
+    results.push({ page: 'projects', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, uniqueLinks, missingImages, initialVisibleCount, paginationVisibleInitially, initialPageCount, paginationGroups, initialCurrentPage, secondPageVisibleCount, secondPageCurrent, initialPitchCount, secondPitchPageCount, initialWebsiteCount, secondWebsitePageCount, visibleFiverrCount, fiverrPaginationHidden, whatsappHref, ogImage, twitterCard, behanceButtonValid, portfolioIconsValid });
 
     await page.locator('[data-project-filter="all"]').click();
     for (const item of await page.locator('.reveal:not([hidden])').all()) {
@@ -161,8 +174,8 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     if (result.errors.length || !result.headingVisible || result.horizontalOverflow) return true;
     if (result.whatsappHref !== 'https://wa.me/917827087878') return true;
     if (result.ogImage !== 'https://ishaquenv.com/assets/portfolio/og-image.png' || result.twitterCard !== 'summary_large_image') return true;
-    if (result.page === 'home') return result.projectCount !== 6 || result.menuOpen === false || result.secondServiceOpen === false || !result.whatsappPosition.visible || !result.whatsappPosition.rightAligned || !result.whatsappPosition.fixed || !result.whatsappPosition.withinViewport || !result.whatsappIconOnly || !result.exploreWorksVisible || !result.exploreIconIsFile || !result.viewAllProjectsIsButton || result.cvHref !== '/assets/portfolio/Muhammed-Ishaque-CV.pdf' || result.cvDownload !== 'Muhammed-Ishaque-CV.pdf' || !result.cvAvailable || (result.viewport !== 'desktop' ? result.overallRatingVisible || result.heroLedeVisible || result.heroEyebrowVisible || result.heroStageHeight > 502 || result.heroActionGap > 22 || result.heroBottomGap < 16 || result.heroBottomGap > 20 || !result.heroImageCurrentSrc.endsWith('/assets/portfolio/ishaque-hero-mobile.png') : !result.overallRatingVisible || !result.heroLedeVisible || !result.heroEyebrowVisible || !result.heroImageCurrentSrc.endsWith('/assets/portfolio/ishaque-hero.png'));
-    return result.projectCount !== 52 || result.uniqueLinks < 47 || result.missingImages !== 0 || result.initialVisibleCount !== 10 || !result.paginationVisibleInitially || result.initialPageCount !== (result.viewport === 'mobile' ? 4 : 6) || result.paginationGroups !== 3 || result.initialCurrentPage !== '1' || result.secondPageVisibleCount !== 10 || result.secondPageCurrent !== '2' || result.initialPitchCount !== 10 || result.secondPitchPageCount !== 2 || result.initialWebsiteCount !== 10 || result.secondWebsitePageCount !== 6 || result.visibleFiverrCount !== 7 || !result.fiverrPaginationHidden;
+    if (result.page === 'home') return result.projectCount !== 6 || result.menuOpen === false || result.secondServiceOpen === false || !result.whatsappPosition.visible || !result.whatsappPosition.rightAligned || !result.whatsappPosition.fixed || !result.whatsappPosition.withinViewport || !result.whatsappIconOnly || !result.exploreWorksVisible || !result.exploreIconIsFile || !result.viewAllProjectsIsButton || !result.projectIconsValid || result.cvHref !== '/assets/portfolio/Muhammed-Ishaque-CV.pdf' || result.cvDownload !== 'Muhammed-Ishaque-CV.pdf' || !result.cvAvailable || (result.viewport !== 'desktop' ? !result.viewAllProjectsWidthMatches || result.overallRatingVisible || result.heroLedeVisible || result.heroEyebrowVisible || result.heroStageHeight > 502 || result.heroActionGap > 22 || result.heroBottomGap < 16 || result.heroBottomGap > 20 || !result.heroImageCurrentSrc.endsWith('/assets/portfolio/ishaque-hero-mobile.png') : !result.overallRatingVisible || !result.heroLedeVisible || !result.heroEyebrowVisible || !result.heroImageCurrentSrc.endsWith('/assets/portfolio/ishaque-hero.png'));
+    return result.projectCount !== 52 || result.uniqueLinks < 47 || result.missingImages !== 0 || result.initialVisibleCount !== 10 || !result.paginationVisibleInitially || result.initialPageCount !== (result.viewport === 'mobile' ? 4 : 6) || result.paginationGroups !== 3 || result.initialCurrentPage !== '1' || result.secondPageVisibleCount !== 10 || result.secondPageCurrent !== '2' || result.initialPitchCount !== 10 || result.secondPitchPageCount !== 2 || result.initialWebsiteCount !== 10 || result.secondWebsitePageCount !== 6 || result.visibleFiverrCount !== 7 || !result.fiverrPaginationHidden || !result.behanceButtonValid || !result.portfolioIconsValid;
   });
   if (failed) process.exit(1);
 })().catch(error => { console.error(error); process.exit(1); });
