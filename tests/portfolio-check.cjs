@@ -24,17 +24,33 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     const headingVisible = await page.getByRole('heading', { name: /Ideas, made/i }).isVisible();
     const horizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
     const projectCount = await page.locator('.project-card').count();
+    const overallRatingVisible = await page.getByText('Overall rating', { exact: true }).isVisible();
+    const whatsapp = page.locator('.whatsapp-float');
+    const whatsappHref = await whatsapp.getAttribute('href');
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForTimeout(120);
+    const whatsappPosition = await whatsapp.evaluate(element => {
+      const rect = element.getBoundingClientRect();
+      return {
+        visible: rect.width > 0 && rect.height >= 44,
+        centered: Math.abs((rect.left + rect.width / 2) - window.innerWidth / 2) <= 2,
+        fixed: getComputedStyle(element).position === 'fixed',
+        withinViewport: rect.bottom <= window.innerHeight && rect.top >= 0
+      };
+    });
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.waitForTimeout(450);
 
     if (viewport.name === 'mobile') {
       await page.locator('.menu-toggle').click();
       const menuOpen = await page.locator('.mobile-menu').getAttribute('aria-hidden') === 'false';
       await page.keyboard.press('Escape');
-      results.push({ page: 'home', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, menuOpen });
+      results.push({ page: 'home', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, menuOpen, whatsappHref, whatsappPosition, overallRatingVisible });
     } else {
       await page.locator('.service-trigger').nth(1).click();
       await page.waitForTimeout(420);
       const secondServiceOpen = await page.locator('.service-trigger').nth(1).getAttribute('aria-expanded') === 'true';
-      results.push({ page: 'home', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, secondServiceOpen });
+      results.push({ page: 'home', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, secondServiceOpen, whatsappHref, whatsappPosition, overallRatingVisible });
     }
 
     for (const item of await page.locator('.reveal:not([hidden])').all()) {
@@ -57,16 +73,19 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     await page.waitForTimeout(800);
 
     const initialVisibleCount = await page.locator('.portfolio-card:not([hidden])').count();
-    const loadMoreVisibleInitially = await page.locator('[data-load-more]').isVisible();
-    await page.locator('[data-load-more]').click();
-    const afterFirstLoadCount = await page.locator('.portfolio-card:not([hidden])').count();
-    for (let loadIndex = 0; loadIndex < 5 && await page.locator('[data-load-more]').isVisible(); loadIndex += 1) {
-      await page.locator('[data-load-more]').click();
-    }
+    const paginationVisibleInitially = await page.locator('[data-project-pagination]').isVisible();
+    const initialPageCount = await page.locator('[data-project-pagination] [data-page]').count();
+    const initialCurrentPage = await page.locator('[data-project-pagination] [aria-current="page"]').textContent();
+    await page.locator('[data-project-pagination] [aria-label="Page 2"]').click();
+    const secondPageVisibleCount = await page.locator('.portfolio-card:not([hidden])').count();
+    const secondPageCurrent = await page.locator('[data-project-pagination] [aria-current="page"]').textContent();
 
-    for (const card of await page.locator('.portfolio-card:not([hidden])').all()) {
-      await card.scrollIntoViewIfNeeded();
-      await page.waitForTimeout(25);
+    for (let pageNumber = 1; pageNumber <= 6; pageNumber += 1) {
+      await page.locator(`[data-project-pagination] [aria-label="Page ${pageNumber}"]`).click();
+      for (const card of await page.locator('.portfolio-card:not([hidden])').all()) {
+        await card.scrollIntoViewIfNeeded();
+        await page.waitForTimeout(30);
+      }
     }
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.waitForTimeout(300);
@@ -76,19 +95,20 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     const projectCount = await page.locator('.portfolio-card').count();
     const uniqueLinks = await page.locator('.portfolio-card').evaluateAll(cards => new Set(cards.map(card => card.href)).size);
     const missingImages = await page.locator('.portfolio-image img').evaluateAll(images => images.filter(image => !image.complete || image.naturalWidth === 0).length);
+    const whatsappHref = await page.locator('.whatsapp-float').getAttribute('href');
 
     await page.locator('[data-project-filter="pitch"]').click();
     const initialPitchCount = await page.locator('.portfolio-card:not([hidden])').count();
-    await page.locator('[data-load-more]').click();
-    const visiblePitchCount = await page.locator('.portfolio-card:not([hidden])').count();
+    await page.locator('[data-project-pagination] [aria-label="Page 2"]').click();
+    const secondPitchPageCount = await page.locator('.portfolio-card:not([hidden])').count();
     await page.locator('[data-project-filter="website"]').click();
     const initialWebsiteCount = await page.locator('.portfolio-card:not([hidden])').count();
-    await page.locator('[data-load-more]').click();
-    const visibleWebsiteCount = await page.locator('.portfolio-card:not([hidden])').count();
+    await page.locator('[data-project-pagination] [aria-label="Page 2"]').click();
+    const secondWebsitePageCount = await page.locator('.portfolio-card:not([hidden])').count();
     await page.locator('[data-project-filter="fiverr"]').click();
     const visibleFiverrCount = await page.locator('.portfolio-card:not([hidden])').count();
-    const fiverrLoadMoreHidden = !(await page.locator('[data-load-more]').isVisible());
-    results.push({ page: 'projects', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, uniqueLinks, missingImages, initialVisibleCount, loadMoreVisibleInitially, afterFirstLoadCount, initialPitchCount, visiblePitchCount, initialWebsiteCount, visibleWebsiteCount, visibleFiverrCount, fiverrLoadMoreHidden });
+    const fiverrPaginationHidden = !(await page.locator('[data-project-pagination]').isVisible());
+    results.push({ page: 'projects', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, uniqueLinks, missingImages, initialVisibleCount, paginationVisibleInitially, initialPageCount, initialCurrentPage, secondPageVisibleCount, secondPageCurrent, initialPitchCount, secondPitchPageCount, initialWebsiteCount, secondWebsitePageCount, visibleFiverrCount, fiverrPaginationHidden, whatsappHref });
 
     await page.locator('[data-project-filter="all"]').click();
     for (const item of await page.locator('.reveal:not([hidden])').all()) {
@@ -103,8 +123,9 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
   console.log(JSON.stringify(results, null, 2));
   const failed = results.some(result => {
     if (result.errors.length || !result.headingVisible || result.horizontalOverflow) return true;
-    if (result.page === 'home') return result.projectCount !== 6 || result.menuOpen === false || result.secondServiceOpen === false;
-    return result.projectCount !== 52 || result.uniqueLinks < 47 || result.missingImages !== 0 || result.initialVisibleCount !== 10 || !result.loadMoreVisibleInitially || result.afterFirstLoadCount !== 20 || result.initialPitchCount !== 10 || result.visiblePitchCount !== 12 || result.initialWebsiteCount !== 10 || result.visibleWebsiteCount !== 16 || result.visibleFiverrCount !== 7 || !result.fiverrLoadMoreHidden;
+    if (result.whatsappHref !== 'https://wa.me/917827087878') return true;
+    if (result.page === 'home') return result.projectCount !== 6 || result.menuOpen === false || result.secondServiceOpen === false || !result.whatsappPosition.visible || !result.whatsappPosition.centered || !result.whatsappPosition.fixed || !result.whatsappPosition.withinViewport || (result.viewport === 'mobile' ? result.overallRatingVisible : !result.overallRatingVisible);
+    return result.projectCount !== 52 || result.uniqueLinks < 47 || result.missingImages !== 0 || result.initialVisibleCount !== 10 || !result.paginationVisibleInitially || result.initialPageCount !== 8 || result.initialCurrentPage !== '1' || result.secondPageVisibleCount !== 10 || result.secondPageCurrent !== '2' || result.initialPitchCount !== 10 || result.secondPitchPageCount !== 2 || result.initialWebsiteCount !== 10 || result.secondWebsitePageCount !== 6 || result.visibleFiverrCount !== 7 || !result.fiverrPaginationHidden;
   });
   if (failed) process.exit(1);
 })().catch(error => { console.error(error); process.exit(1); });

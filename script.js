@@ -177,30 +177,72 @@ if (heroStage && !prefersReducedMotion && window.matchMedia('(hover: hover)').ma
 
 const projectFilters = [...document.querySelectorAll('[data-project-filter]')];
 const portfolioCards = [...document.querySelectorAll('.portfolio-card[data-category]')];
-const loadMoreButton = document.querySelector('[data-load-more]');
-const loadMoreLabel = document.querySelector('[data-load-more-label]');
-const projectRemaining = document.querySelector('[data-project-remaining]');
 const projectStatus = document.querySelector('[data-project-status]');
+const projectPagination = document.querySelector('[data-project-pagination]');
+const projectGrid = document.querySelector('#project-grid');
+const projectPageSize = 10;
 let activeProjectFilter = 'all';
-let visibleProjectLimit = 10;
+let activeProjectPage = 1;
+
+function makePageButton(label, page, options = {}) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = `pagination-button${options.current ? ' is-current' : ''}${options.direction ? ` is-${options.direction}` : ''}`;
+  button.dataset.page = String(page);
+  button.setAttribute('aria-label', options.ariaLabel || `Page ${page}`);
+  if (options.current) button.setAttribute('aria-current', 'page');
+  if (options.disabled) button.disabled = true;
+  button.textContent = label;
+  button.addEventListener('click', () => {
+    activeProjectPage = page;
+    updatePortfolioVisibility();
+    projectGrid?.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'start' });
+  });
+  return button;
+}
+
+function renderProjectPagination(totalPages) {
+  if (!projectPagination) return;
+  projectPagination.replaceChildren();
+  projectPagination.hidden = totalPages <= 1;
+  if (totalPages <= 1) return;
+
+  projectPagination.append(makePageButton('<', Math.max(1, activeProjectPage - 1), {
+    ariaLabel: 'Previous project page',
+    direction: 'previous',
+    disabled: activeProjectPage === 1
+  }));
+  for (let page = 1; page <= totalPages; page += 1) {
+    projectPagination.append(makePageButton(String(page), page, { current: page === activeProjectPage }));
+  }
+  projectPagination.append(makePageButton('>', Math.min(totalPages, activeProjectPage + 1), {
+    ariaLabel: 'Next project page',
+    direction: 'next',
+    disabled: activeProjectPage === totalPages
+  }));
+}
 
 function updatePortfolioVisibility() {
   const matchingCards = portfolioCards.filter(card => activeProjectFilter === 'all' || card.dataset.category === activeProjectFilter);
+  const totalPages = Math.max(1, Math.ceil(matchingCards.length / projectPageSize));
+  activeProjectPage = Math.min(activeProjectPage, totalPages);
+  const pageStart = (activeProjectPage - 1) * projectPageSize;
+  const pageEnd = Math.min(pageStart + projectPageSize, matchingCards.length);
   portfolioCards.forEach(card => { card.hidden = true; });
-  matchingCards.forEach((card, index) => { card.hidden = index >= visibleProjectLimit; });
+  matchingCards.forEach((card, index) => { card.hidden = index < pageStart || index >= pageEnd; });
 
-  const shownCount = Math.min(visibleProjectLimit, matchingCards.length);
-  const remainingCount = Math.max(0, matchingCards.length - shownCount);
-  if (projectStatus) projectStatus.textContent = `Showing ${shownCount} of ${matchingCards.length} projects`;
-  if (projectRemaining) projectRemaining.textContent = `${remainingCount} remaining`;
-  if (loadMoreLabel) loadMoreLabel.textContent = `Load next ${Math.min(10, remainingCount)}`;
-  if (loadMoreButton) loadMoreButton.hidden = remainingCount === 0;
+  if (projectStatus) {
+    projectStatus.textContent = matchingCards.length
+      ? `Showing ${pageStart + 1} to ${pageEnd} of ${matchingCards.length} projects`
+      : 'No projects in this category';
+  }
+  renderProjectPagination(totalPages);
 }
 
 projectFilters.forEach(button => {
   button.addEventListener('click', () => {
     activeProjectFilter = button.dataset.projectFilter;
-    visibleProjectLimit = 10;
+    activeProjectPage = 1;
     projectFilters.forEach(filter => {
       const isSelected = filter === button;
       filter.classList.toggle('is-active', isSelected);
@@ -208,10 +250,6 @@ projectFilters.forEach(button => {
     });
     updatePortfolioVisibility();
   });
-});
-loadMoreButton?.addEventListener('click', () => {
-  visibleProjectLimit += 10;
-  updatePortfolioVisibility();
 });
 updatePortfolioVisibility();
 
