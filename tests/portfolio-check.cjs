@@ -39,11 +39,8 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     const servicesCollapsedInitially = await page.locator('.service-trigger').evaluateAll(triggers => triggers.every(trigger => trigger.getAttribute('aria-expanded') === 'false')) && await page.locator('.service-panel').evaluateAll(panels => panels.every(panel => panel.hidden));
     const mobileFontScale = !isMobile || await page.locator('body').evaluate(element => Number.parseFloat(getComputedStyle(element).fontSize) <= 15);
     const mobileQuoteLineCount = !isMobile ? 3 : await page.locator('.quote-section blockquote span').evaluateAll(spans => new Set(spans.map(span => Math.round(span.getBoundingClientRect().top))).size);
-    const mobileContactHeadlineLineCount = !isMobile ? 1 : await page.locator('#contact-title').evaluate(element => {
-      const range = document.createRange();
-      range.selectNodeContents(element);
-      return new Set([...range.getClientRects()].filter(rect => rect.width > 0).map(rect => Math.round(rect.top))).size;
-    });
+    const mobileContactHeadlineLineCount = !isMobile ? 2 : await page.locator('#contact-title').evaluate(element => new Set([...element.querySelectorAll('span')].map(span => Math.round(span.getBoundingClientRect().top))).size);
+    const mobileContactLandEmphasis = !isMobile || await page.locator('#contact-title').evaluate(element => Number.parseFloat(getComputedStyle(element.querySelector('.contact-land')).fontSize) > Number.parseFloat(getComputedStyle(element.querySelector('.contact-lead')).fontSize));
     const heroImageCurrentSrc = await page.locator('.hero-picture img').evaluate(image => image.currentSrc);
     const heroLedeVisible = await page.locator('.hero-lede').isVisible();
     const heroEyebrowVisible = await page.locator('.hero-copy .eyebrow').isVisible();
@@ -132,12 +129,12 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
       await page.locator('.menu-toggle').click();
       const menuOpen = await page.locator('.mobile-menu').getAttribute('aria-hidden') === 'false';
       await page.keyboard.press('Escape');
-      results.push({ page: 'home', viewport: viewport.name, errors, headingVisible, mobileContentImmediate, statusOpenToWork, servicesCollapsedInitially, mobileFontScale, mobileQuoteLineCount, mobileContactHeadlineLineCount, horizontalOverflow, projectCount, projectImagesWidescreen, mobileProjectImagesEager, menuOpen, whatsappHref, whatsappPosition, whatsappIconOnly, whatsappScrollStability, overallRatingVisible, exploreWorksVisible, exploreIconIsFile, viewAllProjectsIsButton, viewAllProjectsWidthMatches, projectIconsValid, cvHref, cvDownload, cvAvailable, ogImage, twitterCard, heroImageCurrentSrc, heroLedeVisible, heroEyebrowVisible, heroStageHeight, heroActionGap, heroBottomGap });
+      results.push({ page: 'home', viewport: viewport.name, errors, headingVisible, mobileContentImmediate, statusOpenToWork, servicesCollapsedInitially, mobileFontScale, mobileQuoteLineCount, mobileContactHeadlineLineCount, mobileContactLandEmphasis, horizontalOverflow, projectCount, projectImagesWidescreen, mobileProjectImagesEager, menuOpen, whatsappHref, whatsappPosition, whatsappIconOnly, whatsappScrollStability, overallRatingVisible, exploreWorksVisible, exploreIconIsFile, viewAllProjectsIsButton, viewAllProjectsWidthMatches, projectIconsValid, cvHref, cvDownload, cvAvailable, ogImage, twitterCard, heroImageCurrentSrc, heroLedeVisible, heroEyebrowVisible, heroStageHeight, heroActionGap, heroBottomGap });
     } else {
       await page.locator('.service-trigger').nth(1).click();
       await page.waitForTimeout(420);
       const secondServiceOpen = await page.locator('.service-trigger').nth(1).getAttribute('aria-expanded') === 'true';
-      results.push({ page: 'home', viewport: viewport.name, errors, headingVisible, mobileContentImmediate, statusOpenToWork, servicesCollapsedInitially, mobileFontScale, mobileQuoteLineCount, mobileContactHeadlineLineCount, horizontalOverflow, projectCount, projectImagesWidescreen, mobileProjectImagesEager, secondServiceOpen, whatsappHref, whatsappPosition, whatsappIconOnly, whatsappScrollStability, overallRatingVisible, exploreWorksVisible, exploreIconIsFile, viewAllProjectsIsButton, viewAllProjectsWidthMatches, projectIconsValid, cvHref, cvDownload, cvAvailable, ogImage, twitterCard, heroImageCurrentSrc, heroLedeVisible, heroEyebrowVisible, heroStageHeight, heroActionGap, heroBottomGap });
+      results.push({ page: 'home', viewport: viewport.name, errors, headingVisible, mobileContentImmediate, statusOpenToWork, servicesCollapsedInitially, mobileFontScale, mobileQuoteLineCount, mobileContactHeadlineLineCount, mobileContactLandEmphasis, horizontalOverflow, projectCount, projectImagesWidescreen, mobileProjectImagesEager, secondServiceOpen, whatsappHref, whatsappPosition, whatsappIconOnly, whatsappScrollStability, overallRatingVisible, exploreWorksVisible, exploreIconIsFile, viewAllProjectsIsButton, viewAllProjectsWidthMatches, projectIconsValid, cvHref, cvDownload, cvAvailable, ogImage, twitterCard, heroImageCurrentSrc, heroLedeVisible, heroEyebrowVisible, heroStageHeight, heroActionGap, heroBottomGap });
     }
 
     for (const item of await page.locator('.reveal:not([hidden])').all()) {
@@ -205,7 +202,7 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
       return element.classList.contains('button') && logo?.getAttribute('viewBox') === '0 0 24 24' && Boolean(logo.querySelector('path'));
     });
     const projectsLayoutAlignment = await page.evaluate(() => {
-      const filters = document.querySelector('.project-filters').getBoundingClientRect();
+      const filters = document.querySelector(window.innerWidth <= 620 ? '.project-filter-select' : '.project-filters').getBoundingClientRect();
       const image = document.querySelector('.portfolio-card:not([hidden]) .portfolio-image').getBoundingClientRect();
       const grid = document.querySelector('.portfolio-grid').getBoundingClientRect();
       const reference = window.innerWidth <= 620 ? image : grid;
@@ -216,21 +213,29 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
       };
     });
 
-    await page.locator('[data-project-filter="pitch"]').click();
+    const chooseProjectFilter = async value => viewport.name === 'mobile'
+      ? page.locator('[data-project-filter-select]').selectOption(value)
+      : page.locator(`[data-project-filter="${value}"]`).click();
+    const categoryOrder = await page.locator('[data-project-filter]').evaluateAll(buttons => buttons.map(button => button.dataset.projectFilter));
+    const projectCategoryGroupOrder = await page.locator('.portfolio-card').evaluateAll(cards => cards.map(card => card.dataset.category).filter((category, index, categories) => index === 0 || category !== categories[index - 1]));
+    const mobileFilterSelectorVisible = viewport.name !== 'mobile' || await page.locator('[data-project-filter-select]').isVisible();
+    const desktopFilterButtonsVisible = viewport.name === 'mobile' || await page.locator('.project-filters').isVisible();
+    await chooseProjectFilter('pitch');
     const initialPitchCount = await page.locator('.portfolio-card:not([hidden])').count();
     await page.locator('[data-project-pagination] [aria-label="Page 2"]').click();
     const secondPitchPageCount = await page.locator('.portfolio-card:not([hidden])').count();
-    await page.locator('[data-project-filter="website"]').click();
+    await chooseProjectFilter('website');
     const initialWebsiteCount = await page.locator('.portfolio-card:not([hidden])').count();
     await page.locator('[data-project-pagination] [aria-label="Page 2"]').click();
     const secondWebsitePageCount = await page.locator('.portfolio-card:not([hidden])').count();
-    await page.locator('[data-project-filter="fiverr"]').click();
+    await chooseProjectFilter('fiverr');
     const visibleFiverrCount = await page.locator('.portfolio-card:not([hidden])').count();
     const fiverrPaginationHidden = !(await page.locator('[data-project-pagination]').isVisible());
-    results.push({ page: 'projects', viewport: viewport.name, errors, headingVisible, projectsContentImmediate, horizontalOverflow, projectCount, uniqueLinks, missingImages, portfolioImagesWidescreen, initialVisibleCount, visibleProjectImagesEager, paginationVisibleInitially, initialPageCount, paginationGroups, initialCurrentPage, secondPageVisibleCount, secondPageCurrent, initialPitchCount, secondPitchPageCount, initialWebsiteCount, secondWebsitePageCount, visibleFiverrCount, fiverrPaginationHidden, whatsappHref, ogImage, twitterCard, behanceButtonValid, portfolioIconsValid, projectsLayoutAlignment });
+    results.push({ page: 'projects', viewport: viewport.name, errors, headingVisible, projectsContentImmediate, horizontalOverflow, projectCount, uniqueLinks, missingImages, portfolioImagesWidescreen, initialVisibleCount, visibleProjectImagesEager, paginationVisibleInitially, initialPageCount, paginationGroups, initialCurrentPage, secondPageVisibleCount, secondPageCurrent, initialPitchCount, secondPitchPageCount, initialWebsiteCount, secondWebsitePageCount, visibleFiverrCount, fiverrPaginationHidden, whatsappHref, ogImage, twitterCard, behanceButtonValid, portfolioIconsValid, projectsLayoutAlignment, categoryOrder, projectCategoryGroupOrder, mobileFilterSelectorVisible, desktopFilterButtonsVisible });
 
-    await page.locator('[data-project-filter="all"]').click();
+    await chooseProjectFilter('all');
     for (const item of await page.locator('.reveal:not([hidden])').all()) {
+      if (!(await item.isVisible())) continue;
       await item.scrollIntoViewIfNeeded();
       await page.waitForTimeout(35);
     }
@@ -244,8 +249,8 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     if (result.errors.length || !result.headingVisible || result.horizontalOverflow) return true;
     if (result.whatsappHref !== 'https://wa.me/917827087878') return true;
     if (result.ogImage !== 'https://ishaquenv.com/assets/portfolio/og-image.png' || result.twitterCard !== 'summary_large_image') return true;
-    if (result.page === 'home') return result.projectCount !== 6 || !result.projectImagesWidescreen || !result.mobileContentImmediate || !result.mobileProjectImagesEager || !result.statusOpenToWork || !result.servicesCollapsedInitially || !result.mobileFontScale || result.mobileQuoteLineCount !== 3 || result.mobileContactHeadlineLineCount !== 1 || result.menuOpen === false || result.secondServiceOpen === false || !result.whatsappPosition.visible || !result.whatsappPosition.rightAligned || !result.whatsappPosition.fixed || !result.whatsappPosition.withinViewport || !result.whatsappPosition.dynamicViewportAnchored || !result.whatsappIconOnly || result.whatsappScrollStability.range > 1 || !result.whatsappScrollStability.composited || !result.whatsappScrollStability.mobileShadowCompact || !result.exploreWorksVisible || !result.exploreIconIsFile || !result.viewAllProjectsIsButton || !result.projectIconsValid || result.cvHref !== '/assets/portfolio/Muhammed-Ishaque-CV.pdf' || result.cvDownload !== 'Muhammed-Ishaque-CV.pdf' || !result.cvAvailable || (result.viewport !== 'desktop' ? !result.viewAllProjectsWidthMatches || result.overallRatingVisible || result.heroLedeVisible || result.heroEyebrowVisible || result.heroStageHeight > 502 || result.heroActionGap < 22 || result.heroActionGap > 26 || result.heroBottomGap < 16 || result.heroBottomGap > 20 || !result.heroImageCurrentSrc.endsWith('/assets/portfolio/ishaque-hero-mobile.png') : !result.overallRatingVisible || !result.heroLedeVisible || !result.heroEyebrowVisible || !result.heroImageCurrentSrc.endsWith('/assets/portfolio/ishaque-hero.png'));
-    return result.projectCount !== 52 || result.uniqueLinks < 47 || result.missingImages !== 0 || !result.portfolioImagesWidescreen || !result.projectsContentImmediate || result.initialVisibleCount !== 10 || !result.visibleProjectImagesEager || !result.paginationVisibleInitially || result.initialPageCount !== (result.viewport === 'mobile' ? 4 : 6) || result.paginationGroups !== 3 || result.initialCurrentPage !== '1' || result.secondPageVisibleCount !== 10 || result.secondPageCurrent !== '2' || result.initialPitchCount !== 10 || result.secondPitchPageCount !== 2 || result.initialWebsiteCount !== 10 || result.secondWebsitePageCount !== 6 || result.visibleFiverrCount !== 7 || !result.fiverrPaginationHidden || !result.behanceButtonValid || !result.portfolioIconsValid || !result.projectsLayoutAlignment.withinViewport || result.projectsLayoutAlignment.leftDelta > 1 || result.projectsLayoutAlignment.rightDelta > 1;
+    if (result.page === 'home') return result.projectCount !== 6 || !result.projectImagesWidescreen || !result.mobileContentImmediate || !result.mobileProjectImagesEager || !result.statusOpenToWork || !result.servicesCollapsedInitially || !result.mobileFontScale || result.mobileQuoteLineCount !== 3 || result.mobileContactHeadlineLineCount !== 2 || !result.mobileContactLandEmphasis || result.menuOpen === false || result.secondServiceOpen === false || !result.whatsappPosition.visible || !result.whatsappPosition.rightAligned || !result.whatsappPosition.fixed || !result.whatsappPosition.withinViewport || !result.whatsappPosition.dynamicViewportAnchored || !result.whatsappIconOnly || result.whatsappScrollStability.range > 1 || !result.whatsappScrollStability.composited || !result.whatsappScrollStability.mobileShadowCompact || !result.exploreWorksVisible || !result.exploreIconIsFile || !result.viewAllProjectsIsButton || !result.projectIconsValid || result.cvHref !== '/assets/portfolio/Muhammed-Ishaque-CV.pdf' || result.cvDownload !== 'Muhammed-Ishaque-CV.pdf' || !result.cvAvailable || (result.viewport !== 'desktop' ? !result.viewAllProjectsWidthMatches || result.overallRatingVisible || result.heroLedeVisible || result.heroEyebrowVisible || result.heroStageHeight > 502 || result.heroActionGap < 22 || result.heroActionGap > 26 || result.heroBottomGap < 16 || result.heroBottomGap > 20 || !result.heroImageCurrentSrc.endsWith('/assets/portfolio/ishaque-hero-mobile.png') : !result.overallRatingVisible || !result.heroLedeVisible || !result.heroEyebrowVisible || !result.heroImageCurrentSrc.endsWith('/assets/portfolio/ishaque-hero.png'));
+    return result.projectCount !== 52 || result.uniqueLinks < 47 || result.missingImages !== 0 || !result.portfolioImagesWidescreen || !result.projectsContentImmediate || result.initialVisibleCount !== 10 || !result.visibleProjectImagesEager || !result.paginationVisibleInitially || result.initialPageCount !== (result.viewport === 'mobile' ? 4 : 6) || result.paginationGroups !== 3 || result.initialCurrentPage !== '1' || result.secondPageVisibleCount !== 10 || result.secondPageCurrent !== '2' || result.initialPitchCount !== 10 || result.secondPitchPageCount !== 2 || result.initialWebsiteCount !== 10 || result.secondWebsitePageCount !== 6 || result.visibleFiverrCount !== 7 || !result.fiverrPaginationHidden || !result.behanceButtonValid || !result.portfolioIconsValid || !result.projectsLayoutAlignment.withinViewport || result.projectsLayoutAlignment.leftDelta > 1 || result.projectsLayoutAlignment.rightDelta > 1 || result.categoryOrder.slice(0, 3).join(',') !== 'all,pitch,presentation' || result.projectCategoryGroupOrder.slice(0, 3).join(',') !== 'pitch,presentation,one-pager' || !result.mobileFilterSelectorVisible || !result.desktopFilterButtonsVisible;
   });
   if (failed) process.exit(1);
 })().catch(error => { console.error(error); process.exit(1); });

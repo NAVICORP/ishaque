@@ -204,6 +204,7 @@ if (heroStage && !prefersReducedMotion && window.matchMedia('(hover: hover)').ma
 }
 
 const projectFilters = [...document.querySelectorAll('[data-project-filter]')];
+const projectFilterSelect = document.querySelector('[data-project-filter-select]');
 const portfolioCards = [...document.querySelectorAll('.portfolio-card[data-category]')];
 const projectStatus = document.querySelector('[data-project-status]');
 const projectPagination = document.querySelector('[data-project-pagination]');
@@ -297,18 +298,22 @@ function updatePortfolioVisibility() {
   renderProjectPagination(totalPages);
 }
 
-projectFilters.forEach(button => {
-  button.addEventListener('click', () => {
-    activeProjectFilter = button.dataset.projectFilter;
-    activeProjectPage = 1;
-    projectFilters.forEach(filter => {
-      const isSelected = filter === button;
-      filter.classList.toggle('is-active', isSelected);
-      filter.setAttribute('aria-pressed', String(isSelected));
-    });
-    updatePortfolioVisibility();
+function setProjectFilter(value) {
+  activeProjectFilter = value;
+  activeProjectPage = 1;
+  projectFilters.forEach(filter => {
+    const isSelected = filter.dataset.projectFilter === value;
+    filter.classList.toggle('is-active', isSelected);
+    filter.setAttribute('aria-pressed', String(isSelected));
   });
+  if (projectFilterSelect) projectFilterSelect.value = value;
+  updatePortfolioVisibility();
+}
+
+projectFilters.forEach(button => {
+  button.addEventListener('click', () => setProjectFilter(button.dataset.projectFilter));
 });
+projectFilterSelect?.addEventListener('change', () => setProjectFilter(projectFilterSelect.value));
 updatePortfolioVisibility();
 compactPagination.addEventListener?.('change', updatePortfolioVisibility);
 

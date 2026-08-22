@@ -278,7 +278,7 @@ img { display: block; max-width: 100%; }
 .contact-copy { position: relative; z-index: 2; max-width: 960px; }
 .contact-copy .eyebrow { color: rgba(255,255,255,.72); }
 .contact-copy h2 { margin: 20px 0 30px; font-size: clamp(74px, 11.5vw, 168px); font-weight: 650; line-height: .77; letter-spacing: -.085em; }
-.contact-copy h2 span { color: rgba(255,255,255,.38); }
+.contact-copy h2 .contact-land { color: rgba(255,255,255,.38); }
 .contact-copy > p { max-width: 580px; color: rgba(255,255,255,.78); font-size: 17px; }
 .contact-actions { margin-top: 38px; display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
 .button-invert { color: var(--ink); background: #fff; border-color: #fff; box-shadow: 0 12px 34px rgba(0, 74, 132, .18); }
@@ -313,6 +313,7 @@ img { display: block; max-width: 100%; }
 .behance-mark { flex: 0 0 auto; width: 29px; height: 29px; display: grid; place-items: center; color: #fff; }
 .behance-mark svg { width: 100%; height: 100%; display: block; fill: currentColor; }
 .projects-browser { padding-top: 34px; padding-bottom: 150px; }
+.project-filter-select { display: none; }
 .project-filters { position: sticky; z-index: 20; top: 100px; margin-bottom: 58px; padding: 8px; display: flex; align-items: center; flex-wrap: wrap; gap: 7px; border: 1px solid rgba(216, 226, 236, .86); border-radius: 18px; background: rgba(255,255,255,.88); box-shadow: 0 12px 36px rgba(34, 58, 84, .08); backdrop-filter: blur(16px); transition: top .35s var(--ease); }
 .header-hidden .project-filters { top: 12px; }
 .project-filter { min-height: 44px; padding: 10px 15px; display: inline-flex; align-items: center; gap: 9px; border: 0; border-radius: 12px; color: #516074; background: transparent; font-size: 12px; font-weight: 750; cursor: pointer; transition: color .22s ease, background-color .22s ease, transform .22s var(--ease); }
@@ -495,8 +496,9 @@ img { display: block; max-width: 100%; }
   .quote-section > p { margin-top: 28px; font-size: 10px; }
   .quote-mark { font-size: 300px; }
   .contact-section { min-height: 680px; padding: 88px 16px max(92px, calc(env(safe-area-inset-bottom) + 76px)); }
-  .contact-copy h2 { margin: 16px 0 24px; font-size: clamp(34px, 10.2vw, 42px); line-height: .92; white-space: nowrap; }
-  .contact-copy h2 br { display: none; }
+  .contact-copy h2 { margin: 16px 0 24px; font-size: clamp(46px, 13vw, 52px); line-height: .82; white-space: normal; }
+  .contact-copy h2 .contact-lead { display: inline-block; white-space: nowrap; }
+  .contact-copy h2 .contact-land { display: inline-block; font-size: 1.18em; line-height: .9; }
   .contact-copy > p { font-size: 15px; }
   .contact-actions { margin-top: 28px; gap: 10px; }
   .button-invert { width: 100%; justify-content: space-between; }
@@ -509,8 +511,16 @@ img { display: block; max-width: 100%; }
   .projects-hero-aside p { margin-bottom: 20px; font-size: 14px; }
   .button-behance { min-height: 48px; }
   .projects-browser { padding-top: 24px; padding-bottom: 100px; }
-  .project-filters { width: 100%; max-width: 100%; margin-left: 0; margin-bottom: 36px; padding: 6px; gap: 5px; border-radius: 15px; scroll-snap-type: x proximity; overscroll-behavior-inline: contain; }
-  .project-filter { min-height: 42px; padding: 9px 12px; scroll-snap-align: start; }
+  .project-filters { display: none; }
+  .project-filter-select { position: sticky; z-index: 20; top: 86px; width: 100%; min-height: 64px; margin-bottom: 36px; padding: 8px 14px 8px 9px; display: grid; grid-template-columns: 42px minmax(0, 1fr) 22px; align-items: center; gap: 11px; border: 1px solid rgba(216,226,236,.94); border-radius: 17px; background: rgba(255,255,255,.94); box-shadow: 0 12px 34px rgba(34,58,84,.1); backdrop-filter: blur(18px); transition: top .35s var(--ease), box-shadow .22s ease; cursor: pointer; touch-action: manipulation; }
+  .header-hidden .project-filter-select { top: 8px; }
+  .filter-select-icon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 12px; color: #fff; background: var(--sky); }
+  .filter-select-icon svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+  .filter-select-copy { min-width: 0; display: grid; gap: 1px; }
+  .filter-select-copy small { color: #7a879a; font-size: 9px; font-weight: 800; letter-spacing: .11em; line-height: 1.2; text-transform: uppercase; }
+  .filter-select-copy select { width: 100%; min-height: 26px; padding: 0; border: 0; outline: 0; appearance: none; color: var(--ink); background: transparent; font: inherit; font-size: 15px; font-weight: 750; cursor: pointer; }
+  .filter-select-copy select:focus-visible { outline: 2px solid var(--sky); outline-offset: 4px; border-radius: 4px; }
+  .filter-select-chevron { width: 22px; height: 22px; fill: none; stroke: var(--ink); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
   .portfolio-grid { grid-template-columns: 1fr; gap: 36px; }
   .portfolio-image { border-radius: 18px; }
   .portfolio-meta { min-height: 82px; padding-top: 14px; }
