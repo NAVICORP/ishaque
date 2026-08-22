@@ -69,20 +69,11 @@
     </section>
 
     <section class="projects-browser section" aria-label="Portfolio projects">
-      <label class="project-filter-select reveal" for="project-filter-select">
-        <span class="filter-select-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M4 6h16M7 12h10M10 18h4"></path></svg></span>
-        <span class="filter-select-copy"><small>Filter projects</small><select id="project-filter-select" data-project-filter-select aria-label="Filter projects by category">
-          <option value="all">All projects (52)</option>
-          <option value="pitch">Pitch decks (12)</option>
-          <option value="presentation">Presentations (7)</option>
-          <option value="one-pager">One-pagers (4)</option>
-          <option value="brochure">Brochures (3)</option>
-          <option value="visual">Visual design (3)</option>
-          <option value="website">Websites (16)</option>
-          <option value="fiverr">Fiverr picks (7)</option>
-        </select></span>
-        <svg class="filter-select-chevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m7 9 5 5 5-5"></path></svg>
-      </label>
+      <button class="project-filter-trigger reveal" type="button" data-project-filter-trigger aria-haspopup="dialog" aria-controls="project-filter-sheet" aria-expanded="false">
+        <span class="filter-trigger-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M4 6h16M7 12h10M10 18h4"></path></svg></span>
+        <span class="filter-trigger-copy"><small>Filter by category</small><strong data-project-filter-label>All projects <em>52</em></strong></span>
+        <svg class="filter-trigger-chevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m7 9 5 5 5-5"></path></svg>
+      </button>
       <div class="project-filters reveal" role="group" aria-label="Filter projects">
         <button type="button" class="project-filter is-active" data-project-filter="all" aria-pressed="true">All <span>52</span></button>
         <button type="button" class="project-filter" data-project-filter="pitch" aria-pressed="false">Pitch decks <span>12</span></button>
@@ -167,6 +158,26 @@
   </main>
 
   <footer class="projects-footer section"><span>© 2026 Ishaque Nv.</span><div><a href="/">Home</a><a href="https://www.linkedin.com/in/heyzaak/" target="_blank" rel="noreferrer">LinkedIn</a><a href="https://www.behance.net/skifidesigns" target="_blank" rel="noreferrer">Behance</a><a href="https://www.fiverr.com/skifidesigns" target="_blank" rel="noreferrer">Fiverr</a></div><a class="back-to-top" href="#main">Back to top <span class="action-icon action-icon-up" aria-hidden="true"></span></a></footer>
+  <div class="filter-sheet" id="project-filter-sheet" data-project-filter-sheet hidden>
+    <button class="filter-sheet-backdrop" type="button" data-filter-sheet-close aria-label="Close project filters" tabindex="-1"></button>
+    <div class="filter-sheet-panel" role="dialog" aria-modal="true" aria-labelledby="filter-sheet-title" tabindex="-1">
+      <span class="filter-sheet-handle" aria-hidden="true"></span>
+      <div class="filter-sheet-header">
+        <div><p>Portfolio categories</p><h2 id="filter-sheet-title">Choose a category</h2></div>
+        <button class="filter-sheet-close" type="button" data-filter-sheet-close aria-label="Close project filters"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m6 6 12 12M18 6 6 18"></path></svg></button>
+      </div>
+      <div class="filter-sheet-options" role="group" aria-label="Project categories">
+        <button type="button" class="filter-sheet-option is-selected" data-project-filter-option="all" aria-pressed="true"><span>All projects</span><small>52</small><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"></path></svg></i></button>
+        <button type="button" class="filter-sheet-option" data-project-filter-option="pitch" aria-pressed="false"><span>Pitch decks</span><small>12</small><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"></path></svg></i></button>
+        <button type="button" class="filter-sheet-option" data-project-filter-option="presentation" aria-pressed="false"><span>Presentations</span><small>7</small><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"></path></svg></i></button>
+        <button type="button" class="filter-sheet-option" data-project-filter-option="one-pager" aria-pressed="false"><span>One-pagers</span><small>4</small><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"></path></svg></i></button>
+        <button type="button" class="filter-sheet-option" data-project-filter-option="brochure" aria-pressed="false"><span>Brochures</span><small>3</small><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"></path></svg></i></button>
+        <button type="button" class="filter-sheet-option" data-project-filter-option="visual" aria-pressed="false"><span>Visual design</span><small>3</small><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"></path></svg></i></button>
+        <button type="button" class="filter-sheet-option" data-project-filter-option="website" aria-pressed="false"><span>Websites</span><small>16</small><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"></path></svg></i></button>
+        <button type="button" class="filter-sheet-option" data-project-filter-option="fiverr" aria-pressed="false"><span>Fiverr picks</span><small>7</small><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"></path></svg></i></button>
+      </div>
+    </div>
+  </div>
   <a class="whatsapp-float" href="https://wa.me/917827087878" target="_blank" rel="noreferrer" aria-label="Chat with Ishaque on WhatsApp" title="Chat on WhatsApp">
     <svg aria-hidden="true" viewBox="0 0 448 512"><path d="M380.9 97.1C339 55.1 283.2 32 223.9 32 101.5 32 1.9 131.6 1.9 254c0 39.1 10.2 77.3 29.6 111L.7 480l117.7-30.9c32.4 17.7 68.9 27 106 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.7-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.8l-6.7-4-69.8 18.3L72 359.1l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.1c-5.5-2.8-32.8-16.1-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8s-14.3 18-17.6 21.8c-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.6-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"></path></svg>
   </a>

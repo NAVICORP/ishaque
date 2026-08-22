@@ -204,7 +204,12 @@ if (heroStage && !prefersReducedMotion && window.matchMedia('(hover: hover)').ma
 }
 
 const projectFilters = [...document.querySelectorAll('[data-project-filter]')];
-const projectFilterSelect = document.querySelector('[data-project-filter-select]');
+const projectFilterTrigger = document.querySelector('[data-project-filter-trigger]');
+const projectFilterLabel = document.querySelector('[data-project-filter-label]');
+const projectFilterSheet = document.querySelector('[data-project-filter-sheet]');
+const projectFilterSheetPanel = projectFilterSheet?.querySelector('.filter-sheet-panel');
+const projectFilterOptions = [...document.querySelectorAll('[data-project-filter-option]')];
+const projectFilterCloseButtons = [...document.querySelectorAll('[data-filter-sheet-close]')];
 const portfolioCards = [...document.querySelectorAll('.portfolio-card[data-category]')];
 const projectStatus = document.querySelector('[data-project-status]');
 const projectPagination = document.querySelector('[data-project-pagination]');
@@ -213,6 +218,40 @@ const projectPageSize = 10;
 const compactPagination = window.matchMedia('(max-width: 620px)');
 let activeProjectFilter = 'all';
 let activeProjectPage = 1;
+let filterSheetCloseTimer;
+
+function setPageInert(isInert) {
+  [...document.body.children].forEach(element => {
+    if (element === projectFilterSheet || element.tagName === 'SCRIPT') return;
+    element.inert = isInert;
+  });
+}
+
+function openProjectFilterSheet() {
+  if (!projectFilterSheet || !projectFilterTrigger) return;
+  window.clearTimeout(filterSheetCloseTimer);
+  projectFilterSheet.hidden = false;
+  setPageInert(true);
+  document.body.classList.add('filter-sheet-open');
+  projectFilterTrigger.setAttribute('aria-expanded', 'true');
+  requestAnimationFrame(() => {
+    projectFilterSheet.classList.add('is-open');
+    const selectedOption = projectFilterOptions.find(option => option.dataset.projectFilterOption === activeProjectFilter);
+    (selectedOption || projectFilterSheetPanel)?.focus({ preventScroll: true });
+  });
+}
+
+function closeProjectFilterSheet({ restoreFocus = true } = {}) {
+  if (!projectFilterSheet || projectFilterSheet.hidden) return;
+  projectFilterSheet.classList.remove('is-open');
+  document.body.classList.remove('filter-sheet-open');
+  projectFilterTrigger?.setAttribute('aria-expanded', 'false');
+  setPageInert(false);
+  if (restoreFocus) projectFilterTrigger?.focus({ preventScroll: true });
+  const finishClose = () => { projectFilterSheet.hidden = true; };
+  if (prefersReducedMotion) finishClose();
+  else filterSheetCloseTimer = window.setTimeout(finishClose, 220);
+}
 
 function makePageButton(label, page, options = {}) {
   const button = document.createElement('button');
@@ -306,14 +345,51 @@ function setProjectFilter(value) {
     filter.classList.toggle('is-active', isSelected);
     filter.setAttribute('aria-pressed', String(isSelected));
   });
-  if (projectFilterSelect) projectFilterSelect.value = value;
+  projectFilterOptions.forEach(option => {
+    const isSelected = option.dataset.projectFilterOption === value;
+    option.classList.toggle('is-selected', isSelected);
+    option.setAttribute('aria-pressed', String(isSelected));
+  });
+  const selectedOption = projectFilterOptions.find(option => option.dataset.projectFilterOption === value);
+  if (projectFilterLabel && selectedOption) {
+    const label = selectedOption.querySelector('span')?.textContent || 'All projects';
+    const count = selectedOption.querySelector('small')?.textContent || portfolioCards.length;
+    projectFilterLabel.innerHTML = `${label} <em>${count}</em>`;
+  }
   updatePortfolioVisibility();
 }
 
 projectFilters.forEach(button => {
   button.addEventListener('click', () => setProjectFilter(button.dataset.projectFilter));
 });
-projectFilterSelect?.addEventListener('change', () => setProjectFilter(projectFilterSelect.value));
+projectFilterTrigger?.addEventListener('click', openProjectFilterSheet);
+projectFilterCloseButtons.forEach(button => button.addEventListener('click', () => closeProjectFilterSheet()));
+projectFilterOptions.forEach(option => {
+  option.addEventListener('click', () => {
+    setProjectFilter(option.dataset.projectFilterOption);
+    closeProjectFilterSheet();
+  });
+});
+document.addEventListener('keydown', event => {
+  if (!projectFilterSheet || projectFilterSheet.hidden) return;
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    closeProjectFilterSheet();
+    return;
+  }
+  if (event.key !== 'Tab') return;
+  const focusable = [...projectFilterSheet.querySelectorAll('button:not([disabled]), [tabindex]:not([tabindex="-1"])')].filter(element => element.offsetParent !== null);
+  if (!focusable.length) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+});
 updatePortfolioVisibility();
 compactPagination.addEventListener?.('change', updatePortfolioVisibility);
 
