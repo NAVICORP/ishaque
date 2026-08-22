@@ -226,6 +226,7 @@ img { display: block; max-width: 100%; }
 .orbit-one { width: 480px; height: 480px; right: -180px; top: -180px; }
 .orbit-two { width: 320px; height: 320px; right: -100px; top: -100px; }
 .section-action { margin-top: 58px; display: flex; justify-content: center; }
+.button-all-projects { min-width: 220px; justify-content: space-between; }
 
 .services-section { width: 100%; max-width: none; padding-left: max(24px, calc((100% - var(--max))/2)); padding-right: max(24px, calc((100% - var(--max))/2)); background: var(--cloud); }
 .service-list { border-top: 1px solid #d7e0e8; }
@@ -432,12 +433,12 @@ img { display: block; max-width: 100%; }
   .hero-actions { width: 57%; margin-top: 18px; flex-direction: column; flex-wrap: nowrap; gap: 8px; }
   .hero-actions .button, .hero-actions .text-link { width: 100%; }
   .hero-actions .button { min-height: 48px; padding: 11px 13px; justify-content: space-between; gap: 10px; border-radius: 14px; font-size: 12px; white-space: nowrap; }
-  .hero-stage { height: clamp(500px, 66svh, 540px); min-height: 500px; max-height: 540px; border-radius: 24px; }
+  .hero-stage { height: clamp(480px, 60svh, 500px); min-height: 480px; max-height: 500px; border-radius: 24px; }
   .hero-picture img { object-position: center; transform: none; }
   .hero-stage:hover .hero-picture img { transform: none; }
   .hero-shade { background: linear-gradient(90deg, rgba(5,10,16,.84) 0%, rgba(5,10,16,.58) 45%, rgba(5,10,16,.05) 72%), linear-gradient(0deg, rgba(5,10,16,.82) 0%, transparent 30%); }
-  .hero-copy { top: 24px; right: 18px; bottom: 18px; left: 18px; width: auto; max-width: none; display: flex; flex-direction: column; align-items: flex-start; transform: none; }
-  .availability-pill { margin-bottom: 18px; padding: 6px 10px; font-size: 9px; }
+  .hero-copy { top: 24px; right: 18px; bottom: 18px; left: 18px; width: auto; max-width: none; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; transform: none; }
+  .availability-pill { position: absolute; top: 0; left: 0; margin: 0; padding: 6px 10px; font-size: 9px; }
   .hero-caption { display: none; }
   .floating-proof { min-width: 148px; padding: 14px; }
   .floating-proof > strong { font-size: 20px; }
@@ -462,6 +463,7 @@ img { display: block; max-width: 100%; }
   .project-meta h3 { font-size: 28px; }
   .arrow-button { width: 44px; height: 44px; }
   .section-action { margin-top: 44px; }
+  .button-all-projects { width: min(100%, 260px); }
   .project-card-statement { min-height: 430px; }
   .statement-copy { min-height: 350px; }
   .services-section { padding-right: 16px; padding-left: 16px; }
