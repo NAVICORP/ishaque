@@ -41,9 +41,11 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     await page.waitForTimeout(120);
     const whatsappPosition = await whatsapp.evaluate(element => {
       const rect = element.getBoundingClientRect();
+      const edgeGap = window.innerWidth - rect.right;
       return {
         visible: rect.width > 0 && rect.height >= 44,
-        centered: Math.abs((rect.left + rect.width / 2) - window.innerWidth / 2) <= 2,
+        rightAligned: edgeGap >= 12 && edgeGap <= 40,
+        edgeGap,
         fixed: getComputedStyle(element).position === 'fixed',
         withinViewport: rect.bottom <= window.innerHeight && rect.top >= 0
       };
@@ -140,7 +142,7 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     if (result.errors.length || !result.headingVisible || result.horizontalOverflow) return true;
     if (result.whatsappHref !== 'https://wa.me/917827087878') return true;
     if (result.ogImage !== 'https://ishaquenv.com/assets/portfolio/og-image.png' || result.twitterCard !== 'summary_large_image') return true;
-    if (result.page === 'home') return result.projectCount !== 6 || result.menuOpen === false || result.secondServiceOpen === false || !result.whatsappPosition.visible || !result.whatsappPosition.centered || !result.whatsappPosition.fixed || !result.whatsappPosition.withinViewport || !result.whatsappIconOnly || !result.exploreWorksVisible || result.cvHref !== '/assets/portfolio/Muhammed-Ishaque-CV.pdf' || result.cvDownload !== 'Muhammed-Ishaque-CV.pdf' || !result.cvAvailable || (result.viewport === 'mobile' ? result.overallRatingVisible : !result.overallRatingVisible);
+    if (result.page === 'home') return result.projectCount !== 6 || result.menuOpen === false || result.secondServiceOpen === false || !result.whatsappPosition.visible || !result.whatsappPosition.rightAligned || !result.whatsappPosition.fixed || !result.whatsappPosition.withinViewport || !result.whatsappIconOnly || !result.exploreWorksVisible || result.cvHref !== '/assets/portfolio/Muhammed-Ishaque-CV.pdf' || result.cvDownload !== 'Muhammed-Ishaque-CV.pdf' || !result.cvAvailable || (result.viewport === 'mobile' ? result.overallRatingVisible : !result.overallRatingVisible);
     return result.projectCount !== 52 || result.uniqueLinks < 47 || result.missingImages !== 0 || result.initialVisibleCount !== 10 || !result.paginationVisibleInitially || result.initialPageCount !== (result.viewport === 'mobile' ? 4 : 6) || result.paginationGroups !== 3 || result.initialCurrentPage !== '1' || result.secondPageVisibleCount !== 10 || result.secondPageCurrent !== '2' || result.initialPitchCount !== 10 || result.secondPitchPageCount !== 2 || result.initialWebsiteCount !== 10 || result.secondWebsitePageCount !== 6 || result.visibleFiverrCount !== 7 || !result.fiverrPaginationHidden;
   });
   if (failed) process.exit(1);
