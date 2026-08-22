@@ -167,8 +167,9 @@ img { display: block; max-width: 100%; }
 .hero-actions { margin-top: 30px; display: flex; justify-content: flex-start; align-items: center; flex-wrap: wrap; gap: 18px 30px; }
 .hero-actions .text-link { color: #fff; }
 .hero-stage { position: relative; isolation: isolate; min-height: clamp(640px, 72vh, 760px); overflow: hidden; border-radius: var(--radius-lg); background: var(--night); box-shadow: var(--shadow-lg); transform-style: preserve-3d; }
-.hero-stage > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; transform: scale(1.02); transition: transform .7s var(--ease); }
-.hero-stage:hover > img { transform: scale(1.045); }
+.hero-picture { position: absolute; inset: 0; display: block; }
+.hero-picture img { width: 100%; height: 100%; object-fit: cover; object-position: center; transform: scale(1.02); transition: transform .7s var(--ease); }
+.hero-stage:hover .hero-picture img { transform: scale(1.045); }
 .hero-shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(5,10,16,.9) 0%, rgba(5,10,16,.72) 35%, rgba(5,10,16,.18) 68%, rgba(5,10,16,.05) 100%), linear-gradient(0deg, rgba(5,10,16,.32), transparent 52%); }
 .hero-caption { position: absolute; left: 32px; bottom: 32px; z-index: 2; padding: 14px 18px; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,.2); border-radius: 14px; color: #fff; background: rgba(7,14,22,.36); backdrop-filter: blur(14px); }
 .hero-caption span { color: rgba(255,255,255,.7); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; }
@@ -374,7 +375,7 @@ img { display: block; max-width: 100%; }
   .hero { padding-top: 98px; }
   .hero-copy { top: auto; right: 30px; bottom: 44px; left: 30px; width: auto; max-width: 620px; transform: none; }
   .hero-stage { min-height: 700px; border-radius: 28px; }
-  .hero-stage > img { object-position: 68% center; }
+  .hero-picture img { object-position: 68% center; }
   .hero-shade { background: linear-gradient(90deg, rgba(5,10,16,.9) 0%, rgba(5,10,16,.68) 58%, rgba(5,10,16,.22) 100%), linear-gradient(0deg, rgba(5,10,16,.82) 0%, rgba(5,10,16,.08) 68%); }
   .hero-caption { left: 20px; bottom: 20px; }
   .proof-one { top: 20px; left: 20px; }
@@ -424,17 +425,17 @@ img { display: block; max-width: 100%; }
   .mobile-socials a { min-height: 44px; padding: 10px 14px; display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 999px; background: #fff; }
   .hero { padding-top: 84px; }
   .hero-metrics > div:nth-child(5) { display: none; }
-  .hero h1 { font-size: clamp(44px, 12.8vw, 54px); line-height: .92; }
-  .hero .eyebrow { margin-bottom: 14px; font-size: 10px; letter-spacing: .1em; }
-  .hero-lede { margin-top: 18px; font-size: 15px; line-height: 1.55; }
-  .hero-actions { margin-top: 20px; flex-direction: column; gap: 10px; }
-  .hero-actions .button, .hero-actions .text-link { width: 100%; }
-  .hero-actions .button { min-height: 50px; padding: 12px 17px; justify-content: space-between; border-radius: 14px; }
-  .hero-stage { min-height: max(690px, calc(100svh - 108px)); max-height: 760px; border-radius: 24px; }
-  .hero-stage > img { object-position: 70% center; }
-  .hero-shade { background: linear-gradient(90deg, rgba(5,10,16,.92) 0%, rgba(5,10,16,.72) 60%, rgba(5,10,16,.24) 100%), linear-gradient(0deg, rgba(5,10,16,.9) 0%, rgba(5,10,16,.12) 72%); }
-  .hero-copy { right: 18px; bottom: 24px; left: 18px; }
-  .availability-pill { margin-bottom: 16px; padding: 6px 10px; font-size: 10px; }
+  .hero h1 { width: 57%; font-size: clamp(32px, 9.5vw, 40px); line-height: .92; letter-spacing: -.064em; }
+  .hero .eyebrow, .hero-lede { display: none; }
+  .hero-actions { width: 100%; margin-top: auto; flex-direction: row; flex-wrap: nowrap; gap: 8px; }
+  .hero-actions .button, .hero-actions .text-link { width: calc(50% - 4px); }
+  .hero-actions .button { min-height: 48px; padding: 11px 13px; justify-content: space-between; gap: 10px; border-radius: 14px; font-size: 12px; white-space: nowrap; }
+  .hero-stage { min-height: max(610px, calc(100svh - 108px)); max-height: 690px; border-radius: 24px; }
+  .hero-picture img { object-position: center; transform: none; }
+  .hero-stage:hover .hero-picture img { transform: none; }
+  .hero-shade { background: linear-gradient(90deg, rgba(5,10,16,.84) 0%, rgba(5,10,16,.58) 45%, rgba(5,10,16,.05) 72%), linear-gradient(0deg, rgba(5,10,16,.82) 0%, transparent 30%); }
+  .hero-copy { top: 24px; right: 18px; bottom: 18px; left: 18px; width: auto; max-width: none; display: flex; flex-direction: column; align-items: flex-start; transform: none; }
+  .availability-pill { margin-bottom: 18px; padding: 6px 10px; font-size: 9px; }
   .hero-caption { display: none; }
   .floating-proof { min-width: 148px; padding: 14px; }
   .floating-proof > strong { font-size: 20px; }

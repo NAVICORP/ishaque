@@ -12,17 +12,22 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
 
   for (const viewport of [
     { name: 'desktop', width: 1440, height: 1000 },
-    { name: 'mobile', width: 390, height: 844 }
+    { name: 'mobile', width: 390, height: 844 },
+    { name: 'mobile-small', width: 375, height: 812 }
   ]) {
+    const isMobile = viewport.width <= 620;
     const page = await browser.newPage({ viewport });
     const errors = [];
     page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(testUrl, { waitUntil: 'networkidle' });
     await page.waitForTimeout(900);
-    if (viewport.name === 'mobile') await page.screenshot({ path: '_artifacts/portfolio-mobile-fold.jpg', type: 'jpeg', quality: 90 });
+    if (isMobile) await page.screenshot({ path: `_artifacts/portfolio-${viewport.name}-fold.jpg`, type: 'jpeg', quality: 90 });
 
     const headingVisible = await page.getByRole('heading', { name: /Ideas, made/i }).isVisible();
+    const heroImageCurrentSrc = await page.locator('.hero-picture img').evaluate(image => image.currentSrc);
+    const heroLedeVisible = await page.locator('.hero-lede').isVisible();
+    const heroEyebrowVisible = await page.locator('.hero-copy .eyebrow').isVisible();
     const ogImage = await page.locator('meta[property="og:image"]').getAttribute('content');
     const twitterCard = await page.locator('meta[name="twitter:card"]').getAttribute('content');
     const horizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
@@ -53,16 +58,16 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.waitForTimeout(450);
 
-    if (viewport.name === 'mobile') {
+    if (isMobile) {
       await page.locator('.menu-toggle').click();
       const menuOpen = await page.locator('.mobile-menu').getAttribute('aria-hidden') === 'false';
       await page.keyboard.press('Escape');
-      results.push({ page: 'home', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, menuOpen, whatsappHref, whatsappPosition, whatsappIconOnly, overallRatingVisible, exploreWorksVisible, cvHref, cvDownload, cvAvailable, ogImage, twitterCard });
+      results.push({ page: 'home', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, menuOpen, whatsappHref, whatsappPosition, whatsappIconOnly, overallRatingVisible, exploreWorksVisible, cvHref, cvDownload, cvAvailable, ogImage, twitterCard, heroImageCurrentSrc, heroLedeVisible, heroEyebrowVisible });
     } else {
       await page.locator('.service-trigger').nth(1).click();
       await page.waitForTimeout(420);
       const secondServiceOpen = await page.locator('.service-trigger').nth(1).getAttribute('aria-expanded') === 'true';
-      results.push({ page: 'home', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, secondServiceOpen, whatsappHref, whatsappPosition, whatsappIconOnly, overallRatingVisible, exploreWorksVisible, cvHref, cvDownload, cvAvailable, ogImage, twitterCard });
+      results.push({ page: 'home', viewport: viewport.name, errors, headingVisible, horizontalOverflow, projectCount, secondServiceOpen, whatsappHref, whatsappPosition, whatsappIconOnly, overallRatingVisible, exploreWorksVisible, cvHref, cvDownload, cvAvailable, ogImage, twitterCard, heroImageCurrentSrc, heroLedeVisible, heroEyebrowVisible });
     }
 
     for (const item of await page.locator('.reveal:not([hidden])').all()) {
@@ -142,7 +147,7 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     if (result.errors.length || !result.headingVisible || result.horizontalOverflow) return true;
     if (result.whatsappHref !== 'https://wa.me/917827087878') return true;
     if (result.ogImage !== 'https://ishaquenv.com/assets/portfolio/og-image.png' || result.twitterCard !== 'summary_large_image') return true;
-    if (result.page === 'home') return result.projectCount !== 6 || result.menuOpen === false || result.secondServiceOpen === false || !result.whatsappPosition.visible || !result.whatsappPosition.rightAligned || !result.whatsappPosition.fixed || !result.whatsappPosition.withinViewport || !result.whatsappIconOnly || !result.exploreWorksVisible || result.cvHref !== '/assets/portfolio/Muhammed-Ishaque-CV.pdf' || result.cvDownload !== 'Muhammed-Ishaque-CV.pdf' || !result.cvAvailable || (result.viewport === 'mobile' ? result.overallRatingVisible : !result.overallRatingVisible);
+    if (result.page === 'home') return result.projectCount !== 6 || result.menuOpen === false || result.secondServiceOpen === false || !result.whatsappPosition.visible || !result.whatsappPosition.rightAligned || !result.whatsappPosition.fixed || !result.whatsappPosition.withinViewport || !result.whatsappIconOnly || !result.exploreWorksVisible || result.cvHref !== '/assets/portfolio/Muhammed-Ishaque-CV.pdf' || result.cvDownload !== 'Muhammed-Ishaque-CV.pdf' || !result.cvAvailable || (result.viewport !== 'desktop' ? result.overallRatingVisible || result.heroLedeVisible || result.heroEyebrowVisible || !result.heroImageCurrentSrc.endsWith('/assets/portfolio/ishaque-hero-mobile.png') : !result.overallRatingVisible || !result.heroLedeVisible || !result.heroEyebrowVisible || !result.heroImageCurrentSrc.endsWith('/assets/portfolio/ishaque-hero.png'));
     return result.projectCount !== 52 || result.uniqueLinks < 47 || result.missingImages !== 0 || result.initialVisibleCount !== 10 || !result.paginationVisibleInitially || result.initialPageCount !== (result.viewport === 'mobile' ? 4 : 6) || result.paginationGroups !== 3 || result.initialCurrentPage !== '1' || result.secondPageVisibleCount !== 10 || result.secondPageCurrent !== '2' || result.initialPitchCount !== 10 || result.secondPitchPageCount !== 2 || result.initialWebsiteCount !== 10 || result.secondWebsitePageCount !== 6 || result.visibleFiverrCount !== 7 || !result.fiverrPaginationHidden;
   });
   if (failed) process.exit(1);

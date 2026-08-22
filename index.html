@@ -68,7 +68,10 @@
   <main id="main">
     <section class="hero section" id="top" aria-labelledby="hero-title">
       <div class="hero-stage reveal" data-hero-stage>
-        <img src="/assets/portfolio/ishaque-hero.png" width="1672" height="941" alt="Ishaque Nv. smiling while working on a laptop" fetchpriority="high">
+        <picture class="hero-picture">
+          <source media="(max-width: 620px)" srcset="/assets/portfolio/ishaque-hero-mobile.png">
+          <img src="/assets/portfolio/ishaque-hero.png" width="1672" height="941" alt="Ishaque Nv. smiling while working on a laptop" fetchpriority="high">
+        </picture>
         <div class="hero-shade" aria-hidden="true"></div>
         <div class="hero-copy">
           <div class="availability-pill"><span class="pulse" aria-hidden="true"></span> Available for select projects</div>
