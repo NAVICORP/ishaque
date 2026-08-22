@@ -490,11 +490,13 @@ img { display: block; max-width: 100%; }
   .timeline article:hover { padding-left: 0; }
   .timeline article > p { font-size: 13px; }
   .quote-section { min-height: 520px; padding: 84px 18px; }
-  .quote-section blockquote { font-size: 39px; }
+  .quote-section blockquote { font-size: clamp(28px, 8vw, 32px); line-height: 1.08; }
+  .quote-section blockquote span { display: block; white-space: nowrap; }
   .quote-section > p { margin-top: 28px; font-size: 10px; }
   .quote-mark { font-size: 300px; }
   .contact-section { min-height: 680px; padding: 88px 16px max(92px, calc(env(safe-area-inset-bottom) + 76px)); }
-  .contact-copy h2 { margin: 16px 0 24px; font-size: clamp(64px, 21vw, 86px); line-height: .82; }
+  .contact-copy h2 { margin: 16px 0 24px; font-size: clamp(34px, 10.2vw, 42px); line-height: .92; white-space: nowrap; }
+  .contact-copy h2 br { display: none; }
   .contact-copy > p { font-size: 15px; }
   .contact-actions { margin-top: 28px; gap: 10px; }
   .button-invert { width: 100%; justify-content: space-between; }
