@@ -270,8 +270,10 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     const categoryOrder = await page.locator('[data-project-filter]').evaluateAll(buttons => buttons.map(button => button.dataset.projectFilter));
     const desktopFilterLabels = await page.locator('[data-project-filter]').evaluateAll(buttons => buttons.map(button => buttons.length ? button.childNodes[0].textContent.trim() : ''));
     const mobileFilterLabels = await page.locator('[data-project-filter-option] > span').allTextContents();
-    const expectedFilterLabels = ['All', 'Pitch Decks', 'Presentations', 'Websites', 'One-Pagers', 'Brochures', 'Visual Design', 'Fiverr Picks'];
-    const filterLabelsTitleCase = expectedFilterLabels.every((label, index) => desktopFilterLabels[index] === label && mobileFilterLabels[index] === label);
+    const expectedDesktopFilterLabels = ['All', 'Pitch Decks', 'Presentations', 'Websites', 'One-Pagers', 'Brochures', 'Visual Design', 'Fiverr Picks'];
+    const expectedMobileFilterLabels = ['All Projects', 'Pitch Decks', 'Presentations', 'Websites', 'One-Pagers', 'Brochures', 'Visual Design', 'Fiverr Picks'];
+    const filterLabelsTitleCase = expectedDesktopFilterLabels.every((label, index) => desktopFilterLabels[index] === label)
+      && expectedMobileFilterLabels.every((label, index) => mobileFilterLabels[index] === label);
     const startProjectTargets = await page.locator('a').filter({ hasText: 'Start a project' }).evaluateAll(links => links.map(link => link.getAttribute('href')));
     const startProjectTargetsForm = startProjectTargets.length === 3 && startProjectTargets.every(href => href === '/#project-form');
     const projectCategoryGroupOrder = await page.locator('.portfolio-card').evaluateAll(cards => cards.map(card => card.dataset.category).filter((category, index, categories) => index === 0 || category !== categories[index - 1]));
