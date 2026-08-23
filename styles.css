@@ -288,7 +288,7 @@ img { display: block; max-width: 100%; }
 .copy-button { min-height: 52px; padding: 13px 17px; display: inline-flex; align-items: center; gap: 10px; border: 1px solid rgba(255,255,255,.34); border-radius: 15px; color: #fff; background: rgba(255,255,255,.1); cursor: pointer; transition: background-color .2s ease; }
 .copy-button:hover { background: rgba(255,255,255,.18); }
 .copy-button svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; }
-.contact-form { width: 100%; margin-top: 0; padding: 24px; border: 1px solid rgba(255,255,255,.28); border-radius: 26px; background: rgba(255,255,255,.13); box-shadow: 0 24px 60px rgba(0,74,132,.18); backdrop-filter: blur(18px); }
+.contact-form { width: 100%; margin-top: 0; padding: 24px; scroll-margin-top: 110px; border: 1px solid rgba(255,255,255,.28); border-radius: 26px; background: rgba(255,255,255,.13); box-shadow: 0 24px 60px rgba(0,74,132,.18); backdrop-filter: blur(18px); }
 .contact-form-heading { margin-bottom: 22px; display: flex; align-items: end; justify-content: space-between; gap: 32px; }
 .contact-form-heading > div > span { color: rgba(255,255,255,.72); font-size: 9px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
 .contact-form-heading h3 { margin: 5px 0 0; color: #fff; font-size: clamp(24px, 2.5vw, 34px); font-weight: 650; line-height: 1.08; letter-spacing: -.045em; }
