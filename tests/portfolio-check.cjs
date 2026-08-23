@@ -77,8 +77,9 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     const viewAllProjectsIsButton = await viewAllProjectsButton.isVisible() && await viewAllProjectsButton.evaluate(element => element.classList.contains('button'));
     const projectIconsValid = await page.locator('.project-card .arrow-button').evaluateAll(elements => elements.length === 6 && elements.every(element => {
       const pseudo = getComputedStyle(element, '::before');
+      const style = getComputedStyle(element);
       const rect = element.getBoundingClientRect();
-      return pseudo.maskImage !== 'none' && rect.width >= 44 && rect.height >= 44;
+      return pseudo.maskImage !== 'none' && style.display === 'flex' && style.alignItems === 'center' && style.justifyContent === 'center' && rect.width >= 44 && rect.height >= 44;
     }));
     const viewAllProjectsWidthMatches = await page.evaluate(() => {
       const button = document.querySelector('.button-all-projects').getBoundingClientRect();
@@ -230,7 +231,10 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
       return Math.abs(rect.width / rect.height - 16 / 9) < .02;
     }));
     const whatsappHref = await page.locator('.whatsapp-float').getAttribute('href');
-    const portfolioIconsValid = await page.locator('.portfolio-meta i').evaluateAll(elements => elements.length === 52 && elements.every(element => getComputedStyle(element, '::before').maskImage !== 'none'));
+    const portfolioIconsValid = await page.locator('.portfolio-meta i').evaluateAll(elements => elements.length === 52 && elements.every(element => {
+      const style = getComputedStyle(element);
+      return getComputedStyle(element, '::before').maskImage !== 'none' && style.display === 'flex' && style.alignItems === 'center' && style.justifyContent === 'center';
+    }));
     const behanceButton = page.getByRole('link', { name: 'Follow on Behance', exact: true });
     const behanceButtonValid = await behanceButton.isVisible() && await behanceButton.evaluate(element => {
       const logo = element.querySelector('.behance-mark svg');
