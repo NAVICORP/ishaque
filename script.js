@@ -219,7 +219,7 @@ const cursor = document.querySelector('.cursor-label');
 if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
   document.querySelectorAll('[data-cursor]').forEach(card => {
     card.addEventListener('mouseenter', () => {
-      cursor.textContent = card.dataset.cursor;
+      cursor.textContent = '';
       cursor.classList.add('is-visible');
     });
     card.addEventListener('mousemove', event => {
