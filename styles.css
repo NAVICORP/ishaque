@@ -335,13 +335,11 @@ h3 { font-weight: 800; line-height: 1.1; }
 /* ---------- journey: the map ---------- */
 
 .journey { position: relative; z-index: 2;
-  --m-land: #f8f5ee; --m-block: #e7e1d5; --m-park: #d2e9c8; --m-paddy: #e4efc6; --m-water: #aad3f2;
-  --m-road: #ffffff; --m-hwy: #fcde86; --m-hwy-c: #edc458; --m-rail: #c9c1b3; --m-inset: #fdfbf7; --m-inset-line: #e2ddd3;
-  --m-mtn: #d8d0c0; --m-snow: #ffffff; --m-label: #8a8f98; --route: #2e7dda; --sec-bg: var(--m-land); background: var(--m-land); }
+  --m-land: #f8f5ee; --m-block: #e7e1d5; --m-park: #d2e9c8; --m-water: #aad3f2;
+  --m-road: #ffffff; --m-hwy: #fcde86; --m-hwy-c: #edc458; --route: #2e7dda; --sec-bg: var(--m-land); background: var(--m-land); }
 :root[data-theme="dark"] .journey {
-  --m-land: #161e2c; --m-block: #212b3d; --m-park: #1c3329; --m-paddy: #1f3527; --m-water: #19314f;
-  --m-road: #2a3447; --m-hwy: #5c4a1f; --m-hwy-c: #3f3418; --m-rail: #3a4458; --m-inset: #1b2434; --m-inset-line: #2c3649;
-  --m-mtn: #2f3a4e; --m-snow: #56637a; --m-label: #7f8a9c; --route: #78b2ff; }
+  --m-land: #161e2c; --m-block: #212b3d; --m-park: #1c3329; --m-water: #19314f;
+  --m-road: #232d40; --m-hwy: #5c4a1f; --m-hwy-c: #3f3418; --route: #78b2ff; }
 .j-pin { position: relative; height: 100svh; min-height: 560px; overflow: hidden; }
 .journey.is-map .j-pin { position: sticky; top: 0; }
 .mapview { position: absolute; inset: 0; background: var(--m-land); }
@@ -349,27 +347,15 @@ h3 { font-weight: 800; line-height: 1.1; }
 .m-land { fill: var(--m-land); }
 .m-block { fill: var(--m-block); }
 .m-park { fill: var(--m-park); }
-.m-ghats { opacity: .75; }
-.m-paddy { fill: var(--m-paddy); }
 .m-water { fill: var(--m-water); }
 .m-river { fill: none; stroke: var(--m-water); stroke-linecap: round; }
-.m-road { fill: none; stroke: var(--m-road); stroke-linecap: round; }
-.m-hwy { fill: none; stroke: var(--m-hwy); stroke-linecap: round; }
-.m-hwy-casing { fill: none; stroke: var(--m-hwy-c); stroke-linecap: round; }
-.m-rail { fill: none; stroke: var(--m-rail); stroke-width: 5; stroke-dasharray: 2 14; stroke-linecap: round; }
-.m-inset-card { fill: var(--m-inset); stroke: var(--m-inset-line); stroke-width: 4; }
-.m-mtn { fill: var(--m-mtn); }
-.m-snow { fill: var(--m-snow); }
-.r-base { fill: none; stroke: var(--route); stroke-opacity: .3; stroke-width: 7; stroke-dasharray: 2 16; stroke-linecap: round; }
-.r-case { fill: none; stroke: var(--m-land); stroke-width: 18; stroke-linecap: round; }
-.r-done { fill: none; stroke: var(--route); stroke-width: 10; stroke-linecap: round; }
+.m-street { fill: none; stroke: var(--m-road); stroke-width: 14; opacity: .85; }
+.m-road-case { fill: none; stroke: var(--m-hwy-c); stroke-width: 64; stroke-linecap: round; stroke-linejoin: round; }
+.m-road-main { fill: none; stroke: var(--m-hwy); stroke-width: 52; stroke-linecap: round; stroke-linejoin: round; }
+.m-road-line { fill: none; stroke: var(--m-land); stroke-width: 3; stroke-dasharray: 22 26; stroke-linecap: round; opacity: .9; }
+.r-done { fill: none; stroke: var(--route); stroke-width: 18; stroke-linecap: round; stroke-linejoin: round; opacity: .9; }
 
-.m-labels, .m-pins { position: absolute; inset: 0; pointer-events: none; }
-.m-label { position: absolute; left: 0; top: 0; font-size: 13px; font-weight: 700; line-height: 1; color: var(--m-label); white-space: nowrap; will-change: transform; text-shadow: 0 0 3px var(--m-land), 0 0 6px var(--m-land); }
-.m-label-city { font-size: 15px; font-weight: 800; color: color-mix(in srgb, var(--m-label) 70%, var(--ink)); }
-.m-label-water { font-style: italic; color: color-mix(in srgb, var(--m-water) 30%, #4a7fae); }
-:root[data-theme="dark"] .m-label-water { color: #5f8fbf; }
-
+.m-pins { position: absolute; inset: 0; pointer-events: none; }
 .mk { position: absolute; left: 0; top: 0; pointer-events: auto; display: flex; align-items: flex-start; gap: 6px; will-change: transform; transition: opacity .35s; }
 .mk-head { position: relative; display: grid; place-items: center; width: 48px; height: 48px; margin: -58px 0 0 -24px; border-radius: 50% 50% 50% 0; background: var(--c); transform: rotate(-45deg); box-shadow: 0 10px 18px -8px rgba(20, 38, 64, .55); transition: transform .45s var(--spring), filter .35s, background-color .35s; }
 .mk-head > span { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: #fff; transform: rotate(45deg); overflow: hidden; color: var(--c); }
@@ -386,7 +372,6 @@ h3 { font-weight: 800; line-height: 1.1; }
 .mk.is-on .mk-name, .mk:hover .mk-name, .mk:focus-visible .mk-name { opacity: 1; transform: none; }
 .mk.is-on::before { content: ""; position: absolute; left: -26px; top: -14px; width: 52px; height: 28px; border-radius: 50%; border: 2px solid var(--c); opacity: .5; animation: halo 1.8s var(--ease) infinite; }
 @keyframes halo { from { transform: scale(.5); opacity: .7; } to { transform: scale(1.6); opacity: 0; } }
-.mk.is-hidden { opacity: 0; pointer-events: none; }
 .mk:focus-visible { outline: none; }
 .mk:focus-visible .mk-head { box-shadow: 0 0 0 4px var(--sky); }
 
@@ -705,12 +690,7 @@ kbd { display: inline-grid; place-items: center; min-width: 26px; height: 22px; 
 @keyframes marquee { to { translate: calc(-100% - 52px) 0; } }
 .client-logos li { display: flex; align-items: center; height: 34px; }
 .client-logos img { height: var(--h, 24px); width: auto; }
-.employer { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 16px; margin: 30px auto 0; padding: 14px 18px; border-radius: 20px; background: var(--card); box-shadow: var(--shadow-sm); width: fit-content; max-width: 100%; }
-.employer span { font-size: 14px; font-weight: 800; color: var(--ink-2); }
-.employer img { height: 24px; width: auto; }
-.employer em { font-style: normal; font-size: 15px; font-weight: 600; color: var(--ink-2); }
-:root[data-theme="dark"] .employer img { filter: brightness(1.3); }
-
+:root[data-theme="dark"] 
 /* marker highlights sweep in */
 .hl { background-repeat: no-repeat; transition: background-size 1.1s var(--ease) .25s; }
 .hl.anim-hl { background-size: 0% 100%; }
@@ -844,7 +824,6 @@ kbd { display: inline-grid; place-items: center; min-width: 26px; height: 22px; 
   .pnode, .pnode.up { grid-template-columns: 26px 1fr; grid-template-rows: auto; column-gap: 16px; padding-bottom: 26px; }
   .pnode .dot, .pnode.up .dot { grid-row: 1; grid-column: 1; position: relative; z-index: 1; }
   .pnode .pt, .pnode.up .pt { grid-row: 1; grid-column: 2; padding: 2px 0 0; }
-  .jcard { width: 220px; }
   .row-links a { padding: 0 14px; }
   .dock a { padding: 0 11px; }
   .dock .dock-cta { padding: 0 14px; }
