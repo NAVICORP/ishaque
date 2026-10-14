@@ -34,13 +34,16 @@
     <img src="/assets/portfolio/ishaque-headshot.jpg" alt="" width="36" height="36">
     <span>Ishaque Nv.</span>
   </a>
-  <button class="theme-pill" type="button" data-theme-toggle aria-label="Switch to night">
+  <div class="top-right">
+    <p class="visits" data-visits hidden><i aria-hidden="true"></i><b data-visits-count></b> visitors</p>
+    <button class="theme-pill" type="button" data-theme-toggle aria-label="Switch to night">
     <span class="theme-icon" aria-hidden="true">
       <svg class="icon-moon" viewBox="0 0 24 24"><path d="M20 14.6A8.2 8.2 0 0 1 9.4 4a8.2 8.2 0 1 0 10.6 10.6Z"/></svg>
       <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/></svg>
     </span>
     <span class="theme-word" data-theme-word>Night</span>
   </button>
+  </div>
 
   <nav class="dock" aria-label="Primary" data-dock>
     <span class="dock-ind" aria-hidden="true" data-dock-ind></span>
@@ -66,7 +69,6 @@
             <img class="piece cloud cloud-b" src="/assets/scene/cloud-2.webp" alt="" style="--x:700;--y:520;--w:300" width="720" height="161">
             <img class="piece cloud cloud-c" src="/assets/scene/cloud-3.webp" alt="" style="--x:1480;--y:470;--w:250" width="720" height="261">
             <div class="birds"><i class="bird b1"><svg viewBox="0 0 24 10"><path d="M1 8C5 2 9 2 12 7C15 2 19 2 23 8"/></svg></i><i class="bird b2"><svg viewBox="0 0 24 10"><path d="M1 8C5 2 9 2 12 7C15 2 19 2 23 8"/></svg></i><i class="bird b3"><svg viewBox="0 0 24 10"><path d="M1 8C5 2 9 2 12 7C15 2 19 2 23 8"/></svg></i></div>
-            <svg class="plane-art" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMax slice"><path class="plane-trail" d="M1180 470c60-40 130-80 200-104"/><path class="plane" d="M1384 366l48-15-19 42-8-17-21-10Zm29 10 10-25"/></svg>
           </div>
           <div class="ly ly-far" aria-hidden="true">
             <img class="piece" src="/assets/scene/hills-far.webp" alt="" style="--x:800;--y:660;--w:1840" width="2000" height="283">
@@ -86,54 +88,34 @@
           <div class="ly ly-front" aria-hidden="true">
             <img class="piece" src="/assets/scene/ground-front.webp" alt="" style="--x:800;--y:1004;--w:1840" width="2000" height="667">
             <img class="piece me" src="/assets/scene/me.webp" alt="" style="--x:735;--y:985;--w:118" width="520" height="1131">
+            <span class="me-tag" style="--x:668;--y:760" aria-hidden="true">that's me</span>
           </div>
 
-          <div class="pins" data-pins>
-            <button class="pin" type="button" style="--x:255;--y:540;--d:.18" data-place="delhi" aria-expanded="false" aria-controls="place-sheet"><b>New Delhi <em>2023</em></b><i class="pd" aria-hidden="true"></i></button>
-            <button class="pin" type="button" style="--x:420;--y:584;--d:.11" data-place="calicut" aria-expanded="false" aria-controls="place-sheet"><b>University of Calicut <em>BA</em></b><i class="pd" aria-hidden="true"></i></button>
-            <button class="pin" type="button" style="--x:604;--y:664;--d:.11" data-place="home" aria-expanded="false" aria-controls="place-sheet"><b>Where it began <em>2020</em></b><i class="pd" aria-hidden="true"></i></button>
-            <button class="pin pin-me" type="button" style="--x:735;--y:760;--d:0" data-place="me" aria-expanded="false" aria-controls="place-sheet"><span class="me-hit" aria-hidden="true"></span><span class="visually-hidden">That's me</span><span class="me-note" aria-hidden="true">that's me</span></button>
-            <button class="pin pin-main" type="button" style="--x:905;--y:614;--d:.05" data-place="skifi" aria-expanded="false" aria-controls="place-sheet"><b><img src="/assets/skifi/skifi-logo.svg" alt="" width="44" height="17"> <em>Now</em><span class="visually-hidden">SkiFi</span></b><i class="pd" aria-hidden="true"></i></button>
-            <button class="pin" type="button" style="--x:1150;--y:560;--d:.18" data-place="fiverr" aria-expanded="false" aria-controls="place-sheet"><b><img src="/assets/portfolio/fiverr-pro.png" alt="" width="22" height="22"> Fiverr Pro <em>2025</em></b><i class="pd" aria-hidden="true"></i></button>
-            <button class="pin pin-sky" type="button" style="--x:1420;--y:346;--d:.4" data-place="wyoming" aria-expanded="false" aria-controls="place-sheet"><b>Wyoming, USA <em>LLC</em></b><i class="pd" aria-hidden="true"></i></button>
-          </div>
         </div>
 
         <div class="hero-copy" data-hero-copy>
           <p class="hey">hey, I'm Ishaque</p>
           <h1 id="hero-title">I design products, and the pitch decks that sell them.</h1>
-          <p class="sub">Founder of SkiFi, a design and code studio in Kerala. 2,700+ projects for founders and brands in 40+ countries.</p>
+          <p class="sub">Founder of SkiFi, a design and code studio in Kerala.</p>
         </div>
 
         <p class="scroll-cue" aria-hidden="true"><i></i>Scroll to fly in</p>
-        <p class="tap-cue" aria-hidden="true">tap a place</p>
 
-        <aside class="sheet place-sheet" id="place-sheet" aria-labelledby="place-title" data-place-sheet hidden>
-          <div class="sheet-top">
-            <span class="tag" data-place-tag></span>
-            <button class="x" type="button" data-place-close aria-label="Close">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
-            </button>
-          </div>
-          <h2 id="place-title" data-place-title></h2>
-          <p class="lead" data-place-text></p>
-          <ul class="did" data-place-list></ul>
-          <a class="btn-ink" data-place-link hidden></a>
-        </aside>
       </div>
     </section>
 
-    <section class="story torn" id="about" aria-labelledby="story-title">
+    <section class="proof torn" id="about" aria-labelledby="proof-title">
       <div class="wrap">
-        <h2 class="kicker" id="story-title">How I got here</h2>
-        <div class="tell-box" data-notes>
-          <p class="tell">I studied Arabic, not design. In 2020 I started taking presentation work on Fiverr from home, just me and PowerPoint. Six years and 2,700+ projects later, it's SkiFi: a design and code studio of fifteen in Kerala making decks, brands, websites and apps.</p>
-          <div class="note note-sun" data-note style="--nx:72%;--ny:-4%;--rot:4deg"><strong>$300M+</strong><span>raised by clients with decks I designed</span></div>
-          <div class="note note-coral" data-note style="--nx:84%;--ny:34%;--rot:-5deg"><strong>4.9 <i aria-hidden="true">★</i></strong><span>from 900+ reviews on Fiverr</span></div>
-          <div class="note note-sky" data-note style="--nx:70%;--ny:64%;--rot:3deg"><strong>40+ countries</strong><span lang="ar">مرحبا</span> <span lang="hi">नमस्ते</span> <span lang="ml">നമസ്കാരം</span><span>I work in six languages</span></div>
-          <div class="note note-mint" data-note style="--nx:52%;--ny:88%;--rot:-3deg"><img src="/assets/portfolio/fiverr-pro.png" alt="" width="40" height="40"><span>Vetted Pro, then a Vetted Pro Agency</span></div>
-          <p class="move-hint" aria-hidden="true">move things around</p>
+        <div class="proof-head">
+          <h2 id="proof-title">I studied Arabic, then Googled my way to design. 2,700+ projects later, I run a studio.</h2>
+          <img class="proof-me" src="/assets/scene/me-laptop.webp" alt="" width="560" height="618" loading="lazy">
         </div>
+        <ul class="notes">
+          <li class="note note-sun" style="--rot:-3deg"><strong>$300M+</strong><span>raised by clients with decks I designed</span></li>
+          <li class="note note-coral" style="--rot:2deg"><strong>4.9 <i aria-hidden="true">★</i></strong><span>from 900+ reviews on Fiverr</span></li>
+          <li class="note note-sky" style="--rot:-2deg"><strong>40+</strong><span>countries, in six languages</span></li>
+          <li class="note note-mint" style="--rot:3deg"><img src="/assets/portfolio/fiverr-pro.png" alt="" width="40" height="40"><span>Fiverr Vetted Pro, now a Vetted Pro Agency</span></li>
+        </ul>
         <div class="clients">
           <p>Brands I've designed for</p>
           <div class="marquee">
@@ -190,9 +172,8 @@
         </div>
         <div class="j-fade" data-j-fade></div>
         <div class="j-head" data-j-head>
-          <p class="kicker">The journey</p>
-          <h2 id="journey-title">From Arabic classes to <span class="hl hl-sky">my own studio.</span></h2>
-          <p class="j-sub">Nine stops from Calicut to Okhla and back home to Blathur. <span>Scroll to walk the road.</span></p>
+          <h2 id="journey-title">The road <span class="hl hl-sky">so far.</span></h2>
+          <p class="j-sub">Eight stops from Calicut to Okhla and back home to Blathur. <span>Scroll to walk the road.</span></p>
         </div>
         <article class="jcard" data-jcard aria-hidden="true"></article>
         <div class="compass" aria-hidden="true" data-compass>
@@ -207,70 +188,70 @@
               <li><button type="button" data-j-go="4" aria-label="Stop 5: Fiverr Vetted Pro"></button></li>
               <li><button type="button" data-j-go="5" aria-label="Stop 6: SkiFi studio"></button></li>
               <li><button type="button" data-j-go="6" aria-label="Stop 7: Vetted Pro Agency"></button></li>
-              <li><button type="button" data-j-go="7" aria-label="Stop 8: SKIFI GROUP LLC"></button></li>
-              <li><button type="button" data-j-go="8" aria-label="Stop 9: skifi.co"></button></li>
+              <li><button type="button" data-j-go="7" aria-label="Stop 8: skifi.co"></button></li>
           </ol>
           <span class="jtl-label" data-jtl-label>Degree to now</span>
         </nav>
       </div>
       <ol class="j-stops" data-j-stops>
-          <li class="j-stop" data-t="0.030" style="--c:#2348a6">
+          <li class="j-stop" data-t="0.030" data-pic="/assets/stops/calicut.webp" data-landmark="/assets/map/college.webp" style="--c:#2348a6">
+            <img class="j-pic" src="/assets/stops/calicut.webp" alt="" width="800" height="600" loading="lazy">
             <span class="j-icon j-icon-logo" aria-hidden="true"><img src="/assets/edu/calicut.webp" alt="" width="40" height="40"></span>
             <p class="j-place">University of Calicut</p>
             <p class="j-meta"><span class="j-when">BA</span>, Kerala</p>
             <h3>I studied Arabic, not design.</h3>
             <p class="j-text">A BA in Arabic at the University of Calicut. Languages first; the slides came later.</p>
           </li>
-          <li class="j-stop" data-t="0.147" style="--c:#f26b47">
+          <li class="j-stop" data-t="0.164" data-pic="/assets/stops/home-2020.webp" data-landmark="/assets/map/home.webp" style="--c:#f26b47">
+            <img class="j-pic" src="/assets/stops/home-2020.webp" alt="" width="800" height="600" loading="lazy">
             <span class="j-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 11 12 4l8 7v9H4Z"/><path d="M10 20v-5h4v5"/></svg></span>
             <p class="j-place">Home, Blathur</p>
             <p class="j-meta"><span class="j-when">2020</span>, Kannur, Kerala</p>
             <h3>Just me and PowerPoint.</h3>
             <p class="j-text">From home I started taking presentation work on Fiverr: pitch decks, company profiles, anything with slides. Clients came back, then clients from abroad.</p>
           </li>
-          <li class="j-stop" data-t="0.265" style="--c:#2b9a5c">
+          <li class="j-stop" data-t="0.299" data-pic="/assets/stops/jamia.webp" data-landmark="/assets/map/jamia.webp" style="--c:#2b9a5c">
+            <img class="j-pic" src="/assets/stops/jamia.webp" alt="" width="800" height="600" loading="lazy">
             <span class="j-icon j-icon-logo" aria-hidden="true"><img src="/assets/edu/jamia.webp" alt="" width="40" height="40"></span>
             <p class="j-place">Jamia Millia Islamia</p>
             <p class="j-meta"><span class="j-when">MA</span>, Okhla, New Delhi</p>
             <h3>Off to Delhi for a master's.</h3>
             <p class="j-text">An MA in Arabic at Jamia Millia Islamia. The next stop turned out to be just down the road in Okhla.</p>
           </li>
-          <li class="j-stop" data-t="0.382" style="--c:#e8622a">
+          <li class="j-stop" data-t="0.433" data-pic="/assets/stops/value360.webp" data-landmark="/assets/map/office.webp" data-logo="/assets/clients/value360.webp" data-logo-full="/assets/clients/value360-full.webp" style="--c:#e8622a">
+            <img class="j-pic" src="/assets/stops/value360.webp" alt="" width="800" height="600" loading="lazy">
             <span class="j-icon" aria-hidden="true"><img src="/assets/clients/value360-mark.webp" alt="" width="26" height="26"></span>
             <p class="j-place">Value360 Communications</p>
             <p class="j-meta"><span class="j-when">2023 to 2025</span>, Okhla, New Delhi</p>
             <h3>Two years of nine to five.</h3>
-            <p class="j-text">As a Senior Presentation Designer at Value360 I made decks for brands like IndiGo and Toyota Kirloskar, and learned how companies pitch to clients and decision makers. I kept freelancing alongside.</p>
+            <p class="j-text">As a Senior Presentation Designer at Value360 I made decks for brands like IndiGo and Toyota Kirloskar, and learned how companies pitch to clients and decision makers.</p>
           </li>
-          <li class="j-stop" data-t="0.500" style="--c:#1dbf73">
+          <li class="j-stop" data-t="0.567" data-pic="/assets/stops/vetted-pro.webp" data-landmark="/assets/map/trophy.webp" style="--c:#1dbf73">
+            <img class="j-pic" src="/assets/stops/vetted-pro.webp" alt="" width="800" height="600" loading="lazy">
             <span class="j-icon" aria-hidden="true"><img src="/assets/portfolio/fiverr-pro.png" alt="" width="28" height="28"></span>
             <p class="j-place">Fiverr Vetted Pro</p>
-            <p class="j-meta"><span class="j-when">August 2025</span>, Blathur, Kannur</p>
+            <p class="j-meta"><span class="j-when">2025</span>, Blathur, Kannur</p>
             <h3>Vetted, twice.</h3>
             <p class="j-text">Fiverr made me a Vetted Pro for presentation design, then for pitch decks too.</p>
           </li>
-          <li class="j-stop" data-t="0.617" style="--c:#2a7afe">
+          <li class="j-stop" data-t="0.701" data-pic="/assets/stops/studio.webp" data-landmark="/assets/map/studio.webp" style="--c:#2a7afe">
+            <img class="j-pic" src="/assets/stops/studio.webp" alt="" width="800" height="600" loading="lazy">
             <span class="j-icon" aria-hidden="true"><img src="/assets/skifi/skifi-logo.svg" alt="" width="30" height="12"></span>
             <p class="j-place">SkiFi studio</p>
             <p class="j-meta"><span class="j-when">2025</span>, Blathur, Kannur</p>
             <h3>More than a freelancer.</h3>
             <p class="j-text">Back home I built SkiFi into a team: presentations first, then brands, brochures, websites, UI, AI creative and video.</p>
           </li>
-          <li class="j-stop" data-t="0.735" style="--c:#e2a72e">
+          <li class="j-stop" data-t="0.836" data-pic="/assets/stops/agency.webp" style="--c:#e2a72e">
+            <img class="j-pic" src="/assets/stops/agency.webp" alt="" width="800" height="600" loading="lazy">
             <span class="j-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9Z"/></svg></span>
             <p class="j-place">Vetted Pro Agency</p>
-            <p class="j-meta"><span class="j-when">June 2026</span>, Blathur, Kannur</p>
+            <p class="j-meta"><span class="j-when">2026</span>, Blathur, Kannur</p>
             <h3>An agency, officially.</h3>
             <p class="j-text">SkiFi joined Fiverr's Vetted Pro agency tier, with 950+ clients behind it.</p>
           </li>
-          <li class="j-stop" data-t="0.853" style="--c:#c4416d">
-            <span class="j-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 21V4m0 0h11l-2 4 2 4H5"/></svg></span>
-            <p class="j-place">SKIFI GROUP LLC</p>
-            <p class="j-meta"><span class="j-when">2026</span>, Wyoming, USA</p>
-            <h3>A company, not a profile.</h3>
-            <p class="j-text">We registered SKIFI GROUP LLC in Wyoming so SkiFi can work with clients anywhere as an international business.</p>
-          </li>
-          <li class="j-stop" data-t="0.970" style="--c:#142640">
+          <li class="j-stop" data-t="0.970" data-pic="/assets/stops/now.webp" data-landmark="/assets/map/laptop.webp" style="--c:#142640">
+            <img class="j-pic" src="/assets/stops/now.webp" alt="" width="800" height="600" loading="lazy">
             <span class="j-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.4 3.6 5.2 3.6 8.5s-1.2 6.1-3.6 8.5c-2.4-2.4-3.6-5.2-3.6-8.5S9.6 5.9 12 3.5Z"/></svg></span>
             <p class="j-place">skifi.co</p>
             <p class="j-meta"><span class="j-when">Now</span>, Blathur and online</p>
@@ -283,7 +264,6 @@
     <section class="work" id="work" aria-labelledby="work-title">
       <div class="wrap">
         <div class="sec-head">
-          <p class="kicker">Selected work</p>
           <h2 id="work-title">Work that did its job.</h2>
         </div>
         <div class="deck-wrap" data-deck>
@@ -291,9 +271,7 @@
 <!--@work-deck-->
           </div>
           <div class="deck-side">
-            <p class="pick-hint" aria-hidden="true">pick a card</p>
             <p class="deck-counter" aria-live="polite"><span data-deck-index>1</span> / <span data-deck-total>8</span></p>
-            <h3 data-deck-name></h3>
             <p class="deck-summary" data-deck-summary></p>
             <div class="deck-controls">
               <button class="round" type="button" data-deck-prev aria-label="Previous project"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg></button>
@@ -306,50 +284,20 @@
       </div>
     </section>
 
-    <section class="brand-sec torn" id="websites" aria-labelledby="sites-title">
-      <div class="wrap brand-head">
-        <div>
-          <h2 id="sites-title">Websites too.</h2>
-          <p class="bh-sub">Fast, clear sites for brands, schools, nonprofits and studios.</p>
-        </div>
-        <a class="btn-ghost" href="/projects#websites">All <!--@count-websites--> websites</a>
-      </div>
-      <div class="brand-car">
-        <div class="brand-row" data-brand-row tabindex="0" aria-label="Websites, scroll sideways">
-<!--@websites-strip-->
-        </div>
-        <button class="round bnav prev" type="button" data-brand-prev aria-label="Previous websites"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg></button>
-        <button class="round bnav next" type="button" data-brand-next aria-label="Next websites"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
-      </div>
-      <div class="wrap"><div class="brand-prog" aria-hidden="true"><i data-brand-prog></i></div></div>
-    </section>
-
     <section class="studio-sec torn" id="skifi" aria-labelledby="skifi-title">
       <div class="wrap studio-grid">
         <div>
           <img class="studio-logo" src="/assets/skifi/skifi-logo-light.svg" alt="SkiFi" width="150" height="60" loading="lazy">
           <h2 id="skifi-title">I built my own studio.</h2>
-          <p class="hats-k">The hats I wear there</p>
-          <ol class="hats">
-            <li><b>Founder and CEO</b><span>Clients, team and direction</span></li>
-            <li><b>Product designer</b><span>Apps and platforms, from trading terminals to farm software</span></li>
-            <li><b>Presentation designer</b><span>The decks that sell them</span></li>
-            <li><b>Builder</b><span>Websites and apps, from skifi.co to farmi.life</span></li>
-          </ol>
+          <p class="studio-line">Pitch decks, products, brands and websites, designed and built in-house.</p>
         </div>
         <div class="studio-side">
           <ul class="studio-stats">
             <li><b>950+</b><span>clients</span></li>
-            <li><b>15</b><span>people in Kannur</span></li>
-            <li><b>2020</b><span>founded on Fiverr</span></li>
+            <li><b>15</b><span>people</span></li>
+            <li><b>2020</b><span>founded</span></li>
           </ul>
-          <ul class="chips" aria-label="What SkiFi makes">
-            <li>Pitch decks</li><li>Presentations</li><li>Brand identity</li><li>Websites</li><li>UI and UX</li><li>Apps</li><li>AI creative and video</li>
-          </ul>
-          <div class="studio-actions">
-            <a class="btn-sun" href="https://skifi.co" target="_blank" rel="noopener">Visit skifi.co</a>
-            <a class="btn-line" href="https://skifi.co/case-studies" target="_blank" rel="noopener">Case studies</a>
-          </div>
+          <a class="btn-sun" href="https://skifi.co" target="_blank" rel="noopener">Visit skifi.co</a>
         </div>
       </div>
     </section>
@@ -357,38 +305,61 @@
     <section class="stack torn" id="stack" aria-labelledby="stack-title">
       <div class="wrap">
         <div class="sec-head">
-          <p class="kicker">My stack</p>
           <h2 id="stack-title">What I open every day.</h2>
         </div>
         <ul class="tools">
-          <li class="tool" tabindex="0" style="--c:#d65a2e"><span class="tm tm-img"><img src="/assets/tools/powerpoint.webp" alt="" width="54" height="54" loading="lazy"></span><b>PowerPoint</b><span class="tu">Pitch decks, templates and Morph animation</span></li>
-          <li class="tool" tabindex="0" style="--c:#2f7fd8"><span class="tm tm-img"><img src="/assets/tools/keynote.webp" alt="" width="54" height="54" loading="lazy"></span><b>Keynote</b><span class="tu">Decks for teams that live on a Mac</span></li>
-          <li class="tool" tabindex="0" style="--c:#e2a72e"><span class="tm tm-img"><img src="/assets/tools/google-slides.webp" alt="" width="54" height="54" loading="lazy"></span><b>Google Slides</b><span class="tu">Decks a whole team edits together</span></li>
-          <li class="tool" tabindex="0" style="--c:#7b5cd6"><span class="tm tm-img"><img src="/assets/tools/figma.webp" alt="" width="54" height="54" loading="lazy"></span><b>Figma</b><span class="tu">Websites, app screens and slide concepts</span></li>
-          <li class="tool" tabindex="0" style="--c:#e07b23"><span class="tm tm-img"><img src="/assets/tools/illustrator.webp" alt="" width="54" height="54" loading="lazy"></span><b>Illustrator</b><span class="tu">Logos, icons and infographics</span></li>
-          <li class="tool" tabindex="0" style="--c:#2c8ad6"><span class="tm tm-img"><img src="/assets/tools/photoshop.webp" alt="" width="54" height="54" loading="lazy"></span><b>Photoshop</b><span class="tu">Image work and mockups</span></li>
-          <li class="tool" tabindex="0" style="--c:#c4416d"><span class="tm tm-img"><img src="/assets/tools/indesign.webp" alt="" width="54" height="54" loading="lazy"></span><b>InDesign</b><span class="tu">Brochures, reports and print</span></li>
-          <li class="tool" tabindex="0" style="--c:#c86a45"><span class="tm tm-img"><img src="/assets/tools/claude.webp" alt="" width="54" height="54" loading="lazy"></span><b>Claude</b><span class="tu">Building the websites and apps</span></li>
-          <li class="tool" tabindex="0" style="--c:#10a37f"><span class="tm tm-img tm-mono"><img src="/assets/tools/chatgpt.webp" alt="" width="54" height="54" loading="lazy"></span><b>ChatGPT</b><span class="tu">Research, writing and first drafts</span></li>
-          <li class="tool" tabindex="0" style="--c:#3b4a63"><span class="tm tm-img tm-mono"><img src="/assets/tools/github.webp" alt="" width="54" height="54" loading="lazy"></span><b>GitHub</b><span class="tu">Where every site and app lives</span></li>
+          <li class="tool" tabindex="0" style="--c:#d65a2e"><span class="tm tm-img"><img src="/assets/tools/powerpoint.webp" alt="" width="40" height="40" loading="lazy"></span><b>PowerPoint</b><span class="tu">Pitch decks, templates and Morph animation</span></li>
+          <li class="tool" tabindex="0" style="--c:#2f7fd8"><span class="tm tm-img"><img src="/assets/tools/keynote.webp" alt="" width="40" height="40" loading="lazy"></span><b>Keynote</b><span class="tu">Decks for teams that live on a Mac</span></li>
+          <li class="tool" tabindex="0" style="--c:#e2a72e"><span class="tm tm-img"><img src="/assets/tools/google-slides.webp" alt="" width="40" height="40" loading="lazy"></span><b>Google Slides</b><span class="tu">Decks a whole team edits together</span></li>
+          <li class="tool" tabindex="0" style="--c:#7b5cd6"><span class="tm tm-img"><img src="/assets/tools/figma.webp" alt="" width="40" height="40" loading="lazy"></span><b>Figma</b><span class="tu">Websites, app screens and slide concepts</span></li>
+          <li class="tool" tabindex="0" style="--c:#e07b23"><span class="tm tm-img"><img src="/assets/tools/illustrator.webp" alt="" width="40" height="40" loading="lazy"></span><b>Illustrator</b><span class="tu">Logos, icons and infographics</span></li>
+          <li class="tool" tabindex="0" style="--c:#2c8ad6"><span class="tm tm-img"><img src="/assets/tools/photoshop.webp" alt="" width="40" height="40" loading="lazy"></span><b>Photoshop</b><span class="tu">Image work and mockups</span></li>
+          <li class="tool" tabindex="0" style="--c:#c4416d"><span class="tm tm-img"><img src="/assets/tools/indesign.webp" alt="" width="40" height="40" loading="lazy"></span><b>InDesign</b><span class="tu">Brochures, reports and print</span></li>
+          <li class="tool" tabindex="0" style="--c:#c86a45"><span class="tm tm-img"><img src="/assets/tools/claude.webp" alt="" width="40" height="40" loading="lazy"></span><b>Claude</b><span class="tu">Building the websites and apps</span></li>
+          <li class="tool" tabindex="0" style="--c:#10a37f"><span class="tm tm-img tm-mono"><img src="/assets/tools/chatgpt.webp" alt="" width="40" height="40" loading="lazy"></span><b>ChatGPT</b><span class="tu">Research, writing and first drafts</span></li>
+          <li class="tool" tabindex="0" style="--c:#3b4a63"><span class="tm tm-img tm-mono"><img src="/assets/tools/github.webp" alt="" width="40" height="40" loading="lazy"></span><b>GitHub</b><span class="tu">Where every site and app lives</span></li>
         </ul>
       </div>
     </section>
 
-    <section class="process torn" id="process" aria-labelledby="process-title">
+    <section class="wall torn" id="wall" aria-labelledby="wall-title" data-wall hidden>
       <div class="wrap">
-        <div class="sec-head">
-          <p class="kicker">How I work</p>
-          <h2 id="process-title">White space isn't empty. It's where the <span class="hl">message lands.</span></h2>
+        <div class="wall-head">
+          <h2 id="wall-title">Before you leave, leave a note.</h2>
+          <div class="pass" data-pass aria-label="Boarding pass, IndiGo, Kannur to New Delhi, 2023">
+            <div class="pass-main">
+              <div class="pass-top"><img src="/assets/clients/indigo-white.webp" alt="IndiGo" width="351" height="72"><span>Boarding pass</span></div>
+              <div class="pass-route">
+                <div><b>CNN</b><span>Kannur</span></div>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 13.5 21 7.5c.8-.3 1.6.4 1.2 1.2-.2.4-.6.7-1 .8l-6.2 2 -3.6 6.6h-2.3l1.6-5.4-4.6 1.5-1.9 2H2.4l1.3-3.2Z"/></svg>
+                <div><b>DEL</b><span>New Delhi</span></div>
+              </div>
+              <dl class="pass-info">
+                <div><dt>Passenger</dt><dd>Ishaque Nv.</dd></div>
+                <div><dt>Flight</dt><dd>6E 2023</dd></div>
+                <div><dt>Seat</dt><dd>1A</dd></div>
+              </dl>
+            </div>
+            <div class="pass-stub" aria-hidden="true"><b>DEL</b><i></i></div>
+          </div>
         </div>
-        <ol class="proc-line">
-          <li class="pnode"><span class="dot" aria-hidden="true"></span><div class="pt"><b>Listen</b><span>The audience, the goal, the deadline.</span></div></li>
-          <li class="pnode up"><span class="dot" aria-hidden="true"></span><div class="pt"><b>Find the one thing</b><span>What the room should believe at the end.</span></div></li>
-          <li class="pnode"><span class="dot" aria-hidden="true"></span><div class="pt"><b>Write the story</b><span>Slide by slide, before any design.</span></div></li>
-          <li class="pnode up"><span class="dot" aria-hidden="true"></span><div class="pt"><b>Structure it</b><span>One job per slide, in the order questions get asked.</span></div></li>
-          <li class="pnode"><span class="dot" aria-hidden="true"></span><div class="pt"><b>Design it</b><span>Type, data and imagery that read in a second.</span></div></li>
-          <li class="pnode up"><span class="dot" aria-hidden="true"></span><div class="pt"><b>Hand it over</b><span>Editable files your team can keep using.</span></div></li>
-        </ol>
+        <div class="wall-body">
+          <form class="wall-form" data-wall-form novalidate>
+            <div class="wf-who">
+              <button class="avatar" type="button" data-avatar aria-label="Shuffle your avatar"><span data-avatar-letter>?</span></button>
+              <p>Tap to shuffle</p>
+            </div>
+            <label class="field" for="wall-name"><span>Your name</span><input id="wall-name" name="name" maxlength="40" autocomplete="name" required></label>
+            <label class="field" for="wall-work"><span>Where you work <em>optional</em></span><input id="wall-work" name="work" maxlength="60" autocomplete="organization"></label>
+            <label class="field" for="wall-msg"><span>Your note <em data-wall-count>0/200</em></span><textarea id="wall-msg" name="message" maxlength="200" rows="3" required></textarea></label>
+            <label class="hp" aria-hidden="true">Website <input name="website" tabindex="-1" autocomplete="off"></label>
+            <div class="wf-foot">
+              <p class="form-status" data-wall-status role="status" aria-live="polite"></p>
+              <button class="btn-ink" type="submit">Pin it to the wall</button>
+            </div>
+          </form>
+          <ul class="wall-notes" data-wall-notes aria-label="Notes from visitors"></ul>
+        </div>
       </div>
     </section>
 
@@ -396,8 +367,9 @@
       <div class="wrap hello-inner">
         <h2 id="contact-title">Let's make it land.</h2>
         <p class="hello-sub">Tell me about the audience, the goal and the deadline. I'll come back with a clear way forward.</p>
+        <div class="keys-wrap">
+          <img class="point-me" src="/assets/scene/me-point.webp" alt="" width="420" height="930" loading="lazy">
         <div class="keys-mat">
-          <p class="keys-hint">Press a key: <kbd>E</kbd> <kbd>W</kbd> <kbd>L</kbd> <kbd>B</kbd> <kbd>F</kbd> <kbd>R</kbd></p>
           <ul class="keys">
             <li><a class="kw" href="mailto:ishaque@skifi.co" data-key="e"><span class="cap">E</span><span class="kl">Email</span></a></li>
             <li><a class="kw" href="https://wa.me/917827087878" target="_blank" rel="noopener" data-key="w"><span class="cap">W</span><span class="kl">WhatsApp</span></a></li>
@@ -406,6 +378,7 @@
             <li><a class="kw" href="https://www.fiverr.com/skifidesigns" target="_blank" rel="noopener" data-key="f"><span class="cap">F</span><span class="kl">Fiverr</span></a></li>
             <li><a class="kw" href="/assets/portfolio/Muhammed-Ishaque-CV.pdf" download="Muhammed-Ishaque-CV.pdf" data-key="r"><span class="cap">R</span><span class="kl">Resume</span></a></li>
           </ul>
+        </div>
         </div>
         <form class="brief" id="project-form" action="https://api.web3forms.com/submit" method="POST" data-contact-form>
           <input type="hidden" name="access_key" value="44e58263-9bb0-4c59-98ec-e9c82910ddf9">
@@ -423,7 +396,7 @@
           </div>
         </form>
       </div>
-      <div class="clouds-foot" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="clouds-foot" aria-hidden="true"><img src="/assets/scene/clouds-foot.webp" alt="" width="2000" height="416" loading="lazy"></div>
       <footer class="foot wrap">
         <span>© 2026 Ishaque Nv.</span>
         <a href="mailto:ishaque@skifi.co">ishaque@skifi.co</a>

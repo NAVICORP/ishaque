@@ -1,0 +1,18 @@
+# Dokploy: Docker Compose from GitHub (NAVICORP/ishaque, branch main,
+# ./deploy/docker-compose.yml). Domain ishaquenv.com (and www) to service
+# `site`, port 8000. Set ADMIN_TOKEN in the Environment tab.
+services:
+  site:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    restart: unless-stopped
+    environment:
+      - ADMIN_TOKEN=${ADMIN_TOKEN}
+    volumes:
+      - ishaque_data:/data
+    expose:
+      - "8000"
+
+volumes:
+  ishaque_data:

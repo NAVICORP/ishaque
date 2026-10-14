@@ -101,160 +101,17 @@ if (dock) {
   place();
 }
 
-/* ---------- valley: fly in on scroll, places on tap ---------- */
+/* ---------- valley: fly in on scroll ---------- */
 const valley = $('[data-valley]');
-if (valley) {
-  const stage = $('[data-stage]', valley);
-  const pins = $$('.pin', valley);
-  const flying = !reduced;
-
-  const copy = $('[data-hero-copy]', valley);
-  const overlaps = (a, b, pad = 10) => a.left < b.right + pad && a.right > b.left - pad && a.top < b.bottom + pad && a.bottom > b.top - pad;
-  const fitPins = () => {
-    const box = stage.getBoundingClientRect();
-    const copyBoxes = copy && Number(getComputedStyle(copy).opacity) > .35 ? [...copy.children].map(el => el.getBoundingClientRect()) : [];
-    pins.forEach(pin => {
-      const label = $('b', pin) || $('.me-note', pin) || pin;
-      pin.style.removeProperty('--shift');
-      const anchor = pin.getBoundingClientRect();
-      const cx = anchor.left + anchor.width / 2;
-      let off = cx < box.left + 4 || cx > box.right - 4;
-      if (!off && $('b', pin)) {
-        const r = label.getBoundingClientRect();
-        let shift = 0;
-        if (r.left < box.left + 10) shift = box.left + 10 - r.left;
-        if (r.right > box.right - 10) shift = box.right - 10 - r.right;
-        if (shift) pin.style.setProperty('--shift', `${shift}px`);
-      }
-      if (!off && copyBoxes.length) { const lr = label.getBoundingClientRect(); off = copyBoxes.some(b => overlaps(lr, b)); }
-      pin.classList.toggle('is-off', off);
-    });
-  };
-
+if (valley && !reduced) {
   let lastP = -1;
   onFrame.push(() => {
-    if (!flying) return;
     const total = valley.offsetHeight - innerHeight;
     const p = total > 0 ? clamp(-valley.getBoundingClientRect().top / total, 0, 1) : 0;
     if (Math.abs(p - lastP) < .001) return;
     lastP = p;
     valley.style.setProperty('--p', p.toFixed(4));
     valley.style.setProperty('--cam', (1 + p * .42).toFixed(4));
-    fitPins();
-  });
-  addEventListener('resize', fitPins);
-  document.fonts?.ready.then(fitPins);
-  fitPins();
-
-  const PLACES = {
-    delhi: {
-      tag: 'New Delhi', title: 'New Delhi',
-      text: 'My MA at Jamia Millia Islamia, then two years at Value360 Communications in Okhla, just down the road.',
-      list: ['MA in Arabic, Jamia Millia Islamia', '2023 to 2025: Senior Presentation Designer, Value360', 'How companies pitch to clients and decision makers'],
-    },
-    calicut: {
-      tag: 'Degree', title: 'University of Calicut',
-      text: 'BA in Arabic. I studied languages, not design.',
-    },
-    home: {
-      tag: '2020', title: 'Home, Blathur',
-      text: 'Where SkiFi began: my first presentation orders on Fiverr, from home. Just me and PowerPoint: pitch decks, company profiles, anything with slides.',
-      list: ['Repeat clients, then international work', 'Thousands of projects for clients in 40+ countries'],
-    },
-    me: {
-      tag: "That's me", title: 'Ishaque Nv.',
-      text: 'Founder of SkiFi. I design and build, and I work in English, Arabic, Hindi, Urdu, Malayalam and Tamil.',
-      link: { href: '#contact', label: 'Say hello' },
-    },
-    skifi: {
-      tag: 'Now', title: 'SkiFi',
-      text: 'The studio I run from Kannur: about fifteen people making decks, brands, websites and apps, with presentations at the heart.',
-      list: ['950+ clients', 'Fiverr Vetted Pro Agency since June 2026', 'Our own products, like FarmiLife'],
-      link: { href: 'https://skifi.co', label: 'Visit skifi.co', external: true },
-    },
-    fiverr: {
-      tag: '2025', title: 'Fiverr Vetted Pro',
-      text: 'Vetted Pro for presentation design in August 2025, then for pitch decks. In June 2026 SkiFi became a Vetted Pro Agency.',
-      list: ['900+ reviews, rated 4.9', '2,700+ projects delivered'],
-      link: { href: 'https://www.fiverr.com/skifidesigns', label: 'See the Fiverr profile', external: true },
-    },
-    wyoming: {
-      tag: 'LLC', title: 'SKIFI GROUP LLC',
-      text: 'Registered in Wyoming, USA, so SkiFi works as an international company, not just a profile on a platform.',
-    },
-  };
-
-  const sheet = $('[data-place-sheet]', valley);
-  let openPin = null;
-  const closePlace = () => {
-    if (!openPin) return;
-    openPin.setAttribute('aria-expanded', 'false');
-    sheet.hidden = true;
-    const last = openPin;
-    openPin = null;
-    return last;
-  };
-  const openPlace = pin => {
-    const data = PLACES[pin.dataset.place];
-    if (!data) return;
-    if (openPin === pin) { closePlace(); return; }
-    closePlace();
-    $('[data-place-tag]', sheet).textContent = data.tag;
-    $('[data-place-title]', sheet).textContent = data.title;
-    $('[data-place-text]', sheet).textContent = data.text;
-    const list = $('[data-place-list]', sheet);
-    list.replaceChildren(...(data.list || []).map(t => Object.assign(document.createElement('li'), { textContent: t })));
-    const link = $('[data-place-link]', sheet);
-    link.hidden = !data.link;
-    if (data.link) {
-      link.href = data.link.href;
-      link.textContent = data.link.label;
-      if (data.link.external) { link.target = '_blank'; link.rel = 'noopener'; } else { link.removeAttribute('target'); }
-    }
-    pin.setAttribute('aria-expanded', 'true');
-    openPin = pin;
-    sheet.hidden = false;
-  };
-  pins.forEach(pin => pin.addEventListener('click', () => openPlace(pin)));
-  $('[data-place-close]', sheet)?.addEventListener('click', () => closePlace()?.focus());
-  $('[data-place-link]', sheet)?.addEventListener('click', () => closePlace());
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && openPin) closePlace()?.focus(); });
-  stage.addEventListener('click', e => {
-    if (openPin && !e.target.closest('.pin, .sheet')) closePlace();
-  });
-}
-
-/* ---------- story: sticky notes you can move ---------- */
-const notesBox = $('[data-notes]');
-if (notesBox) {
-  const canDrag = matchMedia('(min-width: 901px)');
-  const hint = $('.move-hint', notesBox);
-  let z = 3;
-  $$('[data-note]', notesBox).forEach(note => {
-    note.addEventListener('pointerdown', e => {
-      if (!canDrag.matches || e.button !== 0) return;
-      const box = notesBox.getBoundingClientRect();
-      const r = note.getBoundingClientRect();
-      const dx = e.clientX - r.left;
-      const dy = e.clientY - r.top;
-      note.setPointerCapture(e.pointerId);
-      note.classList.add('is-drag');
-      note.style.zIndex = String(++z);
-      const move = ev => {
-        const x = clamp(ev.clientX - box.left - dx, -40, box.width - r.width + 40);
-        const y = clamp(ev.clientY - box.top - dy, -60, box.height - r.height + 40);
-        note.style.left = `${x}px`;
-        note.style.top = `${y}px`;
-      };
-      const up = () => {
-        note.classList.remove('is-drag');
-        note.removeEventListener('pointermove', move);
-        hint?.classList.add('is-done');
-      };
-      note.addEventListener('pointermove', move);
-      note.addEventListener('pointerup', up, { once: true });
-      note.addEventListener('pointercancel', up, { once: true });
-    });
   });
 }
 
@@ -282,7 +139,7 @@ if (journey) {
       i, len, x: p.x, y: p.y, c: li.style.getPropertyValue('--c'),
       icon: $('.j-icon', li).innerHTML, place: $('.j-place', li).textContent, meta: $('.j-meta', li).textContent,
       when: $('.j-when', li).textContent, title: $('h3', li).textContent, text: $('.j-text', li).textContent,
-      pic: li.dataset.pic || '',
+      pic: li.dataset.pic || '', mark: li.dataset.landmark || '', logo: li.dataset.logo || '', logoFull: li.dataset.logoFull || '',
     };
   });
   const N = stops.length;
@@ -298,6 +155,34 @@ if (journey) {
   done.style.strokeDashoffset = `${L}`;
   routeG.append(done);
 
+  /* little landmarks beside each stop, on the side away from the pin's label */
+  const marks = document.createElementNS(NS, 'g');
+  marks.setAttribute('class', 'landmarks');
+  const place = (href, x, y, size) => {
+    const img = document.createElementNS(NS, 'image');
+    img.setAttribute('href', href);
+    img.setAttribute('x', (x - size / 2).toFixed(0));
+    img.setAttribute('y', (y - size / 2).toFixed(0));
+    img.setAttribute('width', size);
+    img.setAttribute('height', size);
+    marks.append(img);
+  };
+  stops.forEach(s => {
+    if (!s.mark) return;
+    const a = at(s.len - 8);
+    const b = at(s.len + 8);
+    const tx = b.x - a.x;
+    const ty = b.y - a.y;
+    const k = Math.hypot(tx, ty) || 1;
+    let nx = -ty / k;
+    let ny = tx / k;
+    if (-nx + ny * .6 < 0) { nx = -nx; ny = -ny; }
+    place(s.mark, s.x + nx * 175, s.y + ny * 175, 230);
+  });
+  place('/assets/map/boat.webp', 1290, 1215, 170);
+  place('/assets/map/mountains.webp', 1830, 2230, 260);
+  svg.insertBefore(marks, routeG.nextSibling);
+
   const pinLayer = $('[data-pins-layer]', journey);
   const pins = stops.map(s => {
     const b = document.createElement('button');
@@ -305,7 +190,8 @@ if (journey) {
     b.className = 'mk';
     b.tabIndex = -1;
     b.style.setProperty('--c', s.c);
-    b.innerHTML = `<span class="mk-head"><span>${s.icon}</span></span><span class="mk-name">${esc(s.place)}</span>`;
+    const name = s.logo ? `<span class="mk-name mk-name-logo"><img src="${s.logo}" alt="${esc(s.place)}"></span>` : `<span class="mk-name">${esc(s.place)}</span>`;
+    b.innerHTML = `<span class="mk-head"><span>${s.icon}</span></span>${name}`;
     b.addEventListener('click', () => goTo(s.i));
     pinLayer.append(b);
     return b;
@@ -355,7 +241,8 @@ if (journey) {
     const s = stops[i];
     card.style.setProperty('--c', s.c);
     const pic = s.pic ? `<span class="jc-pic media"><img src="${s.pic}" alt="" loading="lazy"></span>` : '';
-    card.innerHTML = `<div class="jc-in"><div class="jc-top"><span class="jc-tile">${s.icon}</span><p>${esc(s.place)}<span>${esc(s.meta)}</span></p><em>${String(i + 1).padStart(2, '0')} / ${String(N).padStart(2, '0')}</em></div>${pic}<div class="jc-body"><h3>${esc(s.title)}</h3><p>${esc(s.text)}</p></div></div>`;
+    const who = s.logoFull ? `<p class="jc-brand"><img src="${s.logoFull}" alt="${esc(s.place)}"><span>${esc(s.meta)}</span></p>` : `<span class="jc-tile">${s.icon}</span><p>${esc(s.place)}<span>${esc(s.meta)}</span></p>`;
+    card.innerHTML = `<div class="jc-in"><div class="jc-top">${who}<em>${String(i + 1).padStart(2, '0')} / ${String(N).padStart(2, '0')}</em></div>${pic}<div class="jc-body"><h3>${esc(s.title)}</h3><p>${esc(s.text)}</p></div></div>`;
   }
   function showCard(i) {
     if (i === shown) return;
@@ -518,7 +405,6 @@ const deck = $('[data-deck]');
 if (deck) {
   const cards = $$('.deck-card', deck);
   const slugs = cards.map(c => c.dataset.slug);
-  const nameEl = $('[data-deck-name]', deck);
   const sumEl = $('[data-deck-summary]', deck);
   const idxEl = $('[data-deck-index]', deck);
   $('[data-deck-total]', deck).textContent = String(cards.length);
@@ -534,7 +420,6 @@ if (deck) {
       card.setAttribute('aria-hidden', String(i !== 0));
     });
     const p = bySlug[slugs[front]];
-    nameEl.textContent = p.name;
     sumEl.textContent = p.summary;
     idxEl.textContent = String(front + 1);
   };
@@ -580,27 +465,6 @@ if (deck) {
     if (e.key === 'ArrowLeft') go(-1);
   });
   render();
-}
-
-/* ---------- websites carousel ---------- */
-const brandRow = $('[data-brand-row]');
-if (brandRow) {
-  const prog = $('[data-brand-prog]');
-  const step = () => (brandRow.querySelector('.site')?.offsetWidth || 400) + 24;
-  $('[data-brand-prev]')?.addEventListener('click', () => brandRow.scrollBy({ left: -step(), behavior: reduced ? 'auto' : 'smooth' }));
-  $('[data-brand-next]')?.addEventListener('click', () => brandRow.scrollBy({ left: step(), behavior: reduced ? 'auto' : 'smooth' }));
-  const sync = () => {
-    const max = brandRow.scrollWidth;
-    prog?.style.setProperty('--w', `${clamp(((brandRow.scrollLeft + brandRow.clientWidth) / max) * 100, 8, 100)}%`);
-  };
-  brandRow.addEventListener('scroll', sync, { passive: true });
-  addEventListener('resize', sync);
-  sync();
-  const siteSlugs = $$('.site', brandRow).map(a => a.dataset.slug);
-  $$('.site', brandRow).forEach(a => a.addEventListener('click', e => {
-    if (!plainClick(e)) return;
-    if (openSheet(a.dataset.slug, siteSlugs)) e.preventDefault();
-  }));
 }
 
 /* ---------- contact: press a key ---------- */
@@ -722,6 +586,146 @@ if (grid) {
   setFilter(fromHash(), false);
 }
 
+/* ---------- visitors and the wall (served by the SkiFi server's API) ---------- */
+const API = '/api';
+const visits = $('[data-visits]');
+if (visits) {
+  let first = false;
+  try { first = !localStorage.getItem('seen'); localStorage.setItem('seen', '1'); } catch {}
+  fetch(`${API}/visit`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ first }) })
+    .then(r => (r.ok ? r.json() : Promise.reject()))
+    .then(d => {
+      if (!Number.isFinite(d.visitors) || d.visitors < 1) return;
+      $('[data-visits-count]', visits).textContent = d.visitors.toLocaleString('en-US');
+      visits.hidden = false;
+    })
+    .catch(() => {});
+}
+
+const wall = $('[data-wall]');
+if (wall) {
+  const COLORS = ['#ffe98a', '#ffd1c4', '#cfe7ff', '#cdefd9', '#e6dcff', '#ffdcb0', '#c9f0ef', '#f8d1e6', '#dfeec1', '#ffe2c2', '#d6e4ff', '#fbe3a6'];
+  const INKS = ['#b07d00', '#c4472b', '#2e6fb5', '#2b8a5b', '#6b52c8', '#c26a14', '#16867f', '#b0457c', '#5f7d18', '#c0661c', '#3f62c4', '#9a7400'];
+  const list = $('[data-wall-notes]', wall);
+  const form = $('[data-wall-form]', wall);
+  const status = $('[data-wall-status]', wall);
+  const avatarBtn = $('[data-avatar]', wall);
+  const letterEl = $('[data-avatar-letter]', wall);
+  const countEl = $('[data-wall-count]', wall);
+  let avatar = Math.floor(Math.random() * COLORS.length);
+  const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+  const when = iso => {
+    const days = Math.round((new Date(iso) - Date.now()) / 86400000);
+    if (days > -7) return rtf.format(days, 'day');
+    return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+  const paintAvatar = () => {
+    avatarBtn.style.setProperty('--a', COLORS[avatar]);
+    avatarBtn.style.setProperty('--ai-ink', INKS[avatar]);
+    const n = $('#wall-name', form).value.trim();
+    letterEl.textContent = n ? n[0].toUpperCase() : '?';
+  };
+  const noteEl = (n, fresh = false) => {
+    const li = document.createElement('li');
+    li.className = `note wall-note${fresh ? ' is-fresh' : ''}`;
+    li.style.setProperty('--n', COLORS[n.avatar % COLORS.length]);
+    li.style.setProperty('--rot', `${((n.id.charCodeAt(0) + n.id.charCodeAt(1)) % 7) - 3}deg`);
+    const msg = document.createElement('p');
+    msg.className = 'wn-msg';
+    msg.textContent = n.message;
+    const who = document.createElement('div');
+    who.className = 'wn-who';
+    const av = document.createElement('span');
+    av.className = 'avatar avatar-sm';
+    av.style.setProperty('--a', '#fff');
+    av.style.setProperty('--ai-ink', INKS[n.avatar % INKS.length]);
+    av.textContent = n.name[0].toUpperCase();
+    const meta = document.createElement('p');
+    const b = document.createElement('b');
+    b.textContent = n.name;
+    const small = document.createElement('span');
+    small.textContent = [n.work, when(n.at)].filter(Boolean).join(', ');
+    meta.append(b, small);
+    who.append(av, meta);
+    li.append(msg, who);
+    return li;
+  };
+  fetch(`${API}/notes`)
+    .then(r => (r.ok ? r.json() : Promise.reject()))
+    .then(d => {
+      wall.hidden = false;
+      list.replaceChildren(...d.notes.map(n => noteEl(n)));
+      if (!d.notes.length) list.append(Object.assign(document.createElement('li'), { className: 'wall-empty', textContent: 'No notes yet. Be the first to pin one.' }));
+      queue();
+    })
+    .catch(() => {});
+
+  paintAvatar();
+  avatarBtn.addEventListener('click', () => {
+    avatar = (avatar + 1 + Math.floor(Math.random() * (COLORS.length - 1))) % COLORS.length;
+    paintAvatar();
+    if (!reduced) { avatarBtn.classList.remove('is-spin'); void avatarBtn.offsetWidth; avatarBtn.classList.add('is-spin'); }
+  });
+  $('#wall-name', form).addEventListener('input', paintAvatar);
+  const msg = $('#wall-msg', form);
+  msg.addEventListener('input', () => { countEl.textContent = `${msg.value.length}/200`; });
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(form));
+    status.className = 'form-status';
+    if (!data.name.trim() || !data.message.trim()) {
+      status.classList.add('is-error');
+      status.textContent = 'Add your name and a note.';
+      return;
+    }
+    const button = $('button[type="submit"]', form);
+    button.disabled = true;
+    try {
+      const res = await fetch(`${API}/notes`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...data, avatar }) });
+      const out = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(out.error || 'The note did not pin. Try again.');
+      if (out.note) {
+        $('.wall-empty', list)?.remove();
+        list.prepend(noteEl(out.note, true));
+      }
+      form.reset();
+      countEl.textContent = '0/200';
+      paintAvatar();
+      status.classList.add('is-success');
+      status.textContent = 'Pinned. Thanks for stopping by.';
+    } catch (err) {
+      status.classList.add('is-error');
+      status.textContent = err.message;
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  /* the boarding pass can be moved around */
+  const pass = $('[data-pass]', wall);
+  if (pass && matchMedia('(min-width: 901px) and (pointer: fine)').matches) {
+    pass.addEventListener('pointerdown', e => {
+      if (e.button !== 0) return;
+      const sx = e.clientX;
+      const sy = e.clientY;
+      const ox = Number(pass.dataset.x || 0);
+      const oy = Number(pass.dataset.y || 0);
+      pass.setPointerCapture(e.pointerId);
+      pass.classList.add('is-drag');
+      const move = ev => {
+        pass.dataset.x = String(ox + ev.clientX - sx);
+        pass.dataset.y = String(oy + ev.clientY - sy);
+        pass.style.setProperty('--dx', `${pass.dataset.x}px`);
+        pass.style.setProperty('--dy', `${pass.dataset.y}px`);
+      };
+      const up = () => { pass.classList.remove('is-drag'); pass.removeEventListener('pointermove', move); };
+      pass.addEventListener('pointermove', move);
+      pass.addEventListener('pointerup', up, { once: true });
+      pass.addEventListener('pointercancel', up, { once: true });
+    });
+  }
+}
+
 /* ---------- motion ---------- */
 function splitWords(el, cls, varName) {
   let n = 0;
@@ -766,11 +770,6 @@ if (!reduced) {
   if (stageEl) {
     const h1 = $('#hero-title', stageEl);
     if (h1) splitWords(h1, 'w', '--wi');
-    const depth = { delhi: .35, calicut: .6, home: .6, me: 1.2, skifi: .9, fiverr: .35, wyoming: .5 };
-    $$('.pin', stageEl).forEach((pin, i) => {
-      pin.style.setProperty('--pi', String(i));
-      pin.style.setProperty('--lm', String(depth[pin.dataset.place] || .5));
-    });
     stageEl.classList.add('is-pre');
     const skies = $$('.ly-sky img', stageEl);
     const ready = Promise.race([
@@ -798,23 +797,6 @@ if (!reduced) {
     }
   }
 
-  /* the story paragraph lights up word by word as you read */
-  const tell = $('.tell');
-  if (tell) {
-    splitWords(tell, 'tw', '--ti');
-    const words = $$('.tw', tell);
-    let lit = -1;
-    onFrame.push(() => {
-      const r = tell.getBoundingClientRect();
-      const start = innerHeight * .88;
-      const span = innerHeight * .5 + r.height * .5;
-      const n = Math.round(clamp((start - r.top) / span, 0, 1) * words.length);
-      if (n === lit) return;
-      lit = n;
-      words.forEach((w, i) => w.classList.toggle('is-lit', i < n));
-    });
-  }
-
   /* entrances */
   const io = new IntersectionObserver(entries => {
     entries.forEach(entry => {
@@ -839,32 +821,23 @@ if (!reduced) {
       io.observe(box);
     });
   };
-  group('.tell-box', '.note', 'anim-drop');
+  group('.notes', '.note', 'anim-drop');
   group('.deck-stage', '.deck-card', 'anim-deal', true);
-  group('.brand-row', '.site', 'anim-rise');
-  group('.hats', 'li', 'anim-rise');
   group('.studio-stats', 'li', 'anim-rise');
-  group('.chips', 'li', 'anim-pop');
   group('.tools', '.tool', 'anim-pop');
   group('.keys', '.kw', 'anim-pop');
   group('.work-grid', '.work-card:nth-child(-n+6)', 'anim-rise');
-  $$('.sec-head, .brand-head, .hello h2, .hello-sub, .studio-grid h2, .deck-side, .brief').forEach(el => {
+  $$('.sec-head, .proof h2, .hello h2, .hello-sub, .studio-grid h2, .deck-side, .brief').forEach(el => {
     el.classList.add('anim-rise');
     io.observe(el);
   });
   $$('.hl').forEach(el => { el.classList.add('anim-hl'); io.observe(el); });
-  const line = $('.proc-line');
-  if (line) {
-    line.classList.add('anim-line');
-    $$('.pnode', line).forEach((n, i) => n.style.setProperty('--ai', String(i)));
-    io.observe(line);
-  }
 
   /* numbers count up the first time they show */
-  const countEls = [...$$('.studio-stats b'), $('.note-sun strong'), $('.note-sky strong')].filter(Boolean);
+  const countEls = [...$$('.studio-stats b'), ...$$('.note strong')].filter(Boolean);
   countEls.forEach(el => {
     const m = el.textContent.match(/^(\D*)([\d,]+)(.*)$/);
-    if (!m || m[2] === '2020') return;
+    if (!m || m[2] === '2020' || m[3].startsWith('.')) return;
     const target = Number(m[2].replace(/,/g, ''));
     const commas = m[2].includes(',');
     const fmt = v => `${m[1]}${commas ? v.toLocaleString('en-US') : v}${m[3]}`;
@@ -902,29 +875,6 @@ if (!reduced) {
         card.style.removeProperty('--rx');
         card.style.removeProperty('--ry');
       });
-    });
-  }
-
-  /* websites: drag the row with a mouse */
-  const row = $('[data-brand-row]');
-  if (row && matchMedia('(pointer: fine)').matches) {
-    let down = null;
-    row.addEventListener('pointerdown', e => {
-      if (e.pointerType !== 'mouse' || e.button !== 0) return;
-      down = { x: e.clientX, left: row.scrollLeft, moved: false };
-    });
-    addEventListener('pointermove', e => {
-      if (!down) return;
-      const dx = e.clientX - down.x;
-      if (Math.abs(dx) > 6) { down.moved = true; row.classList.add('is-drag'); }
-      if (down.moved) row.scrollLeft = down.left - dx;
-    });
-    addEventListener('pointerup', () => {
-      if (!down) return;
-      const moved = down.moved;
-      down = null;
-      setTimeout(() => row.classList.remove('is-drag'), 0);
-      if (moved) row.addEventListener('click', ev => ev.preventDefault(), { capture: true, once: true });
     });
   }
 

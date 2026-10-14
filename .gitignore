@@ -3,3 +3,4 @@ dist/
 _artifacts/
 .vercel/
 *.log
+.data/
