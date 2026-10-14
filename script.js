@@ -258,12 +258,13 @@ if (notesBox) {
   });
 }
 
-/* ---------- journey: fly the map, stop by stop ---------- */
+/* ---------- journey: drive the road, stop by stop ---------- */
 const journey = $('[data-journey]');
 if (journey) {
   const NS = 'http://www.w3.org/2000/svg';
   const view = $('[data-mapview]', journey);
   const svg = $('[data-map]', journey);
+  const road = $('#road', svg);
   const card = $('[data-jcard]', journey);
   const head = $('[data-j-head]', journey);
   const fade = $('[data-j-fade]', journey);
@@ -272,49 +273,31 @@ if (journey) {
   const dots = $$('[data-j-go]', journey);
   const jtlLabel = $('[data-jtl-label]', journey);
   const esc = t => t.replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
-  const stops = $$('.j-stop', journey).map((li, i) => ({
-    i, x: +li.dataset.x, y: +li.dataset.y, cluster: li.dataset.cluster, c: li.style.getPropertyValue('--c'),
-    icon: $('.j-icon', li).innerHTML, place: $('.j-place', li).textContent, meta: $('.j-meta', li).textContent,
-    when: $('.j-when', li).textContent, title: $('h3', li).textContent, text: $('.j-text', li).textContent,
-    pic: li.dataset.pic || '',
-  }));
+  const L = road.getTotalLength();
+  const at = len => road.getPointAtLength(clamp(len, 0, L));
+  const stops = $$('.j-stop', journey).map((li, i) => {
+    const len = L * Number(li.dataset.t);
+    const p = at(len);
+    return {
+      i, len, x: p.x, y: p.y, c: li.style.getPropertyValue('--c'),
+      icon: $('.j-icon', li).innerHTML, place: $('.j-place', li).textContent, meta: $('.j-meta', li).textContent,
+      when: $('.j-when', li).textContent, title: $('h3', li).textContent, text: $('.j-text', li).textContent,
+      pic: li.dataset.pic || '',
+    };
+  });
   const N = stops.length;
-  const leaders = new Set();
-  const seenCluster = new Set();
-  stops.forEach(s => { if (!seenCluster.has(s.cluster)) { seenCluster.add(s.cluster); leaders.add(s.i); } });
   const live = !reduced;
   if (live) journey.classList.add('is-map');
 
-  /* the route: a faint dotted line for the whole trip, a solid one for the part walked */
+  /* the walked part of the road, drawn over it in blue */
   const routeG = $('[data-route]', journey);
-  const curves = [];
-  for (let i = 0; i < N - 1; i++) {
-    const a = stops[i];
-    const b = stops[i + 1];
-    const dx = b.x - a.x;
-    const dy = b.y - a.y;
-    const len = Math.hypot(dx, dy);
-    const bend = (i % 2 ? 1 : -1) * Math.min(.24, 120 / len + .1);
-    curves.push(`M${a.x} ${a.y}Q${(a.x + b.x) / 2 - dy * bend} ${(a.y + b.y) / 2 + dx * bend} ${b.x} ${b.y}`);
-  }
-  const path = (d, cls) => {
-    const p = document.createElementNS(NS, 'path');
-    p.setAttribute('d', d);
-    p.setAttribute('class', cls);
-    routeG.append(p);
-    return p;
-  };
-  curves.forEach(d => path(d, 'r-base'));
-  const segs = curves.map(d => {
-    const cas = path(d, 'r-case');
-    const done = path(d, 'r-done');
-    const L = done.getTotalLength();
-    [cas, done].forEach(p => { p.style.strokeDasharray = `${L} ${L + 1}`; p.style.strokeDashoffset = `${L}`; });
-    return { cas, done, L, angle: 0 };
-  });
-  segs.forEach((s, i) => { s.angle = Math.atan2(stops[i + 1].x - stops[i].x, stops[i].y - stops[i + 1].y) * 180 / Math.PI; });
+  const done = document.createElementNS(NS, 'path');
+  done.setAttribute('d', road.getAttribute('d'));
+  done.setAttribute('class', 'r-done');
+  done.style.strokeDasharray = `${L} ${L + 1}`;
+  done.style.strokeDashoffset = `${L}`;
+  routeG.append(done);
 
-  /* pins and place names, positioned on screen every frame */
   const pinLayer = $('[data-pins-layer]', journey);
   const pins = stops.map(s => {
     const b = document.createElement('button');
@@ -327,7 +310,6 @@ if (journey) {
     pinLayer.append(b);
     return b;
   });
-  const labels = $$('.m-label', journey).map(el => ({ el, x: +el.dataset.x, y: +el.dataset.y }));
 
   const INTRO = .7;
   const PER = 1;
@@ -338,6 +320,7 @@ if (journey) {
   let overview = null;
   let cams = [];
   let zStop = 1;
+  let lastKey = '';
 
   function layout() {
     W = view.clientWidth;
@@ -346,17 +329,17 @@ if (journey) {
     journey.style.height = live ? `${Math.round(UNITS * H + H)}px` : '';
     const xs = stops.map(s => s.x);
     const ys = stops.map(s => s.y);
-    const bx0 = Math.min(...xs) - 170;
-    const bx1 = Math.max(...xs) + 170;
-    const by0 = Math.min(...ys) - 190;
-    const by1 = Math.max(...ys) + 110;
+    const bx0 = Math.min(...xs) - 150;
+    const bx1 = Math.max(...xs) + 220;
+    const by0 = Math.min(...ys) - 130;
+    const by1 = Math.max(...ys) + 80;
     const top = H * (mobile ? .44 : .42);
-    const bottom = H * (mobile ? .82 : .9);
+    const bottom = H - (mobile ? 150 : 160);
     const z0 = Math.min((W - 40) / (bx1 - bx0), (bottom - top) / (by1 - by0));
     overview = { x: (bx0 + bx1) / 2, y: (by0 + by1) / 2, z: z0, fx: W / 2, fy: (top + bottom) / 2 };
-    zStop = mobile ? clamp(W / 520, .62, .85) : clamp(H / 980, .72, 1.15);
+    zStop = mobile ? clamp(W / 560, .58, .8) : clamp(H / 1000, .7, 1.05);
     const cardRight = mobile ? 0 : card.offsetLeft + card.offsetWidth;
-    const fx = mobile ? W / 2 : cardRight + (W - cardRight) / 2;
+    const fx = mobile ? W * .36 : cardRight + (W - cardRight) / 2;
     const fy = mobile ? H * .3 : H * .52;
     cams = stops.map(s => ({ x: s.x, y: s.y, z: zStop, fx, fy }));
     lastKey = '';
@@ -364,12 +347,7 @@ if (journey) {
   }
 
   const ease = t => (t < .5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
-  function fly(a, b, e, hop) {
-    const d = Math.hypot(b.x - a.x, b.y - a.y);
-    const k = hop ? Math.min(2.6, d / 650) : 0;
-    const z = Math.exp(Math.log(a.z) + (Math.log(b.z) - Math.log(a.z)) * e) / (1 + k * 4 * e * (1 - e));
-    return { x: a.x + (b.x - a.x) * e, y: a.y + (b.y - a.y) * e, z, fx: a.fx + (b.fx - a.fx) * e, fy: a.fy + (b.fy - a.fy) * e };
-  }
+  const mix = (a, b, e) => a + (b - a) * e;
 
   let shown = -1;
   let swapTimer;
@@ -390,27 +368,32 @@ if (journey) {
     swapTimer = setTimeout(() => { fillCard(shown); card.classList.remove('is-swap'); }, 200);
   }
 
-  let lastKey = '';
   function render() {
     if (!W) return;
     const top = journey.getBoundingClientRect().top;
     const u = live ? clamp(-top / H, 0, UNITS) : 0;
     let cam = overview;
     let active = -1;
-    let seg = -1;
-    let e = 0;
-    let arrived0 = false;
+    let walked = 0;
+    let dot = null;
     if (u >= INTRO) {
       const v = u - INTRO;
       const i = Math.min(N - 1, Math.floor(v / PER));
-      const t = clamp((v - i * PER) / TRAVEL, 0, 1);
-      e = ease(t);
-      cam = fly(i === 0 ? overview : cams[i - 1], cams[i], e, i > 0);
-      active = t > .5 ? i : i - 1;
-      seg = i - 1;
-      arrived0 = i === 0 && t > .9;
+      const e = ease(clamp((v - i * PER) / TRAVEL, 0, 1));
+      active = e > .5 ? i : i - 1;
+      if (i === 0) {
+        cam = { x: mix(overview.x, cams[0].x, e), y: mix(overview.y, cams[0].y, e), z: Math.exp(mix(Math.log(overview.z), Math.log(zStop), e)), fx: mix(overview.fx, cams[0].fx, e), fy: mix(overview.fy, cams[0].fy, e) };
+        walked = stops[0].len;
+        dot = e > .85 ? at(walked) : null;
+      } else {
+        walked = mix(stops[i - 1].len, stops[i].len, e);
+        const p = at(walked);
+        dot = p;
+        const lift = 1 + .5 * 4 * e * (1 - e);
+        cam = { x: p.x, y: p.y, z: zStop / lift, fx: cams[i].fx, fy: cams[i].fy };
+      }
     }
-    const key = `${cam.x.toFixed(1)},${cam.y.toFixed(1)},${cam.z.toFixed(4)},${active},${seg},${e.toFixed(3)}`;
+    const key = `${cam.x.toFixed(1)},${cam.y.toFixed(1)},${cam.z.toFixed(4)},${active},${walked.toFixed(1)}`;
     if (key === lastKey) return;
     lastKey = key;
 
@@ -420,36 +403,22 @@ if (journey) {
     const sx = x => (x - vx) * cam.z;
     const sy = y => (y - vy) * cam.z;
 
-    const far = cam.z < zStop * .55;
     pins.forEach((pin, n) => {
       pin.style.transform = `translate3d(${sx(stops[n].x).toFixed(1)}px, ${sy(stops[n].y).toFixed(1)}px, 0)`;
       pin.classList.toggle('is-on', n === active);
       pin.classList.toggle('is-future', active >= 0 && n > active);
-      pin.classList.toggle('is-hidden', far && !leaders.has(n) && n !== active);
     });
-    labels.forEach(l => {
-      const x = sx(l.x);
-      const y = sy(l.y);
-      l.el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) translate(-50%, -50%)`;
-    });
+    done.style.strokeDashoffset = `${(L - walked).toFixed(1)}`;
 
-    segs.forEach((s, n) => {
-      const p = n < seg ? 1 : n === seg ? e : 0;
-      const off = `${(s.L * (1 - p)).toFixed(1)}`;
-      s.done.style.strokeDashoffset = off;
-      s.cas.style.strokeDashoffset = off;
-    });
-
-    let dot = null;
-    if (seg >= 0) {
-      const pt = segs[seg].done.getPointAtLength(segs[seg].L * e);
-      dot = [pt.x, pt.y];
-    } else if (arrived0) {
-      dot = [stops[0].x, stops[0].y];
-    }
     meDot.classList.toggle('is-on', Boolean(dot));
-    if (dot) meDot.style.transform = `translate3d(${sx(dot[0]).toFixed(1)}px, ${(sy(dot[1]) - 0).toFixed(1)}px, 0)`;
-    if (needle && seg >= 0) needle.style.transform = `rotate(${segs[seg].angle.toFixed(1)}deg)`;
+    if (dot) {
+      meDot.style.transform = `translate3d(${sx(dot.x).toFixed(1)}px, ${sy(dot.y).toFixed(1)}px, 0)`;
+      if (needle) {
+        const a = at(walked - 6);
+        const b = at(walked + 6);
+        needle.style.transform = `rotate(${(Math.atan2(b.x - a.x, a.y - b.y) * 180 / Math.PI).toFixed(1)}deg)`;
+      }
+    }
 
     const headOp = live ? 1 - clamp((u - .12) / .4, 0, 1) : 1;
     head.style.opacity = headOp.toFixed(3);
@@ -879,7 +848,7 @@ if (!reduced) {
   group('.tools', '.tool', 'anim-pop');
   group('.keys', '.kw', 'anim-pop');
   group('.work-grid', '.work-card:nth-child(-n+6)', 'anim-rise');
-  $$('.sec-head, .brand-head, .hello h2, .hello-sub, .studio-grid h2, .deck-side, .employer, .brief').forEach(el => {
+  $$('.sec-head, .brand-head, .hello h2, .hello-sub, .studio-grid h2, .deck-side, .brief').forEach(el => {
     el.classList.add('anim-rise');
     io.observe(el);
   });
