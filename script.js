@@ -112,7 +112,7 @@ if (valley) {
   const overlaps = (a, b, pad = 10) => a.left < b.right + pad && a.right > b.left - pad && a.top < b.bottom + pad && a.bottom > b.top - pad;
   const fitPins = () => {
     const box = stage.getBoundingClientRect();
-    const copyBox = copy && Number(getComputedStyle(copy).opacity) > .35 ? copy.getBoundingClientRect() : null;
+    const copyBoxes = copy && Number(getComputedStyle(copy).opacity) > .35 ? [...copy.children].map(el => el.getBoundingClientRect()) : [];
     pins.forEach(pin => {
       const label = $('b', pin) || $('.me-note', pin) || pin;
       pin.style.removeProperty('--shift');
@@ -126,7 +126,7 @@ if (valley) {
         if (r.right > box.right - 10) shift = box.right - 10 - r.right;
         if (shift) pin.style.setProperty('--shift', `${shift}px`);
       }
-      if (!off && copyBox) off = overlaps(label.getBoundingClientRect(), copyBox);
+      if (!off && copyBoxes.length) { const lr = label.getBoundingClientRect(); off = copyBoxes.some(b => overlaps(lr, b)); }
       pin.classList.toggle('is-off', off);
     });
   };
@@ -673,6 +673,7 @@ if (form) {
       status.classList.add('is-success');
       status.textContent = 'Thanks. Your brief has been sent.';
       showToast('Brief sent');
+      flyPlane(button);
     } catch (err) {
       status.classList.add('is-error');
       status.setAttribute('role', 'alert');
@@ -697,6 +698,7 @@ if (grid) {
   let filter = 'all';
   let shown = PAGE;
   let matches = cards;
+  let applied = false;
 
   const fromHash = () => {
     const h = location.hash.slice(1);
@@ -706,7 +708,17 @@ if (grid) {
     const q = (search?.value || '').trim().toLowerCase();
     matches = cards.filter(c => (filter === 'all' || c.dataset.category === filter) && (!q || c.dataset.keywords.includes(q)));
     cards.forEach(c => { c.hidden = true; });
-    matches.slice(0, shown).forEach(c => { c.hidden = false; });
+    matches.slice(0, shown).forEach((c, i) => {
+      const fresh = c.hidden;
+      c.hidden = false;
+      if (fresh && !reduced && applied) {
+        c.style.setProperty('--i', String(i % PAGE));
+        c.classList.remove('is-new');
+        void c.offsetWidth;
+        c.classList.add('is-new');
+      }
+    });
+    applied = true;
     const total = matches.length;
     const visible = Math.min(shown, total);
     more.hidden = visible >= total;
@@ -739,6 +751,226 @@ if (grid) {
     if (openSheet(card.dataset.slug, matches.map(c => c.dataset.slug))) e.preventDefault();
   }));
   setFilter(fromHash(), false);
+}
+
+/* ---------- motion ---------- */
+function splitWords(el, cls, varName) {
+  let n = 0;
+  const walk = node => {
+    [...node.childNodes].forEach(ch => {
+      if (ch.nodeType === 3) {
+        const frag = document.createDocumentFragment();
+        ch.textContent.split(/(\s+)/).forEach(part => {
+          if (!part) return;
+          if (/^\s+$/.test(part)) { frag.append(part); return; }
+          const span = document.createElement('span');
+          span.className = cls;
+          span.textContent = part;
+          span.style.setProperty(varName, String(n++));
+          frag.append(span);
+        });
+        ch.replaceWith(frag);
+      } else if (ch.nodeType === 1 && ch.tagName !== 'BR') {
+        walk(ch);
+      }
+    });
+  };
+  walk(el);
+  return n;
+}
+
+function flyPlane(from) {
+  if (reduced || !from) return;
+  const r = from.getBoundingClientRect();
+  const plane = document.createElement('span');
+  plane.className = 'paper-plane';
+  plane.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 18-7-7 18-2.6-7.4Z"/></svg>';
+  plane.style.left = `${r.left + r.width / 2 - 17}px`;
+  plane.style.top = `${r.top - 10}px`;
+  document.body.append(plane);
+  setTimeout(() => plane.remove(), 1500);
+}
+
+if (!reduced) {
+  /* the valley assembles itself, then follows the pointer a little */
+  const stageEl = $('[data-stage]');
+  if (stageEl) {
+    const h1 = $('#hero-title', stageEl);
+    if (h1) splitWords(h1, 'w', '--wi');
+    const depth = { delhi: .35, calicut: .6, home: .6, me: 1.2, skifi: .9, fiverr: .35, wyoming: .5 };
+    $$('.pin', stageEl).forEach((pin, i) => {
+      pin.style.setProperty('--pi', String(i));
+      pin.style.setProperty('--lm', String(depth[pin.dataset.place] || .5));
+    });
+    stageEl.classList.add('is-pre');
+    const skies = $$('.ly-sky img', stageEl);
+    const ready = Promise.race([
+      Promise.all(skies.map(img => (img.decode ? img.decode().catch(() => {}) : null))),
+      new Promise(r => setTimeout(r, 1400)),
+    ]);
+    ready.then(() => requestAnimationFrame(() => requestAnimationFrame(() => stageEl.classList.remove('is-pre'))));
+
+    if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      let tx = 0; let ty = 0; let mx = 0; let my = 0; let raf = 0;
+      const step = () => {
+        mx += (tx - mx) * .08;
+        my += (ty - my) * .08;
+        stageEl.style.setProperty('--mx', mx.toFixed(3));
+        stageEl.style.setProperty('--my', my.toFixed(3));
+        raf = Math.abs(tx - mx) + Math.abs(ty - my) > .002 ? requestAnimationFrame(step) : 0;
+      };
+      stageEl.addEventListener('pointermove', e => {
+        const r = stageEl.getBoundingClientRect();
+        tx = ((e.clientX - r.left) / r.width - .5) * 2;
+        ty = ((e.clientY - r.top) / r.height - .5) * 2;
+        if (!raf) raf = requestAnimationFrame(step);
+      });
+      stageEl.addEventListener('pointerleave', () => { tx = 0; ty = 0; if (!raf) raf = requestAnimationFrame(step); });
+    }
+  }
+
+  /* the story paragraph lights up word by word as you read */
+  const tell = $('.tell');
+  if (tell) {
+    splitWords(tell, 'tw', '--ti');
+    const words = $$('.tw', tell);
+    let lit = -1;
+    onFrame.push(() => {
+      const r = tell.getBoundingClientRect();
+      const start = innerHeight * .88;
+      const span = innerHeight * .5 + r.height * .5;
+      const n = Math.round(clamp((start - r.top) / span, 0, 1) * words.length);
+      if (n === lit) return;
+      lit = n;
+      words.forEach((w, i) => w.classList.toggle('is-lit', i < n));
+    });
+  }
+
+  /* entrances */
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      const el = entry.target;
+      el.classList.add('is-in');
+      io.unobserve(el);
+      setTimeout(() => {
+        $$('.anim-rise, .anim-pop, .anim-drop, .anim-deal', el).forEach(child => child.classList.remove('anim-rise', 'anim-pop', 'anim-drop', 'anim-deal'));
+        el.classList.remove('anim-rise', 'anim-pop', 'anim-drop', 'anim-deal');
+      }, 2600);
+      el.dispatchEvent(new CustomEvent('enter'));
+    });
+  }, { threshold: .18, rootMargin: '0px 0px -6% 0px' });
+  const group = (boxSel, itemSel, cls, reverse = false) => {
+    $$(boxSel).forEach(box => {
+      const items = $$(itemSel, box);
+      items.forEach((el, i) => {
+        el.classList.add(cls);
+        el.style.setProperty('--ai', String(reverse ? items.length - 1 - i : i));
+      });
+      io.observe(box);
+    });
+  };
+  group('.tell-box', '.note', 'anim-drop');
+  group('.deck-stage', '.deck-card', 'anim-deal', true);
+  group('.brand-row', '.site', 'anim-rise');
+  group('.hats', 'li', 'anim-rise');
+  group('.studio-stats', 'li', 'anim-rise');
+  group('.chips', 'li', 'anim-pop');
+  group('.tools', '.tool', 'anim-pop');
+  group('.keys', '.kw', 'anim-pop');
+  group('.work-grid', '.work-card:nth-child(-n+6)', 'anim-rise');
+  $$('.sec-head, .brand-head, .hello h2, .hello-sub, .studio-grid h2, .deck-side, .employer, .brief').forEach(el => {
+    el.classList.add('anim-rise');
+    io.observe(el);
+  });
+  $$('.hl').forEach(el => { el.classList.add('anim-hl'); io.observe(el); });
+  const line = $('.proc-line');
+  if (line) {
+    line.classList.add('anim-line');
+    $$('.pnode', line).forEach((n, i) => n.style.setProperty('--ai', String(i)));
+    io.observe(line);
+  }
+
+  /* numbers count up the first time they show */
+  const countEls = [...$$('.studio-stats b'), $('.note-sun strong'), $('.note-sky strong')].filter(Boolean);
+  countEls.forEach(el => {
+    const m = el.textContent.match(/^(\D*)([\d,]+)(.*)$/);
+    if (!m || m[2] === '2020') return;
+    const target = Number(m[2].replace(/,/g, ''));
+    const commas = m[2].includes(',');
+    const fmt = v => `${m[1]}${commas ? v.toLocaleString('en-US') : v}${m[3]}`;
+    el.textContent = fmt(0);
+    const obs = new IntersectionObserver(([en]) => {
+      if (!en.isIntersecting) return;
+      obs.disconnect();
+      const t0 = performance.now();
+      const tickCount = now => {
+        const k = clamp((now - t0) / 1400, 0, 1);
+        el.textContent = fmt(Math.round(target * (1 - (1 - k) ** 4)));
+        if (k < 1) requestAnimationFrame(tickCount);
+      };
+      requestAnimationFrame(tickCount);
+    }, { threshold: .6 });
+    obs.observe(el);
+  });
+
+  /* the front deck card tilts under the pointer */
+  const stage = $('[data-deck-stage]');
+  if (stage && matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    stage.addEventListener('pointermove', e => {
+      const card = $('.deck-card[data-depth="front"]', stage);
+      if (!card) return;
+      const r = card.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - .5;
+      const y = (e.clientY - r.top) / r.height - .5;
+      card.classList.add('is-tilting');
+      card.style.setProperty('--ry', `${(x * 8).toFixed(2)}deg`);
+      card.style.setProperty('--rx', `${(-y * 8).toFixed(2)}deg`);
+    });
+    stage.addEventListener('pointerleave', () => {
+      $$('.deck-card', stage).forEach(card => {
+        card.classList.remove('is-tilting');
+        card.style.removeProperty('--rx');
+        card.style.removeProperty('--ry');
+      });
+    });
+  }
+
+  /* websites: drag the row with a mouse */
+  const row = $('[data-brand-row]');
+  if (row && matchMedia('(pointer: fine)').matches) {
+    let down = null;
+    row.addEventListener('pointerdown', e => {
+      if (e.pointerType !== 'mouse' || e.button !== 0) return;
+      down = { x: e.clientX, left: row.scrollLeft, moved: false };
+    });
+    addEventListener('pointermove', e => {
+      if (!down) return;
+      const dx = e.clientX - down.x;
+      if (Math.abs(dx) > 6) { down.moved = true; row.classList.add('is-drag'); }
+      if (down.moved) row.scrollLeft = down.left - dx;
+    });
+    addEventListener('pointerup', () => {
+      if (!down) return;
+      const moved = down.moved;
+      down = null;
+      setTimeout(() => row.classList.remove('is-drag'), 0);
+      if (moved) row.addEventListener('click', ev => ev.preventDefault(), { capture: true, once: true });
+    });
+  }
+
+  /* the keyboard types its own shortcuts once when it comes into view */
+  const keys = $('.keys');
+  if (keys) {
+    keys.addEventListener('enter', () => {
+      $$('.kw', keys).forEach((k, i) => {
+        setTimeout(() => {
+          k.classList.add('is-pressed');
+          setTimeout(() => k.classList.remove('is-pressed'), 170);
+        }, 900 + i * 160);
+      });
+    }, { once: true });
+  }
 }
 
 queue();
