@@ -47,10 +47,13 @@ for (const vp of [{ name: 'desktop', width: 1440, height: 900 }, { name: 'mobile
     check(await page.locator('.wall-note').first().textContent().then(t => t.includes('Hello from the test.')), `${vp.name}: a note pins to the wall`);
   }
 
-  const jTop = await page.evaluate(() => document.querySelector('#journey').getBoundingClientRect().top + scrollY);
-  await page.evaluate(y => window.scrollTo(0, y + innerHeight * 1.4), jTop);
-  await page.waitForTimeout(700);
-  check(await page.locator('[data-jcard].is-on').count() === 1, `${vp.name}: the journey card opens on the road`);
+  await page.locator('.j-pin').scrollIntoViewIfNeeded();
+  await page.locator('[data-j-next]').click();
+  await page.waitForTimeout(1400);
+  check(await page.locator('[data-jcard].is-on').count() === 1 && (await page.locator('[data-j-count]').textContent()).startsWith('1 /'), `${vp.name}: the journey card opens on the first stop`);
+  await page.locator('[data-j-next]').click();
+  await page.waitForTimeout(1400);
+  check((await page.locator('[data-jcard] h3').textContent()).length > 0 && (await page.locator('[data-j-count]').textContent()).startsWith('2 /'), `${vp.name}: next stop moves along the road`);
 
   await page.locator('#work').scrollIntoViewIfNeeded();
   const first = await page.locator('[data-deck-index]').textContent();
