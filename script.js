@@ -101,34 +101,18 @@ if (dock) {
   place();
 }
 
-/* ---------- valley: fly in on scroll ---------- */
-const valley = $('[data-valley]');
-if (valley && !reduced) {
-  let lastP = -1;
-  onFrame.push(() => {
-    const total = valley.offsetHeight - innerHeight;
-    const p = total > 0 ? clamp(-valley.getBoundingClientRect().top / total, 0, 1) : 0;
-    if (Math.abs(p - lastP) < .001) return;
-    lastP = p;
-    valley.style.setProperty('--p', p.toFixed(4));
-    valley.style.setProperty('--cam', (1 + p * .42).toFixed(4));
-  });
-}
-
-/* ---------- journey: drive the road, stop by stop ---------- */
+/* ---------- journey: drive the road, stop by stop ----------
+ * The map is drawn into one canvas each frame from the shapes in the inline
+ * SVG (read once, then the SVG is dropped). Repainting a big SVG on every
+ * scroll frame was what made the map stutter on phones. */
 const journey = $('[data-journey]');
 if (journey) {
-  const NS = 'http://www.w3.org/2000/svg';
   const view = $('[data-mapview]', journey);
   const svg = $('[data-map]', journey);
   const road = $('#road', svg);
   const card = $('[data-jcard]', journey);
-  const head = $('[data-j-head]', journey);
-  const fade = $('[data-j-fade]', journey);
   const meDot = $('[data-me-dot]', journey);
   const needle = $('.needle', journey);
-  const dots = $$('[data-j-go]', journey);
-  const jtlLabel = $('[data-jtl-label]', journey);
   const esc = t => t.replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
   const L = road.getTotalLength();
   const at = len => road.getPointAtLength(clamp(len, 0, L));
@@ -139,33 +123,55 @@ if (journey) {
       i, len, x: p.x, y: p.y, c: li.style.getPropertyValue('--c'),
       icon: $('.j-icon', li).innerHTML, place: $('.j-place', li).textContent, meta: $('.j-meta', li).textContent,
       when: $('.j-when', li).textContent, title: $('h3', li).textContent, text: $('.j-text', li).textContent,
-      pic: li.dataset.pic || '', mark: li.dataset.landmark || '', logo: li.dataset.logo || '', logoFull: li.dataset.logoFull || '',
+      pic: li.dataset.pic || '', mark: li.dataset.landmark || '',
     };
   });
   const N = stops.length;
-  const live = !reduced;
-  if (live) journey.classList.add('is-map');
+  journey.classList.add('is-map');
 
-  /* the walked part of the road, drawn over it in blue */
-  const routeG = $('[data-route]', journey);
-  const done = document.createElementNS(NS, 'path');
-  done.setAttribute('d', road.getAttribute('d'));
-  done.setAttribute('class', 'r-done');
-  done.style.strokeDasharray = `${L} ${L + 1}`;
-  done.style.strokeDashoffset = `${L}`;
-  routeG.append(done);
+  /* read the map's shapes once: what to draw, how, and where it sits */
+  const STYLE = {
+    'm-block': { fill: 'block' },
+    'm-park': { fill: 'park' },
+    'm-water': { fill: 'water' },
+    'm-river': { stroke: 'water', width: 46 },
+    'm-street': { stroke: 'road', width: 14, alpha: .85, cap: 'butt' },
+    'm-road-case': { stroke: 'hwyC', width: 64 },
+    'm-road-main': { stroke: 'hwy', width: 52 },
+    'm-road-line': { stroke: 'land', width: 3, alpha: .9, dash: [22, 26] },
+  };
+  const shapes = [];
+  $$('rect, path', svg).forEach(el => {
+    const st = STYLE[el.getAttribute('class')];
+    if (!st) return;
+    const width = Number(el.getAttribute('stroke-width')) || st.width || 0;
+    let path;
+    let box;
+    if (el.tagName === 'rect') {
+      const x = +el.getAttribute('x'); const y = +el.getAttribute('y');
+      const w = +el.getAttribute('width'); const h = +el.getAttribute('height');
+      path = new Path2D();
+      if (path.roundRect) path.roundRect(x, y, w, h, +el.getAttribute('rx') || 0); else path.rect(x, y, w, h);
+      box = { x, y, w, h };
+    } else {
+      path = new Path2D(el.getAttribute('d'));
+      const b = el.getBBox();
+      box = { x: b.x, y: b.y, w: b.width, h: b.height };
+    }
+    const m = width / 2 + 2;
+    shapes.push({ ...st, width, path, x0: box.x - m, y0: box.y - m, x1: box.x + box.w + m, y1: box.y + box.h + m });
+  });
+  const roadPath = new Path2D(road.getAttribute('d'));
 
   /* little landmarks beside each stop, on the side away from the pin's label */
-  const marks = document.createElementNS(NS, 'g');
-  marks.setAttribute('class', 'landmarks');
+  const marks = [];
   const place = (href, x, y, size) => {
-    const img = document.createElementNS(NS, 'image');
-    img.setAttribute('href', href);
-    img.setAttribute('x', (x - size / 2).toFixed(0));
-    img.setAttribute('y', (y - size / 2).toFixed(0));
-    img.setAttribute('width', size);
-    img.setAttribute('height', size);
-    marks.append(img);
+    const img = new Image();
+    const m = { img, dark: null, x: x - size / 2, y: y - size / 2, size };
+    img.decoding = 'async';
+    img.onload = () => { m.dark = null; redraw(); };
+    img.src = href;
+    marks.push(m);
   };
   stops.forEach(s => {
     if (!s.mark) return;
@@ -181,59 +187,168 @@ if (journey) {
   });
   place('/assets/map/boat.webp', 1290, 1215, 170);
   place('/assets/map/mountains.webp', 1830, 2230, 260);
-  svg.insertBefore(marks, routeG.nextSibling);
+  /* at night the landmarks are dimmed once into their own small canvas */
+  const darkened = m => {
+    if (!m.dark) {
+      const c = document.createElement('canvas');
+      c.width = m.img.naturalWidth;
+      c.height = m.img.naturalHeight;
+      const x = c.getContext('2d');
+      x.drawImage(m.img, 0, 0);
+      x.globalCompositeOperation = 'source-atop';
+      x.fillStyle = 'rgba(14, 22, 38, .4)';
+      x.fillRect(0, 0, c.width, c.height);
+      m.dark = c;
+    }
+    return m.dark;
+  };
+
+  svg.remove();
+  const canvas = document.createElement('canvas');
+  canvas.className = 'map';
+  view.prepend(canvas);
+  const ctx = canvas.getContext('2d');
+  let colors = {};
+  function readColors() {
+    const cs = getComputedStyle(journey);
+    const v = n => cs.getPropertyValue(n).trim();
+    colors = { land: v('--m-land'), block: v('--m-block'), park: v('--m-park'), water: v('--m-water'), road: v('--m-road'), hwy: v('--m-hwy'), hwyC: v('--m-hwy-c'), route: v('--route') };
+  }
+  readColors();
+  new MutationObserver(() => { readColors(); redraw(); }).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+
+  let dpr = 1;
+  function draw(vx, vy, z, walked) {
+    const vw = W / z;
+    const vh = H / z;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = colors.land;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.setTransform(dpr * z, 0, 0, dpr * z, -vx * dpr * z, -vy * dpr * z);
+    ctx.lineJoin = 'round';
+    for (const s of shapes) {
+      if (s.x1 < vx || s.y1 < vy || s.x0 > vx + vw || s.y0 > vy + vh) continue;
+      ctx.globalAlpha = s.alpha || 1;
+      if (s.fill) {
+        ctx.fillStyle = colors[s.fill];
+        ctx.fill(s.path);
+      } else {
+        ctx.strokeStyle = colors[s.stroke];
+        ctx.lineWidth = s.width;
+        ctx.lineCap = s.cap || 'round';
+        ctx.setLineDash(s.dash || []);
+        ctx.stroke(s.path);
+      }
+    }
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+    if (walked > 0) {
+      ctx.globalAlpha = .9;
+      ctx.strokeStyle = colors.route;
+      ctx.lineWidth = 18;
+      ctx.lineCap = 'round';
+      ctx.setLineDash([walked, L + 20]);
+      ctx.stroke(roadPath);
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+    }
+    const night = root.dataset.theme === 'dark';
+    for (const m of marks) {
+      if (!m.img.complete || !m.img.naturalWidth) continue;
+      if (m.x + m.size < vx || m.y + m.size < vy || m.x > vx + vw || m.y > vy + vh) continue;
+      ctx.drawImage(night ? darkened(m) : m.img, m.x, m.y, m.size, m.size);
+    }
+  }
 
   const pinLayer = $('[data-pins-layer]', journey);
   const pins = stops.map(s => {
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'mk';
-    b.tabIndex = -1;
     b.style.setProperty('--c', s.c);
-    const name = s.logo ? `<span class="mk-name mk-name-logo"><img src="${s.logo}" alt="${esc(s.place)}"></span>` : `<span class="mk-name">${esc(s.place)}</span>`;
-    b.innerHTML = `<span class="mk-head"><span>${s.icon}</span></span>${name}`;
-    b.addEventListener('click', () => goTo(s.i));
+    b.setAttribute('aria-label', `Stop ${s.i + 1}: ${s.place}`);
+    b.innerHTML = `<span class="mk-head"><span>${s.icon}</span></span><span class="mk-name">${esc(s.place)}</span>`;
+    b.addEventListener('click', () => go(s.i));
     pinLayer.append(b);
     return b;
   });
 
-  const INTRO = .7;
-  const PER = 1;
-  const TRAVEL = .55;
-  const UNITS = INTRO + N * PER + .25;
+  /* tap through the stops: no scroll hijacking, the map only moves on a tap,
+     a swipe or an arrow key, and draws nothing while you just scroll past */
+  const prevBtn = $('[data-j-prev]', journey);
+  const nextBtn = $('[data-j-next]', journey);
+  const countEl = $('[data-j-count]', journey);
+  const nextLabel = $('[data-j-next-label]', journey);
   let W = 0;
   let H = 0;
+  let mobile = false;
   let overview = null;
-  let cams = [];
   let zStop = 1;
-  let lastKey = '';
+  let fx = 0;
+  let fy = 0;
+  let cur = -1;
+  let cam = null;
+  let walked = 0;
+  let dotOn = false;
+  let anim = 0;
+  let drawn = '';
+
+  const ease = t => (t < .5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
+  const mix = (a, b, e) => a + (b - a) * e;
+  const stopCam = i => ({ x: stops[i].x, y: stops[i].y, z: zStop, fx, fy });
 
   function layout() {
     W = view.clientWidth;
     H = view.clientHeight;
-    const mobile = W < 760;
-    journey.style.height = live ? `${Math.round(UNITS * H + H)}px` : '';
+    if (!W || !H) return;
+    mobile = W < 760;
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
     const xs = stops.map(s => s.x);
     const ys = stops.map(s => s.y);
     const bx0 = Math.min(...xs) - 150;
     const bx1 = Math.max(...xs) + 220;
     const by0 = Math.min(...ys) - 130;
     const by1 = Math.max(...ys) + 80;
-    const top = H * (mobile ? .44 : .42);
-    const bottom = H - (mobile ? 150 : 160);
+    const top = mobile ? 96 : 110;
+    const bottom = H - (mobile ? 160 : 170);
     const z0 = Math.min((W - 40) / (bx1 - bx0), (bottom - top) / (by1 - by0));
     overview = { x: (bx0 + bx1) / 2, y: (by0 + by1) / 2, z: z0, fx: W / 2, fy: (top + bottom) / 2 };
     zStop = mobile ? clamp(W / 560, .58, .8) : clamp(H / 1000, .7, 1.05);
     const cardRight = mobile ? 0 : card.offsetLeft + card.offsetWidth;
-    const fx = mobile ? W * .36 : cardRight + (W - cardRight) / 2;
-    const fy = mobile ? H * .3 : H * .52;
-    cams = stops.map(s => ({ x: s.x, y: s.y, z: zStop, fx, fy }));
-    lastKey = '';
-    render();
+    fx = mobile ? W * .38 : cardRight + (W - cardRight) / 2;
+    fy = mobile ? clamp(H * .24, 140, 200) : H * .5;
+    if (!anim) cam = cur < 0 ? overview : stopCam(cur);
+    drawn = '';
+    paint();
   }
 
-  const ease = t => (t < .5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
-  const mix = (a, b, e) => a + (b - a) * e;
+  function paint() {
+    if (!cam || !W) return;
+    const key = `${cam.x.toFixed(1)},${cam.y.toFixed(1)},${cam.z.toFixed(4)},${walked.toFixed(1)},${dotOn}`;
+    if (key === drawn) return;
+    drawn = key;
+    const vx = cam.x - cam.fx / cam.z;
+    const vy = cam.y - cam.fy / cam.z;
+    draw(vx, vy, cam.z, walked);
+    const sx = x => (x - vx) * cam.z;
+    const sy = y => (y - vy) * cam.z;
+    pins.forEach((pin, n) => {
+      pin.style.transform = `translate3d(${sx(stops[n].x).toFixed(1)}px, ${sy(stops[n].y).toFixed(1)}px, 0)`;
+    });
+    meDot.classList.toggle('is-on', dotOn);
+    if (dotOn) {
+      const p = at(walked);
+      meDot.style.transform = `translate3d(${sx(p.x).toFixed(1)}px, ${sy(p.y).toFixed(1)}px, 0)`;
+      if (needle) {
+        const a = at(walked - 6);
+        const b = at(walked + 6);
+        needle.style.transform = `rotate(${(Math.atan2(b.x - a.x, a.y - b.y) * 180 / Math.PI).toFixed(1)}deg)`;
+      }
+    }
+  }
+  function redraw() { drawn = ''; paint(); }
 
   let shown = -1;
   let swapTimer;
@@ -241,8 +356,7 @@ if (journey) {
     const s = stops[i];
     card.style.setProperty('--c', s.c);
     const pic = s.pic ? `<span class="jc-pic media"><img src="${s.pic}" alt="" loading="lazy"></span>` : '';
-    const who = s.logoFull ? `<p class="jc-brand"><img src="${s.logoFull}" alt="${esc(s.place)}"><span>${esc(s.meta)}</span></p>` : `<span class="jc-tile">${s.icon}</span><p>${esc(s.place)}<span>${esc(s.meta)}</span></p>`;
-    card.innerHTML = `<div class="jc-in"><div class="jc-top">${who}<em>${String(i + 1).padStart(2, '0')} / ${String(N).padStart(2, '0')}</em></div>${pic}<div class="jc-body"><h3>${esc(s.title)}</h3><p>${esc(s.text)}</p></div></div>`;
+    card.innerHTML = `<div class="jc-in"><div class="jc-top"><span class="jc-tile">${s.icon}</span><p>${esc(s.place)}<span>${esc(s.meta)}</span></p></div><div class="jc-body"><h3>${esc(s.title)}</h3><p>${esc(s.text)}</p></div>${pic}</div>`;
   }
   function showCard(i) {
     if (i === shown) return;
@@ -252,86 +366,102 @@ if (journey) {
     if (i < 0) { card.classList.remove('is-on'); return; }
     if (first) { fillCard(i); card.classList.add('is-on'); return; }
     card.classList.add('is-swap');
-    swapTimer = setTimeout(() => { fillCard(shown); card.classList.remove('is-swap'); }, 200);
+    swapTimer = setTimeout(() => { fillCard(shown); card.classList.remove('is-swap'); }, 180);
   }
 
-  function render() {
-    if (!W) return;
-    const top = journey.getBoundingClientRect().top;
-    const u = live ? clamp(-top / H, 0, UNITS) : 0;
-    let cam = overview;
-    let active = -1;
-    let walked = 0;
-    let dot = null;
-    if (u >= INTRO) {
-      const v = u - INTRO;
-      const i = Math.min(N - 1, Math.floor(v / PER));
-      const e = ease(clamp((v - i * PER) / TRAVEL, 0, 1));
-      active = e > .5 ? i : i - 1;
-      if (i === 0) {
-        cam = { x: mix(overview.x, cams[0].x, e), y: mix(overview.y, cams[0].y, e), z: Math.exp(mix(Math.log(overview.z), Math.log(zStop), e)), fx: mix(overview.fx, cams[0].fx, e), fy: mix(overview.fy, cams[0].fy, e) };
-        walked = stops[0].len;
-        dot = e > .85 ? at(walked) : null;
-      } else {
-        walked = mix(stops[i - 1].len, stops[i].len, e);
-        const p = at(walked);
-        dot = p;
-        const lift = 1 + .5 * 4 * e * (1 - e);
-        cam = { x: p.x, y: p.y, z: zStop / lift, fx: cams[i].fx, fy: cams[i].fy };
-      }
-    }
-    const key = `${cam.x.toFixed(1)},${cam.y.toFixed(1)},${cam.z.toFixed(4)},${active},${walked.toFixed(1)}`;
-    if (key === lastKey) return;
-    lastKey = key;
-
-    const vx = cam.x - cam.fx / cam.z;
-    const vy = cam.y - cam.fy / cam.z;
-    svg.setAttribute('viewBox', `${vx.toFixed(2)} ${vy.toFixed(2)} ${(W / cam.z).toFixed(2)} ${(H / cam.z).toFixed(2)}`);
-    const sx = x => (x - vx) * cam.z;
-    const sy = y => (y - vy) * cam.z;
-
+  function syncControls() {
+    prevBtn.disabled = cur < 0;
+    countEl.textContent = cur < 0 ? `${N} stops` : `${cur + 1} / ${N}`;
+    nextLabel.textContent = cur < 0 ? 'Start the road' : cur === N - 1 ? 'See my work' : 'Next stop';
+    nextBtn.classList.toggle('is-end', cur === N - 1);
     pins.forEach((pin, n) => {
-      pin.style.transform = `translate3d(${sx(stops[n].x).toFixed(1)}px, ${sy(stops[n].y).toFixed(1)}px, 0)`;
-      pin.classList.toggle('is-on', n === active);
-      pin.classList.toggle('is-future', active >= 0 && n > active);
+      pin.classList.toggle('is-on', n === cur);
+      pin.classList.toggle('is-future', cur >= 0 && n > cur);
     });
-    done.style.strokeDashoffset = `${(L - walked).toFixed(1)}`;
+  }
 
-    meDot.classList.toggle('is-on', Boolean(dot));
-    if (dot) {
-      meDot.style.transform = `translate3d(${sx(dot.x).toFixed(1)}px, ${sy(dot.y).toFixed(1)}px, 0)`;
-      if (needle) {
-        const a = at(walked - 6);
-        const b = at(walked + 6);
-        needle.style.transform = `rotate(${(Math.atan2(b.x - a.x, a.y - b.y) * 180 / Math.PI).toFixed(1)}deg)`;
-      }
+  function go(i) {
+    i = clamp(i, -1, N - 1);
+    if (i === cur || !cam) return;
+    const from = { ...cam };
+    const fromWalk = walked;
+    const prev = cur;
+    cur = i;
+    syncControls();
+    const toWalk = i < 0 ? 0 : stops[i].len;
+    const hops = Math.abs(i - prev);
+    let frame;
+    let dur;
+    if (prev >= 0 && i >= 0) {
+      /* drive along the road, lifting the camera a little on the way */
+      dur = Math.min(800 + hops * 220, 1700);
+      const lift = .35 + Math.min(hops - 1, 3) * .15;
+      frame = e => {
+        walked = mix(fromWalk, toWalk, e);
+        const p = at(walked);
+        cam = { x: p.x, y: p.y, z: zStop / (1 + lift * 4 * e * (1 - e)), fx, fy };
+        dotOn = true;
+      };
+    } else {
+      /* fly in from the whole road, or back out to it */
+      dur = 1100;
+      const to = i < 0 ? overview : stopCam(i);
+      frame = e => {
+        cam = { x: mix(from.x, to.x, e), y: mix(from.y, to.y, e), z: Math.exp(mix(Math.log(from.z), Math.log(to.z), e)), fx: mix(from.fx, to.fx, e), fy: mix(from.fy, to.fy, e) };
+        walked = mix(fromWalk, toWalk, e);
+        dotOn = i >= 0 && e > .85;
+      };
     }
-
-    const headOp = live ? 1 - clamp((u - .12) / .4, 0, 1) : 1;
-    head.style.opacity = headOp.toFixed(3);
-    head.style.transform = `translateX(-50%) translateY(${((1 - headOp) * -30).toFixed(1)}px)`;
-    fade.style.opacity = headOp.toFixed(3);
-
-    if (live) showCard(active);
-    dots.forEach((d, n) => {
-      d.classList.toggle('is-on', n === active);
-      d.classList.toggle('is-done', n < active);
-      if (n === active) d.setAttribute('aria-current', 'step'); else d.removeAttribute('aria-current');
-    });
-    if (jtlLabel) jtlLabel.textContent = active >= 0 ? stops[active].when : 'Degree to now';
+    if (reduced) dur = 1;
+    cancelAnimationFrame(anim);
+    if (i < 0) showCard(-1);
+    const t0 = performance.now();
+    const step = now => {
+      const t = clamp((now - t0) / dur, 0, 1);
+      const e = ease(t);
+      frame(e);
+      paint();
+      if (t > .55) showCard(i);
+      anim = t < 1 ? requestAnimationFrame(step) : 0;
+    };
+    anim = requestAnimationFrame(step);
   }
 
-  function goTo(i) {
-    const start = journey.getBoundingClientRect().top + scrollY;
-    const y = start + (INTRO + i * PER + TRAVEL + .15) * H;
-    window.scrollTo({ top: y, behavior: reduced ? 'auto' : 'smooth' });
-  }
-  dots.forEach(d => d.addEventListener('click', () => goTo(+d.dataset.jGo)));
+  prevBtn.addEventListener('click', () => go(cur - 1));
+  nextBtn.addEventListener('click', () => {
+    if (cur === N - 1) { $('#work')?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' }); return; }
+    go(cur + 1);
+  });
 
-  onFrame.push(render);
-  addEventListener('resize', layout);
+  /* swipe the map sideways to move between stops; up and down still scroll */
+  let sx0 = 0;
+  let sy0 = 0;
+  let swiping = false;
+  view.addEventListener('pointerdown', e => { sx0 = e.clientX; sy0 = e.clientY; swiping = true; });
+  view.addEventListener('pointercancel', () => { swiping = false; });
+  view.addEventListener('pointerup', e => {
+    if (!swiping) return;
+    swiping = false;
+    const dx = e.clientX - sx0;
+    const dy = e.clientY - sy0;
+    if (Math.abs(dx) > 44 && Math.abs(dx) > Math.abs(dy) * 1.4) go(dx < 0 ? cur + 1 : cur - 1);
+  });
+
+  /* arrow keys while the map fills most of the screen */
+  let inView = false;
+  new IntersectionObserver(([en]) => { inView = en.intersectionRatio > .6; }, { threshold: [0, .6, 1] }).observe(view);
+  addEventListener('keydown', e => {
+    if (!inView || e.metaKey || e.ctrlKey || e.altKey || /INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName || '')) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); go(cur + 1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); go(cur - 1); }
+  });
+
+  syncControls();
+  let lastW = 0;
+  addEventListener('resize', () => { if (view.clientWidth !== lastW || !mobile) { lastW = view.clientWidth; layout(); } });
   document.fonts?.ready.then(layout);
   layout();
+  lastW = view.clientWidth;
 }
 
 /* ---------- project sheet (quick view) ---------- */
@@ -765,36 +895,14 @@ function flyPlane(from) {
 }
 
 if (!reduced) {
-  /* the valley assembles itself, then follows the pointer a little */
+  /* the hero words arrive once the page is ready */
   const stageEl = $('[data-stage]');
   if (stageEl) {
     const h1 = $('#hero-title', stageEl);
     if (h1) splitWords(h1, 'w', '--wi');
     stageEl.classList.add('is-pre');
-    const skies = $$('.ly-sky img', stageEl);
-    const ready = Promise.race([
-      Promise.all(skies.map(img => (img.decode ? img.decode().catch(() => {}) : null))),
-      new Promise(r => setTimeout(r, 1400)),
-    ]);
-    ready.then(() => requestAnimationFrame(() => requestAnimationFrame(() => stageEl.classList.remove('is-pre'))));
-
-    if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
-      let tx = 0; let ty = 0; let mx = 0; let my = 0; let raf = 0;
-      const step = () => {
-        mx += (tx - mx) * .08;
-        my += (ty - my) * .08;
-        stageEl.style.setProperty('--mx', mx.toFixed(3));
-        stageEl.style.setProperty('--my', my.toFixed(3));
-        raf = Math.abs(tx - mx) + Math.abs(ty - my) > .002 ? requestAnimationFrame(step) : 0;
-      };
-      stageEl.addEventListener('pointermove', e => {
-        const r = stageEl.getBoundingClientRect();
-        tx = ((e.clientX - r.left) / r.width - .5) * 2;
-        ty = ((e.clientY - r.top) / r.height - .5) * 2;
-        if (!raf) raf = requestAnimationFrame(step);
-      });
-      stageEl.addEventListener('pointerleave', () => { tx = 0; ty = 0; if (!raf) raf = requestAnimationFrame(step); });
-    }
+    Promise.race([document.fonts?.ready, new Promise(r => setTimeout(r, 900))])
+      .then(() => requestAnimationFrame(() => requestAnimationFrame(() => stageEl.classList.remove('is-pre'))));
   }
 
   /* entrances */
