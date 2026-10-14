@@ -6,9 +6,10 @@
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "check": "node tests/portfolio-check.cjs"
+    "check": "node tests/portfolio-check.mjs"
   },
   "devDependencies": {
     "vite": "^7.1.2"
-  }
+  },
+  "type": "module"
 }
