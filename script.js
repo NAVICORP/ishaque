@@ -139,7 +139,7 @@ if (journey) {
       i, len, x: p.x, y: p.y, c: li.style.getPropertyValue('--c'),
       icon: $('.j-icon', li).innerHTML, place: $('.j-place', li).textContent, meta: $('.j-meta', li).textContent,
       when: $('.j-when', li).textContent, title: $('h3', li).textContent, text: $('.j-text', li).textContent,
-      pic: li.dataset.pic || '', logo: li.dataset.logo || '', logoFull: li.dataset.logoFull || '',
+      pic: li.dataset.pic || '', mark: li.dataset.landmark || '', logo: li.dataset.logo || '', logoFull: li.dataset.logoFull || '',
     };
   });
   const N = stops.length;
@@ -154,6 +154,34 @@ if (journey) {
   done.style.strokeDasharray = `${L} ${L + 1}`;
   done.style.strokeDashoffset = `${L}`;
   routeG.append(done);
+
+  /* little landmarks beside each stop, on the side away from the pin's label */
+  const marks = document.createElementNS(NS, 'g');
+  marks.setAttribute('class', 'landmarks');
+  const place = (href, x, y, size) => {
+    const img = document.createElementNS(NS, 'image');
+    img.setAttribute('href', href);
+    img.setAttribute('x', (x - size / 2).toFixed(0));
+    img.setAttribute('y', (y - size / 2).toFixed(0));
+    img.setAttribute('width', size);
+    img.setAttribute('height', size);
+    marks.append(img);
+  };
+  stops.forEach(s => {
+    if (!s.mark) return;
+    const a = at(s.len - 8);
+    const b = at(s.len + 8);
+    const tx = b.x - a.x;
+    const ty = b.y - a.y;
+    const k = Math.hypot(tx, ty) || 1;
+    let nx = -ty / k;
+    let ny = tx / k;
+    if (-nx + ny * .6 < 0) { nx = -nx; ny = -ny; }
+    place(s.mark, s.x + nx * 175, s.y + ny * 175, 230);
+  });
+  place('/assets/map/boat.webp', 1290, 1215, 170);
+  place('/assets/map/mountains.webp', 1830, 2230, 260);
+  svg.insertBefore(marks, routeG.nextSibling);
 
   const pinLayer = $('[data-pins-layer]', journey);
   const pins = stops.map(s => {
@@ -669,7 +697,7 @@ if (!reduced) {
   const countEls = [...$$('.studio-stats b'), ...$$('.note strong')].filter(Boolean);
   countEls.forEach(el => {
     const m = el.textContent.match(/^(\D*)([\d,]+)(.*)$/);
-    if (!m || m[2] === '2020') return;
+    if (!m || m[2] === '2020' || m[3].startsWith('.')) return;
     const target = Number(m[2].replace(/,/g, ''));
     const commas = m[2].includes(',');
     const fmt = v => `${m[1]}${commas ? v.toLocaleString('en-US') : v}${m[3]}`;
