@@ -376,6 +376,9 @@ h3 { font-weight: 800; line-height: 1.1; }
 .mk-head b { font-size: 11px; font-weight: 800; color: var(--c); }
 .mk-head svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 .mk-head img { width: 26px; height: auto; max-height: 26px; object-fit: contain; }
+.mk-head img[src*="/edu/"] { width: 34px; max-height: 34px; }
+.jc-tile img[src*="/edu/"] { width: 42px; max-height: 42px; }
+.j-icon img[src*="/edu/"] { width: 40px; max-height: 40px; }
 .mk::after { content: ""; position: absolute; left: -7px; top: -3px; width: 14px; height: 6px; border-radius: 50%; background: rgba(20, 38, 64, .25); filter: blur(1px); }
 .mk-name { margin: -50px 0 0 4px; padding: 7px 12px; border-radius: 999px; background: var(--card); color: var(--ink); font-size: 14px; font-weight: 800; line-height: 1; white-space: nowrap; box-shadow: var(--shadow-sm); opacity: 0; transform: translateX(-6px); transition: opacity .3s, transform .35s var(--spring); }
 .mk.is-future .mk-head { filter: grayscale(.9) brightness(1.15); opacity: .75; }
