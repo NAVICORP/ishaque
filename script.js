@@ -586,6 +586,146 @@ if (grid) {
   setFilter(fromHash(), false);
 }
 
+/* ---------- visitors and the wall (served by the SkiFi server's API) ---------- */
+const API = '/api';
+const visits = $('[data-visits]');
+if (visits) {
+  let first = false;
+  try { first = !localStorage.getItem('seen'); localStorage.setItem('seen', '1'); } catch {}
+  fetch(`${API}/visit`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ first }) })
+    .then(r => (r.ok ? r.json() : Promise.reject()))
+    .then(d => {
+      if (!Number.isFinite(d.visitors) || d.visitors < 1) return;
+      $('[data-visits-count]', visits).textContent = d.visitors.toLocaleString('en-US');
+      visits.hidden = false;
+    })
+    .catch(() => {});
+}
+
+const wall = $('[data-wall]');
+if (wall) {
+  const COLORS = ['#ffe98a', '#ffd1c4', '#cfe7ff', '#cdefd9', '#e6dcff', '#ffdcb0', '#c9f0ef', '#f8d1e6', '#dfeec1', '#ffe2c2', '#d6e4ff', '#fbe3a6'];
+  const INKS = ['#b07d00', '#c4472b', '#2e6fb5', '#2b8a5b', '#6b52c8', '#c26a14', '#16867f', '#b0457c', '#5f7d18', '#c0661c', '#3f62c4', '#9a7400'];
+  const list = $('[data-wall-notes]', wall);
+  const form = $('[data-wall-form]', wall);
+  const status = $('[data-wall-status]', wall);
+  const avatarBtn = $('[data-avatar]', wall);
+  const letterEl = $('[data-avatar-letter]', wall);
+  const countEl = $('[data-wall-count]', wall);
+  let avatar = Math.floor(Math.random() * COLORS.length);
+  const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+  const when = iso => {
+    const days = Math.round((new Date(iso) - Date.now()) / 86400000);
+    if (days > -7) return rtf.format(days, 'day');
+    return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+  const paintAvatar = () => {
+    avatarBtn.style.setProperty('--a', COLORS[avatar]);
+    avatarBtn.style.setProperty('--ai-ink', INKS[avatar]);
+    const n = $('#wall-name', form).value.trim();
+    letterEl.textContent = n ? n[0].toUpperCase() : '?';
+  };
+  const noteEl = (n, fresh = false) => {
+    const li = document.createElement('li');
+    li.className = `note wall-note${fresh ? ' is-fresh' : ''}`;
+    li.style.setProperty('--n', COLORS[n.avatar % COLORS.length]);
+    li.style.setProperty('--rot', `${((n.id.charCodeAt(0) + n.id.charCodeAt(1)) % 7) - 3}deg`);
+    const msg = document.createElement('p');
+    msg.className = 'wn-msg';
+    msg.textContent = n.message;
+    const who = document.createElement('div');
+    who.className = 'wn-who';
+    const av = document.createElement('span');
+    av.className = 'avatar avatar-sm';
+    av.style.setProperty('--a', '#fff');
+    av.style.setProperty('--ai-ink', INKS[n.avatar % INKS.length]);
+    av.textContent = n.name[0].toUpperCase();
+    const meta = document.createElement('p');
+    const b = document.createElement('b');
+    b.textContent = n.name;
+    const small = document.createElement('span');
+    small.textContent = [n.work, when(n.at)].filter(Boolean).join(', ');
+    meta.append(b, small);
+    who.append(av, meta);
+    li.append(msg, who);
+    return li;
+  };
+  fetch(`${API}/notes`)
+    .then(r => (r.ok ? r.json() : Promise.reject()))
+    .then(d => {
+      wall.hidden = false;
+      list.replaceChildren(...d.notes.map(n => noteEl(n)));
+      if (!d.notes.length) list.append(Object.assign(document.createElement('li'), { className: 'wall-empty', textContent: 'No notes yet. Be the first to pin one.' }));
+      queue();
+    })
+    .catch(() => {});
+
+  paintAvatar();
+  avatarBtn.addEventListener('click', () => {
+    avatar = (avatar + 1 + Math.floor(Math.random() * (COLORS.length - 1))) % COLORS.length;
+    paintAvatar();
+    if (!reduced) { avatarBtn.classList.remove('is-spin'); void avatarBtn.offsetWidth; avatarBtn.classList.add('is-spin'); }
+  });
+  $('#wall-name', form).addEventListener('input', paintAvatar);
+  const msg = $('#wall-msg', form);
+  msg.addEventListener('input', () => { countEl.textContent = `${msg.value.length}/200`; });
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(form));
+    status.className = 'form-status';
+    if (!data.name.trim() || !data.message.trim()) {
+      status.classList.add('is-error');
+      status.textContent = 'Add your name and a note.';
+      return;
+    }
+    const button = $('button[type="submit"]', form);
+    button.disabled = true;
+    try {
+      const res = await fetch(`${API}/notes`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...data, avatar }) });
+      const out = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(out.error || 'The note did not pin. Try again.');
+      if (out.note) {
+        $('.wall-empty', list)?.remove();
+        list.prepend(noteEl(out.note, true));
+      }
+      form.reset();
+      countEl.textContent = '0/200';
+      paintAvatar();
+      status.classList.add('is-success');
+      status.textContent = 'Pinned. Thanks for stopping by.';
+    } catch (err) {
+      status.classList.add('is-error');
+      status.textContent = err.message;
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  /* the boarding pass can be moved around */
+  const pass = $('[data-pass]', wall);
+  if (pass && matchMedia('(min-width: 901px) and (pointer: fine)').matches) {
+    pass.addEventListener('pointerdown', e => {
+      if (e.button !== 0) return;
+      const sx = e.clientX;
+      const sy = e.clientY;
+      const ox = Number(pass.dataset.x || 0);
+      const oy = Number(pass.dataset.y || 0);
+      pass.setPointerCapture(e.pointerId);
+      pass.classList.add('is-drag');
+      const move = ev => {
+        pass.dataset.x = String(ox + ev.clientX - sx);
+        pass.dataset.y = String(oy + ev.clientY - sy);
+        pass.style.setProperty('--dx', `${pass.dataset.x}px`);
+        pass.style.setProperty('--dy', `${pass.dataset.y}px`);
+      };
+      const up = () => { pass.classList.remove('is-drag'); pass.removeEventListener('pointermove', move); };
+      pass.addEventListener('pointermove', move);
+      pass.addEventListener('pointerup', up, { once: true });
+      pass.addEventListener('pointercancel', up, { once: true });
+    });
+  }
+}
+
 /* ---------- motion ---------- */
 function splitWords(el, cls, varName) {
   let n = 0;

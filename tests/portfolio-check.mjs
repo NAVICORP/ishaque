@@ -30,6 +30,23 @@ for (const vp of [{ name: 'desktop', width: 1440, height: 900 }, { name: 'mobile
   check(await page.evaluate(() => document.documentElement.dataset.theme) === 'dark', `${vp.name}: night mode switches on`);
   await page.locator('[data-theme-toggle]').click();
 
+  // The wall and visitor count only appear when the SkiFi server's /api answers.
+  const hasApi = await page.evaluate(() => fetch('/api/stats').then(r => r.ok && (r.headers.get('content-type') || '').includes('json')).catch(() => false));
+  await page.waitForTimeout(400);
+  check(await page.locator('#wall').evaluate(el => !el.hidden) === hasApi, `${vp.name}: wall ${hasApi ? 'shows with' : 'stays hidden without'} the API`);
+  if (hasApi) {
+    await page.route('**/api/notes', r => r.request().method() === 'POST'
+      ? r.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ note: { id: 'test-note-1', name: 'Tester', work: '', message: 'Hello from the test.', avatar: 2, at: new Date().toISOString() } }) })
+      : r.continue());
+    const wf = page.locator('[data-wall-form]');
+    await wf.scrollIntoViewIfNeeded();
+    await wf.locator('#wall-name').fill('Tester');
+    await wf.locator('#wall-msg').fill('Hello from the test.');
+    await wf.locator('button[type="submit"]').click();
+    await page.locator('[data-wall-status].is-success').waitFor({ timeout: 4000 }).catch(() => {});
+    check(await page.locator('.wall-note').first().textContent().then(t => t.includes('Hello from the test.')), `${vp.name}: a note pins to the wall`);
+  }
+
   const jTop = await page.evaluate(() => document.querySelector('#journey').getBoundingClientRect().top + scrollY);
   await page.evaluate(y => window.scrollTo(0, y + innerHeight * 1.4), jTop);
   await page.waitForTimeout(700);

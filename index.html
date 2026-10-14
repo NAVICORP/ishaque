@@ -34,13 +34,16 @@
     <img src="/assets/portfolio/ishaque-headshot.jpg" alt="" width="36" height="36">
     <span>Ishaque Nv.</span>
   </a>
-  <button class="theme-pill" type="button" data-theme-toggle aria-label="Switch to night">
+  <div class="top-right">
+    <p class="visits" data-visits hidden><i aria-hidden="true"></i><b data-visits-count></b> visitors</p>
+    <button class="theme-pill" type="button" data-theme-toggle aria-label="Switch to night">
     <span class="theme-icon" aria-hidden="true">
       <svg class="icon-moon" viewBox="0 0 24 24"><path d="M20 14.6A8.2 8.2 0 0 1 9.4 4a8.2 8.2 0 1 0 10.6 10.6Z"/></svg>
       <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/></svg>
     </span>
     <span class="theme-word" data-theme-word>Night</span>
   </button>
+  </div>
 
   <nav class="dock" aria-label="Primary" data-dock>
     <span class="dock-ind" aria-hidden="true" data-dock-ind></span>
@@ -316,6 +319,47 @@
           <li class="tool" tabindex="0" style="--c:#10a37f"><span class="tm tm-img tm-mono"><img src="/assets/tools/chatgpt.webp" alt="" width="40" height="40" loading="lazy"></span><b>ChatGPT</b><span class="tu">Research, writing and first drafts</span></li>
           <li class="tool" tabindex="0" style="--c:#3b4a63"><span class="tm tm-img tm-mono"><img src="/assets/tools/github.webp" alt="" width="40" height="40" loading="lazy"></span><b>GitHub</b><span class="tu">Where every site and app lives</span></li>
         </ul>
+      </div>
+    </section>
+
+    <section class="wall torn" id="wall" aria-labelledby="wall-title" data-wall hidden>
+      <div class="wrap">
+        <div class="wall-head">
+          <h2 id="wall-title">Before you leave, leave a note.</h2>
+          <div class="pass" data-pass aria-label="Boarding pass, IndiGo, Kannur to New Delhi, 2023">
+            <div class="pass-main">
+              <div class="pass-top"><img src="/assets/clients/indigo-white.webp" alt="IndiGo" width="351" height="72"><span>Boarding pass</span></div>
+              <div class="pass-route">
+                <div><b>CNN</b><span>Kannur</span></div>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 13.5 21 7.5c.8-.3 1.6.4 1.2 1.2-.2.4-.6.7-1 .8l-6.2 2 -3.6 6.6h-2.3l1.6-5.4-4.6 1.5-1.9 2H2.4l1.3-3.2Z"/></svg>
+                <div><b>DEL</b><span>New Delhi</span></div>
+              </div>
+              <dl class="pass-info">
+                <div><dt>Passenger</dt><dd>Ishaque Nv.</dd></div>
+                <div><dt>Flight</dt><dd>6E 2023</dd></div>
+                <div><dt>Seat</dt><dd>1A</dd></div>
+              </dl>
+            </div>
+            <div class="pass-stub" aria-hidden="true"><b>DEL</b><i></i></div>
+          </div>
+        </div>
+        <div class="wall-body">
+          <form class="wall-form" data-wall-form novalidate>
+            <div class="wf-who">
+              <button class="avatar" type="button" data-avatar aria-label="Shuffle your avatar"><span data-avatar-letter>?</span></button>
+              <p>Tap to shuffle</p>
+            </div>
+            <label class="field" for="wall-name"><span>Your name</span><input id="wall-name" name="name" maxlength="40" autocomplete="name" required></label>
+            <label class="field" for="wall-work"><span>Where you work <em>optional</em></span><input id="wall-work" name="work" maxlength="60" autocomplete="organization"></label>
+            <label class="field" for="wall-msg"><span>Your note <em data-wall-count>0/200</em></span><textarea id="wall-msg" name="message" maxlength="200" rows="3" required></textarea></label>
+            <label class="hp" aria-hidden="true">Website <input name="website" tabindex="-1" autocomplete="off"></label>
+            <div class="wf-foot">
+              <p class="form-status" data-wall-status role="status" aria-live="polite"></p>
+              <button class="btn-ink" type="submit">Pin it to the wall</button>
+            </div>
+          </form>
+          <ul class="wall-notes" data-wall-notes aria-label="Notes from visitors"></ul>
+        </div>
       </div>
     </section>
 
