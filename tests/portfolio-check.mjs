@@ -23,23 +23,23 @@ for (const vp of [{ name: 'desktop', width: 1440, height: 900 }, { name: 'mobile
   await page.goto(`${base}/`, { waitUntil: 'load' });
   check(await page.getByRole('heading', { level: 1 }).isVisible(), `${vp.name}: hero headline visible`);
   check(await page.locator('.deck-card').count() === 8, `${vp.name}: 8 cards in the selected work deck`);
-  check(await page.locator('.site').count() === PROJECTS.filter(p => p.category === 'Websites').length, `${vp.name}: every website in the strip`);
+  check(await page.locator('.client-logos').first().locator('img').count() === 16, `${vp.name}: all client logos in the row`);
   check(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1), `${vp.name}: no sideways scroll on home`);
 
   await page.locator('[data-theme-toggle]').click();
   check(await page.evaluate(() => document.documentElement.dataset.theme) === 'dark', `${vp.name}: night mode switches on`);
   await page.locator('[data-theme-toggle]').click();
 
-  const pin = page.locator('.pin:not(.is-off)').first();
-  await pin.click();
-  check(await page.locator('[data-place-sheet]').isVisible(), `${vp.name}: tapping a place opens its sheet`);
-  await page.locator('[data-place-close]').click();
+  const jTop = await page.evaluate(() => document.querySelector('#journey').getBoundingClientRect().top + scrollY);
+  await page.evaluate(y => window.scrollTo(0, y + innerHeight * 1.4), jTop);
+  await page.waitForTimeout(700);
+  check(await page.locator('[data-jcard].is-on').count() === 1, `${vp.name}: the journey card opens on the road`);
 
   await page.locator('#work').scrollIntoViewIfNeeded();
-  const first = await page.locator('[data-deck-name]').textContent();
+  const first = await page.locator('[data-deck-index]').textContent();
   await page.locator('[data-deck-next]').click();
   await page.waitForTimeout(450);
-  check(await page.locator('[data-deck-name]').textContent() !== first, `${vp.name}: deck moves to the next card`);
+  check(await page.locator('[data-deck-index]').textContent() !== first, `${vp.name}: deck moves to the next card`);
   await page.locator('[data-deck-open]').click();
   check(await page.locator('[data-quick-view]').isVisible(), `${vp.name}: deck opens the project sheet`);
   await page.locator('[data-qv-close]').click();
