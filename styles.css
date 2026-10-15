@@ -115,7 +115,7 @@ h3 { font-weight: 800; line-height: 1.1; }
   background: var(--card); color: var(--ink); box-shadow: var(--shadow-sm);
   transition: transform .25s var(--spring), opacity .2s;
 }
-.round svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.round svg { flex: none; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 .round:hover { transform: translateY(-2px) scale(1.04); }
 .round:disabled { opacity: .35; cursor: default; transform: none; }
 .tag { display: inline-flex; align-items: center; padding: 5px 11px; border-radius: 999px; background: var(--paper-2); color: var(--ink-2); font-size: 13px; font-weight: 700; line-height: 1.2; white-space: nowrap; }
@@ -160,7 +160,20 @@ h3 { font-weight: 800; line-height: 1.1; }
 :root[data-theme="dark"] .dock-ind { background: rgba(255, 255, 255, .1); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08); }
 .dock-sep { width: 1px; height: 26px; margin: 0 6px; background: var(--line); }
 .dock .dock-cta { background: var(--ink); color: var(--paper); padding: 0 18px; }
-.dock-cta svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+/* one line-icon family across the site: 24 grid, 2px stroke, round ends */
+.i { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.dock .di { display: none; }
+.dock a.is-on .di, .dock a[aria-current="page"] .di { display: block; }
+.dock-cta .i { stroke-width: 2.2; }
+.btn-ink .i, .btn-sun .i, .btn-ghost .i, .btn-line .i { width: 18px; height: 18px; }
+.hey { display: flex; align-items: center; gap: .28em; }
+.hey .wave { width: 1.05em; height: 1.05em; stroke-width: 1.7; transform-origin: 70% 85%; animation: wave 2.2s ease-in-out 1.4s 2; }
+@keyframes wave { 0%, 60%, 100% { rotate: 0deg; } 10%, 30% { rotate: 16deg; } 20%, 40% { rotate: -8deg; } }
+.kl { display: inline-flex; align-items: center; gap: 6px; }
+.kl .i { width: 16px; height: 16px; opacity: .7; }
+.foot-mail { display: inline-flex; align-items: center; gap: 8px; }
+.jc-meta { display: flex; align-items: center; gap: 4px; }
+.jc-meta .i { width: 14px; height: 14px; opacity: .75; }
 
 /* ---------- valley (hero) ---------- */
 
@@ -184,18 +197,6 @@ h3 { font-weight: 800; line-height: 1.1; }
   .scene { left: calc(50% - 350 * var(--u)); width: calc(700 * var(--u)); background-image: url(/assets/scene/hero-day-tall.webp); background-image: image-set(url(/assets/scene/hero-day-tall.webp) 1x, url(/assets/scene/hero-day-tall-2x.webp) 2x); }
   :root[data-theme="dark"] .scene { background-image: url(/assets/scene/hero-night-tall.webp); background-image: image-set(url(/assets/scene/hero-night-tall.webp) 1x, url(/assets/scene/hero-night-tall-2x.webp) 2x); }
 }
-/* a little plane tows a banner across the sky now and then */
-.plane { position: absolute; z-index: 2; top: 10%; left: 100%; display: flex; align-items: center; pointer-events: none; animation: fly-by 26s linear 1.5s infinite; }
-.plane svg { width: 46px; height: 24px; flex: none; }
-.plane .tow { width: 26px; height: 1.5px; flex: none; background: rgba(20, 38, 64, .45); }
-.banner { position: relative; padding: 5px 16px 6px; background: #fffaf0; color: var(--ink); font-family: var(--hand); font-size: 21px; font-weight: 700; line-height: 1; white-space: nowrap; box-shadow: 0 8px 16px -10px rgba(10, 30, 60, .5); animation: flutter 1.4s ease-in-out infinite alternate; transform-origin: 0 50%; }
-.banner::before, .banner::after { content: ""; position: absolute; top: 0; bottom: 0; width: 8px; background: repeating-linear-gradient(180deg, #f26b47 0 5px, #fffaf0 5px 10px); }
-.banner::before { left: 0; }
-.banner::after { right: -10px; width: 12px; clip-path: polygon(0 0, 100% 0, 40% 50%, 100% 100%, 0 100%); background: #f26b47; }
-@keyframes fly-by { from { transform: translateX(0); } to { transform: translateX(calc(-100vw - 100% - 40px)); } }
-@keyframes flutter { from { transform: skewY(-1.5deg); } to { transform: skewY(1.5deg); } }
-:root[data-theme="dark"] .plane { opacity: .85; }
-:root[data-theme="dark"] .plane .tow { background: rgba(255, 255, 255, .4); }
 .me-tag { position: absolute; z-index: 2; left: calc(50% + (var(--x) - 800) * var(--u)); top: calc(100% - (1000 - var(--y)) * var(--u)); translate: -100% -50%; font-family: var(--hand); font-size: clamp(24px, 2.2vw, 32px); font-weight: 700; line-height: 1; color: #fff; white-space: nowrap; rotate: -8deg; text-shadow: 0 2px 10px rgba(10, 30, 50, .4); transition: opacity .6s var(--ease) 1s; }
 .me-tag::after { content: ""; position: absolute; right: -24px; top: 2px; width: 22px; height: 20px; border-top: 2.5px solid #fff; border-right: 2.5px solid #fff; border-radius: 0 18px 0 0; rotate: 10deg; }
 .stage.is-pre .me-tag { opacity: 0; }
@@ -365,7 +366,7 @@ h3 { font-weight: 800; line-height: 1.1; }
 .jctl { position: absolute; z-index: 5; left: 50%; bottom: calc(96px + var(--safe-b)); display: flex; align-items: center; gap: 4px; padding: 5px; border-radius: 999px; background: var(--card); box-shadow: var(--shadow); transform: translateX(-50%); }
 .jctl button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; white-space: nowrap; border-radius: 999px; font-size: 15px; font-weight: 800; color: var(--ink); transition: background-color .25s, opacity .25s, transform .3s var(--spring); }
 .jctl button:active { transform: scale(.95); }
-.jctl svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.jctl svg { flex: none; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 .jctl-prev { width: 44px; }
 .jctl-prev:disabled { opacity: .3; cursor: default; }
 .jctl-next { padding: 0 16px 0 18px; background: color-mix(in srgb, var(--route) 14%, var(--card)); }
@@ -686,7 +687,6 @@ kbd { display: inline-grid; place-items: center; min-width: 26px; height: 22px; 
 @keyframes deal { from { opacity: 0; translate: 0 26px; scale: .97; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .plane { display: none; }
   .stage.is-pre .w, .stage.is-pre .hey, .stage.is-pre .sub, .stage.is-pre .me-tag { opacity: 1; translate: none; }
   .marquee .client-logos { animation: none; flex: 1 1 100%; flex-wrap: wrap; justify-content: center; row-gap: 18px; }
   .marquee { flex-wrap: wrap; -webkit-mask: none; mask: none; }
@@ -708,8 +708,6 @@ kbd { display: inline-grid; place-items: center; min-width: 26px; height: 22px; 
 }
 
 @media (max-width: 760px) {
-  .plane { top: auto; bottom: 47%; }
-  .banner { font-size: 18px; }
   .hats { grid-template-columns: 1fr; gap: 10px; }
   .hats li { grid-template-columns: auto 1fr; align-items: center; padding: 14px 16px; }
   .hello-sub { padding-right: 86px; }
