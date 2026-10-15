@@ -270,6 +270,21 @@ if (stage && cam) {
  * scroll frame was what made the map stutter on phones. */
 const journey = $('[data-journey]');
 if (journey) {
+  /* the map's shapes live in their own file and arrive once the journey is
+     a screen or so away, so the hero's pictures get the first bytes */
+  const host = $('[data-map]', journey);
+  let started = false;
+  const start = () => {
+    if (started) return; started = true;
+    fetch('/assets/journey-map.svg').then(r => r.text()).then(txt => { host.innerHTML = txt; buildJourney(); }).catch(() => {});
+  };
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); start(); } }, { rootMargin: '160% 0px' });
+    io.observe(journey);
+    addEventListener('load', () => setTimeout(start, 2500), { once: true });
+  } else start();
+}
+function buildJourney() {
   const view = $('[data-mapview]', journey);
   const svg = $('[data-map]', journey);
   const road = $('#road', svg);
