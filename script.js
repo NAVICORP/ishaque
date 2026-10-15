@@ -107,7 +107,7 @@ function moveDockTo(link) {
   $$('a', dock).forEach(a => a.classList.toggle('is-on', a === link));
   dockInd.style.opacity = '1';
   dockInd.style.width = `${link.offsetWidth}px`;
-  dockInd.style.transform = `translateX(${link.offsetLeft - 7}px)`;
+  dockInd.style.transform = `translateX(${link.offsetLeft}px)`;
 }
 if (dock) {
   const current = $('a[aria-current="page"]', dock);
@@ -128,6 +128,8 @@ if (dock) {
   const place = () => moveDockTo(active);
   document.fonts?.ready.then(place);
   addEventListener('resize', place);
+  /* the pill follows the link as its icon slides open */
+  if ('ResizeObserver' in window) { const ro = new ResizeObserver(place); $$('a', dock).forEach(a => ro.observe(a)); }
   place();
 }
 
