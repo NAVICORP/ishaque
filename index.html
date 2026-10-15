@@ -62,7 +62,58 @@
         <div class="scene" aria-hidden="true">
           <div class="birds"><i class="bird b1"><svg viewBox="0 0 24 10"><path d="M1 8C5 2 9 2 12 7C15 2 19 2 23 8"/></svg></i><i class="bird b2"><svg viewBox="0 0 24 10"><path d="M1 8C5 2 9 2 12 7C15 2 19 2 23 8"/></svg></i><i class="bird b3"><svg viewBox="0 0 24 10"><path d="M1 8C5 2 9 2 12 7C15 2 19 2 23 8"/></svg></i></div>
         </div>
-        <span class="me-tag" style="--x:668;--y:760" aria-hidden="true">that's me</span>
+        <div class="hpins">
+          <button type="button" class="hpin hp-wide" style="--x:420;--y:590;--c:#2348a6" data-hsheet="calicut" aria-label="University of Calicut"><span class="hp-tag"><img class="hp-ico" src="/assets/edu/calicut.webp" alt="" width="40" height="40">Calicut</span><i class="hp-dot"></i></button>
+          <button type="button" class="hpin" style="--x:622;--y:676;--c:#f26b47" data-hsheet="home" aria-label="Home, Kannur"><span class="hp-tag"><span class="hp-ico hp-glyph"><svg class="i" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1Z"/></svg></span>Home</span><i class="hp-dot"></i></button>
+          <button type="button" class="hpin" style="--x:905;--y:628;--c:#2a7afe" data-hsheet="studio" aria-label="SkiFi studio"><span class="hp-tag"><span class="hp-ico hp-skifi"><img src="/assets/skifi/skifi-logo.svg" alt="" width="30" height="12"></span>SkiFi studio</span><i class="hp-dot"></i></button>
+          <button type="button" class="hpin" style="--x:735;--y:724;--c:#f5b82e" data-hsheet="me" aria-label="That's me"><span class="hp-tag"><img class="hp-ico hp-face" src="/assets/portfolio/ishaque-headshot.jpg" alt="" width="40" height="40">That's me</span><i class="hp-dot"></i></button>
+        </div>
+        <div class="hsheet" data-hsheet-panel role="dialog" aria-labelledby="hs-title" hidden>
+          <button class="x" type="button" data-hsheet-close aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+          <div class="hs-body" data-hsheet-body></div>
+        </div>
+        <template id="hs-me">
+          <h3 id="hs-title">Hey, I'm Ishaque</h3>
+          <p class="hs-sub">Founder of SkiFi, Kannur</p>
+          <ul class="hs-list">
+            <li style="--c:#2348a6"><b>Studied</b><span>BA at the University of Calicut, MA at Jamia Millia Islamia</span></li>
+            <li style="--c:#e8622a"><b>Worked</b><span>Senior Presentation Designer at Value360, 2023 to 2025</span></li>
+            <li style="--c:#2a7afe"><b>Runs</b><span>SkiFi, a design and code studio and a Fiverr Vetted Pro Agency</span></li>
+            <li style="--c:#2b9a5c"><b>Speaks</b><span>English, Arabic, Hindi, Urdu, Malayalam and Tamil</span></li>
+          </ul>
+          <div class="hs-links">
+            <a href="https://www.linkedin.com/in/heyzaak/" target="_blank" rel="noopener"><svg class="i" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>LinkedIn</a>
+            <a href="https://www.behance.net/ishaquenv" target="_blank" rel="noopener"><svg class="i" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="13.5" cy="6.5" r="1" fill="currentColor"/><circle cx="17.5" cy="10.5" r="1" fill="currentColor"/><circle cx="8.5" cy="7.5" r="1" fill="currentColor"/><circle cx="6.5" cy="12.5" r="1" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.65-.75 1.65-1.69 0-.44-.18-.84-.44-1.13-.29-.29-.44-.65-.44-1.12a1.64 1.64 0 0 1 1.67-1.67h2c3.05 0 5.55-2.5 5.55-5.55C21.97 6.01 17.46 2 12 2z"/></svg>Behance</a>
+            <a href="mailto:ishaque@skifi.co"><svg class="i" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>Email</a>
+          </div>
+        </template>
+        <template id="hs-home">
+          <h3 id="hs-title">Home, Kannur</h3>
+          <p class="hs-sub">Where it started, 2020</p>
+          <p class="hs-text">Just me, a laptop and PowerPoint. Clients on Fiverr came back, then clients from abroad.</p>
+          <ul class="hs-chips">
+            <li style="--c:#f26b47"><b>2,700+</b><span>projects</span></li>
+            <li style="--c:#e2a72e"><b>4.9</b><span>from 900+ reviews</span></li>
+            <li style="--c:#2e7dda"><b>40+</b><span>countries</span></li>
+          </ul>
+          <a class="btn-ink hs-cta" href="#journey" data-hsheet-close><svg class="i" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5v14m-7-7 7 7 7-7"/></svg>Walk the journey</a>
+        </template>
+        <template id="hs-studio">
+          <h3 id="hs-title">SkiFi studio</h3>
+          <p class="hs-sub">Kannur, Kerala</p>
+          <p class="hs-text">Pitch decks, products, brands and websites, designed and built in-house.</p>
+          <ul class="hs-chips">
+            <li style="--c:#1dbf73"><b>Vetted Pro</b><span>agency on Fiverr</span></li>
+            <li style="--c:#2a7afe"><b>Design</b><span>and code</span></li>
+          </ul>
+          <a class="btn-ink hs-cta" href="https://skifi.co" target="_blank" rel="noopener">Visit skifi.co<svg class="i" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M7 7h10v10M7 17 17 7"/></svg></a>
+        </template>
+        <template id="hs-calicut">
+          <h3 id="hs-title">University of Calicut</h3>
+          <p class="hs-sub">BA in Arabic</p>
+          <p class="hs-text">I studied Arabic, not design. Languages first; the slides came later.</p>
+          <a class="btn-ink hs-cta" href="#journey" data-hsheet-close><svg class="i" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5v14m-7-7 7 7 7-7"/></svg>Walk the journey</a>
+        </template>
         <div class="hero-copy">
           <p class="hey"><svg class="i wave" viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M18 11V6a2 2 0 0 0-4 0M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-6-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>hey, I'm Ishaque</p>
           <h1 id="hero-title">I design products, and the pitch decks that sell them.</h1>
@@ -74,7 +125,10 @@
     <section class="proof torn" id="about" aria-labelledby="proof-title">
       <div class="wrap">
         <div class="proof-head">
-          <h2 id="proof-title">I was studying <span class="hl hl-sky">linguistics</span>, then <span class="hl hl-sun">Googled my way to design</span>. <span class="hl hl-coral">2,700+ projects</span> later, I <span class="hl hl-lilac">run a studio</span>.</h2>
+          <div>
+          <p class="eyebrow"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5 14.3 8.6 21.5 7l-5 5.3 5 5.3-7.2-1.6L12 22.5l-2.3-6.5-7.2 1.6 5-5.3-5-5.3 7.2 1.6Z"/></svg>How I got here</p>
+          <h2 id="proof-title" data-reveal-words>I was studying <span class="hl hl-sky">linguistics</span>, then <span class="hl hl-sun">Googled my way to design</span>. <span class="hl hl-coral">2,700+ projects</span> later, I <span class="hl hl-lilac">run a studio</span>.</h2>
+          </div>
           <img class="proof-me" src="/assets/scene/me-laptop.webp" alt="" width="560" height="618" loading="lazy">
         </div>
         <ul class="notes">
@@ -129,6 +183,7 @@
 
     <section class="journey torn" id="journey" aria-labelledby="journey-title" data-journey>
       <div class="j-head wrap">
+        <p class="eyebrow"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5 14.3 8.6 21.5 7l-5 5.3 5 5.3-7.2-1.6L12 22.5l-2.3-6.5-7.2 1.6 5-5.3-5-5.3 7.2 1.6Z"/></svg>The journey</p>
         <h2 id="journey-title">The road <span class="hl hl-sky">so far.</span></h2>
         <p class="j-sub">Six stops from Calicut to Okhla and back home to Kannur. Tap through them, or swipe the map.</p>
       </div>
@@ -205,21 +260,26 @@
     <section class="work" id="work" aria-labelledby="work-title">
       <div class="wrap">
         <div class="sec-head">
+          <p class="eyebrow"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5 14.3 8.6 21.5 7l-5 5.3 5 5.3-7.2-1.6L12 22.5l-2.3-6.5-7.2 1.6 5-5.3-5-5.3 7.2 1.6Z"/></svg>Selected work</p>
           <h2 id="work-title">Work that <span class="hl hl-sun">did its job.</span></h2>
         </div>
-        <div class="deck-wrap" data-deck>
-          <div class="deck-stage" data-deck-stage>
-<!--@work-deck-->
-          </div>
-          <div class="deck-side">
-            <p class="deck-counter" aria-live="polite"><span data-deck-index>1</span> / <span data-deck-total>5</span></p>
-            <p class="deck-summary" data-deck-summary></p>
-            <div class="deck-controls">
-              <button class="round" type="button" data-deck-prev aria-label="Previous kind of work"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg></button>
-              <button class="round" type="button" data-deck-next aria-label="Next kind of work"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
-              <a class="btn-ink" href="/projects" data-deck-open><span data-deck-open-label>See all</span><svg class="i" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></a>
+        <div class="cbox" data-cbox>
+          <div class="cbox-scene">
+            <div class="cbox-3d">
+              <div class="cb-pivot">
+                <div class="cb-lid"></div>
+                <div class="cb-floor"></div>
+                <div class="cb-wall cb-left"></div>
+                <div class="cb-wall cb-right"></div>
+                <div class="cb-wall cb-back"></div>
+<!--@work-box-->
+                <div class="cb-front"><span>Things I designed</span></div>
+              </div>
             </div>
           </div>
+          <ol class="clist" data-clist>
+<!--@work-list-->
+          </ol>
         </div>
         <div class="more-row"><a class="btn-ghost" href="/projects"><svg class="i" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect width="7" height="7" x="3" y="3" rx="1.5"/><rect width="7" height="7" x="14" y="3" rx="1.5"/><rect width="7" height="7" x="14" y="14" rx="1.5"/><rect width="7" height="7" x="3" y="14" rx="1.5"/></svg>See all <!--@count-all--> projects</a></div>
       </div>
@@ -236,49 +296,54 @@
       </div>
     </section>
 
-    <section class="app-sec torn" id="app" aria-labelledby="app-title">
-      <div class="wrap">
-        <div class="app-head">
-          <h2 id="app-title">I built my own <span class="hl hl-sun">app.</span></h2>
-          <img class="app-who" src="/assets/farmi/farmer-tablet.webp" alt="" width="420" height="532" loading="lazy">
-        </div>
-        <p class="app-story">A farm should run on <span class="hl">numbers, not guesses</span>. So I built <img class="app-ico" src="/assets/farmi/icon.webp" alt="" width="160" height="160" loading="lazy"><b>FarmiLife</b>: money, stock, animals and crops in one place, a <span class="hl hl-coral">QR tag on every animal</span>, and every screen in <span class="hl hl-sky">six languages</span>.</p>
-        <a class="btn-ink app-cta" href="https://farmi.life" target="_blank" rel="noopener">Visit farmi.life<svg class="i" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M7 7h10v10M7 17 17 7"/></svg></a>
-        <h3 class="hats-title">Every hat I wore</h3>
-        <ul class="hats">
-          <li style="--c:#f26b47"><span class="hat" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 21V4m0 0h11l-2 4 2 4H5"/></svg></span><p><b>Founder</b><span>It grew out of a milk delivery app I built</span></p></li>
-          <li style="--c:#2e7dda"><span class="hat" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="16" rx="3"/><path d="M3.5 9h17M9 9v11"/></svg></span><p><b>Product designer</b><span>Money, stock, animals, crops and people</span></p></li>
-          <li style="--c:#7b5cd6"><span class="hat" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 6 8-6 10-6-10Z"/><path d="M12 3v8m0 0 6 0m-6 0H6"/></svg></span><p><b>Brand designer</b><span>The name, the logo and the colours</span></p></li>
-          <li style="--c:#2b9a5c"><span class="hat" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m8 7-5 5 5 5m8-10 5 5-5 5M14 4l-4 16"/></svg></span><p><b>Developer</b><span>Web, iPhone and Android from one codebase</span></p></li>
-          <li style="--c:#e2a72e"><span class="hat" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 15c-3-3-3-8 0-12 3 4 3 9 0 12Z"/><path d="M9.5 12.5 6 15l1 4 3-2m4.5-4.5L18 15l-1 4-3-2M12 15v6"/></svg></span><p><b>Launch</b><span>Live at farmi.life</span></p></li>
-        </ul>
-      </div>
-    </section>
-
     <section class="stack torn" id="stack" aria-labelledby="stack-title">
       <div class="wrap">
         <div class="sec-head">
+          <p class="eyebrow"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5 14.3 8.6 21.5 7l-5 5.3 5 5.3-7.2-1.6L12 22.5l-2.3-6.5-7.2 1.6 5-5.3-5-5.3 7.2 1.6Z"/></svg>My stack</p>
           <h2 id="stack-title">What I open <span class="hl hl-coral">every day.</span></h2>
         </div>
-        <ul class="tools">
-          <li class="tool"><span class="tm tm-img"><img src="/assets/tools/powerpoint.webp" alt="" width="40" height="40" loading="lazy"></span><b>PowerPoint</b></li>
-          <li class="tool"><span class="tm tm-img"><img src="/assets/tools/keynote.webp" alt="" width="40" height="40" loading="lazy"></span><b>Keynote</b></li>
-          <li class="tool"><span class="tm tm-img"><img src="/assets/tools/google-slides.webp" alt="" width="40" height="40" loading="lazy"></span><b>Google Slides</b></li>
-          <li class="tool"><span class="tm tm-img"><img src="/assets/tools/figma.webp" alt="" width="40" height="40" loading="lazy"></span><b>Figma</b></li>
-          <li class="tool"><span class="tm tm-img"><img src="/assets/tools/illustrator.webp" alt="" width="40" height="40" loading="lazy"></span><b>Illustrator</b></li>
-          <li class="tool"><span class="tm tm-img"><img src="/assets/tools/photoshop.webp" alt="" width="40" height="40" loading="lazy"></span><b>Photoshop</b></li>
-          <li class="tool"><span class="tm tm-img"><img src="/assets/tools/indesign.webp" alt="" width="40" height="40" loading="lazy"></span><b>InDesign</b></li>
-          <li class="tool"><span class="tm tm-img"><img src="/assets/tools/claude.webp" alt="" width="40" height="40" loading="lazy"></span><b>Claude</b></li>
-          <li class="tool"><span class="tm tm-img tm-mono"><img src="/assets/tools/chatgpt.webp" alt="" width="40" height="40" loading="lazy"></span><b>ChatGPT</b></li>
-          <li class="tool"><span class="tm tm-img tm-mono"><img src="/assets/tools/github.webp" alt="" width="40" height="40" loading="lazy"></span><b>GitHub</b></li>
-        </ul>
+        <div class="gift" data-gift>
+          <div class="gift-beam" aria-hidden="true"></div>
+          <ul class="tools">
+            <li class="tool"><span class="tm tm-img"><img src="/assets/tools/powerpoint.webp" alt="" width="40" height="40" loading="lazy"></span><b>PowerPoint</b></li>
+            <li class="tool"><span class="tm tm-img"><img src="/assets/tools/keynote.webp" alt="" width="40" height="40" loading="lazy"></span><b>Keynote</b></li>
+            <li class="tool"><span class="tm tm-img"><img src="/assets/tools/google-slides.webp" alt="" width="40" height="40" loading="lazy"></span><b>Google Slides</b></li>
+            <li class="tool"><span class="tm tm-img"><img src="/assets/tools/figma.webp" alt="" width="40" height="40" loading="lazy"></span><b>Figma</b></li>
+            <li class="tool"><span class="tm tm-img"><img src="/assets/tools/illustrator.webp" alt="" width="40" height="40" loading="lazy"></span><b>Illustrator</b></li>
+            <li class="tool"><span class="tm tm-img"><img src="/assets/tools/photoshop.webp" alt="" width="40" height="40" loading="lazy"></span><b>Photoshop</b></li>
+            <li class="tool"><span class="tm tm-img"><img src="/assets/tools/indesign.webp" alt="" width="40" height="40" loading="lazy"></span><b>InDesign</b></li>
+            <li class="tool"><span class="tm tm-img"><img src="/assets/tools/claude.webp" alt="" width="40" height="40" loading="lazy"></span><b>Claude</b></li>
+            <li class="tool"><span class="tm tm-img tm-mono"><img src="/assets/tools/chatgpt.webp" alt="" width="40" height="40" loading="lazy"></span><b>ChatGPT</b></li>
+            <li class="tool"><span class="tm tm-img tm-mono"><img src="/assets/tools/github.webp" alt="" width="40" height="40" loading="lazy"></span><b>GitHub</b></li>
+          </ul>
+          <div class="gift-stage" aria-hidden="true">
+            <div class="gift-3d">
+              <div class="gb-face gb-front"></div>
+              <div class="gb-face gb-right"></div>
+              <div class="gb-face gb-left"></div>
+              <div class="gb-face gb-back"></div>
+              <div class="gb-lid">
+                <div class="gl-face gl-top"></div>
+                <div class="gl-face gl-front"></div>
+                <div class="gl-face gl-right"></div>
+                <div class="gl-face gl-left"></div>
+                <div class="gl-face gl-back"></div>
+                <svg class="gb-bow" viewBox="0 0 120 70"><path d="M60 40C44 14 14 4 8 18s14 30 52 22Z" /><path d="M60 40c16-26 46-36 52-22s-14 30-52 22Z"/><path d="M56 42 40 66l10-2 6 6 6-28ZM64 42l16 24-10-2-6 6-6-28Z" class="tail"/><ellipse cx="60" cy="40" rx="9" ry="8" class="knot"/></svg>
+              </div>
+            </div>
+          </div>
+          <button class="gift-btn" type="button" data-unwrap><svg class="i" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>Tap to unwrap</button>
+        </div>
       </div>
     </section>
 
     <section class="wall torn" id="wall" aria-labelledby="wall-title" data-wall hidden>
       <div class="wrap">
         <div class="wall-head">
-          <h2 id="wall-title">Before you leave, <span class="hl hl-lilac">leave a note.</span></h2>
+          <div>
+            <p class="eyebrow"><svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5 14.3 8.6 21.5 7l-5 5.3 5 5.3-7.2-1.6L12 22.5l-2.3-6.5-7.2 1.6 5-5.3-5-5.3 7.2 1.6Z"/></svg>The wall</p>
+            <h2 id="wall-title">Before you leave, <span class="hl hl-lilac">leave a note.</span></h2>
+          </div>
           <div class="pass" data-pass aria-label="Boarding pass, IndiGo, Kannur to New Delhi, 2023">
             <div class="pass-main">
               <div class="pass-top"><img src="/assets/clients/indigo-white.webp" alt="IndiGo" width="351" height="72"><span>Boarding pass</span></div>
@@ -296,8 +361,10 @@
             <div class="pass-stub" aria-hidden="true"><b>DEL</b><i></i></div>
           </div>
         </div>
+        <p class="wall-sub">Say hi, share feedback, or tell me what you are building. It goes up on the wall.</p>
+        <button class="btn-ghost wall-open" type="button" data-wall-open aria-expanded="false"><svg class="i" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 20h9M16.38 3.62a1 1 0 0 1 3 3L7.37 18.64a2 2 0 0 1-.85.5l-2.87.84a.5.5 0 0 1-.62-.62l.84-2.87a2 2 0 0 1 .5-.85z"/></svg>Write a note</button>
         <div class="wall-body">
-          <form class="wall-form" data-wall-form novalidate>
+          <form class="wall-form" data-wall-form novalidate hidden>
             <div class="wf-who">
               <button class="avatar" type="button" data-avatar aria-label="Shuffle your avatar"><span data-avatar-letter>?</span></button>
               <p>Tap to shuffle</p>
@@ -324,12 +391,12 @@
           <img class="point-me" src="/assets/scene/me-point.webp" alt="" width="420" height="930" loading="lazy">
         <div class="keys-mat">
           <ul class="keys">
-            <li><a class="kw" href="mailto:ishaque@skifi.co" data-key="e"><span class="cap">E</span><span class="kl"><svg class="i" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>Email</span></a></li>
-            <li><a class="kw" href="https://wa.me/917827087878" target="_blank" rel="noopener" data-key="w"><span class="cap">W</span><span class="kl"><svg class="i" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>WhatsApp</span></a></li>
-            <li><a class="kw" href="https://www.linkedin.com/in/heyzaak/" target="_blank" rel="noopener" data-key="l"><span class="cap">L</span><span class="kl"><svg class="i" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>LinkedIn</span></a></li>
-            <li><a class="kw" href="https://www.behance.net/ishaquenv" target="_blank" rel="noopener" data-key="b"><span class="cap">B</span><span class="kl"><svg class="i" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="13.5" cy="6.5" r="1" fill="currentColor"/><circle cx="17.5" cy="10.5" r="1" fill="currentColor"/><circle cx="8.5" cy="7.5" r="1" fill="currentColor"/><circle cx="6.5" cy="12.5" r="1" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.65-.75 1.65-1.69 0-.44-.18-.84-.44-1.13-.29-.29-.44-.65-.44-1.12a1.64 1.64 0 0 1 1.67-1.67h2c3.05 0 5.55-2.5 5.55-5.55C21.97 6.01 17.46 2 12 2z"/></svg>Behance</span></a></li>
-            <li><a class="kw" href="https://www.fiverr.com/skifidesigns" target="_blank" rel="noopener" data-key="f"><span class="cap">F</span><span class="kl"><svg class="i" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18M16 10a4 4 0 0 1-8 0"/></svg>Fiverr</span></a></li>
-            <li><a class="kw" href="/assets/portfolio/Muhammed-Ishaque-CV.pdf" download="Muhammed-Ishaque-CV.pdf" data-key="r"><span class="cap">R</span><span class="kl"><svg class="i" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4M12 18v-6m-3 3 3 3 3-3"/></svg>Resume</span></a></li>
+            <li><a class="kw" href="mailto:ishaque@skifi.co" data-key="e"><span class="cap">E</span><span class="kl"><svg class="i" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>Email</span><span class="kn" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4v15m-5-5 5 5 5-5"/></svg>Briefs, decks,<br>or just hi.</span></a></li>
+            <li><a class="kw" href="https://wa.me/917827087878" target="_blank" rel="noopener" data-key="w"><span class="cap">W</span><span class="kl"><svg class="i" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>WhatsApp</span><span class="kn" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4v15m-5-5 5 5 5-5"/></svg>Fastest way<br>to reach me.</span></a></li>
+            <li><a class="kw" href="https://www.linkedin.com/in/heyzaak/" target="_blank" rel="noopener" data-key="l"><span class="cap">L</span><span class="kl"><svg class="i" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>LinkedIn</span><span class="kn" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4v15m-5-5 5 5 5-5"/></svg>Where I post<br>the work.</span></a></li>
+            <li><a class="kw" href="https://www.behance.net/ishaquenv" target="_blank" rel="noopener" data-key="b"><span class="cap">B</span><span class="kl"><svg class="i" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="13.5" cy="6.5" r="1" fill="currentColor"/><circle cx="17.5" cy="10.5" r="1" fill="currentColor"/><circle cx="8.5" cy="7.5" r="1" fill="currentColor"/><circle cx="6.5" cy="12.5" r="1" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.65-.75 1.65-1.69 0-.44-.18-.84-.44-1.13-.29-.29-.44-.65-.44-1.12a1.64 1.64 0 0 1 1.67-1.67h2c3.05 0 5.55-2.5 5.55-5.55C21.97 6.01 17.46 2 12 2z"/></svg>Behance</span><span class="kn" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4v15m-5-5 5 5 5-5"/></svg>The portfolio,<br>in full.</span></a></li>
+            <li><a class="kw" href="https://www.fiverr.com/skifidesigns" target="_blank" rel="noopener" data-key="f"><span class="cap">F</span><span class="kl"><svg class="i" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18M16 10a4 4 0 0 1-8 0"/></svg>Fiverr</span><span class="kn" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4v15m-5-5 5 5 5-5"/></svg>900+ reviews<br>live here.</span></a></li>
+            <li><a class="kw" href="/assets/portfolio/Muhammed-Ishaque-CV.pdf" download="Muhammed-Ishaque-CV.pdf" data-key="r"><span class="cap">R</span><span class="kl"><svg class="i" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4M12 18v-6m-3 3 3 3 3-3"/></svg>Resume</span><span class="kn" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4v15m-5-5 5 5 5-5"/></svg>One click,<br>one PDF.</span></a></li>
           </ul>
         </div>
         </div>

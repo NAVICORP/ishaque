@@ -1,40 +1,16 @@
 /*
- * The swipeable deck in "Work that did its job" on the homepage: one card per
- * kind of work, in order. Each card opens the projects page on that filter.
- *   cover: the slug of the project whose cover fronts the card
- *   stat:  optional, a number worth leading with
- *   line:  shown when there is no stat
- *   about: the line beside the deck while the card is in front
+ * The box of cards in "Work that did its job" on the homepage: one card per
+ * kind of work, left to right. Each card opens the projects page on that
+ * filter. The list under the box shows the same cards with their clients.
+ *   from/to: the card's gradient
+ *   icon:    a key in ICONS in src/render.js
+ *   stat:    the big number on the card, with a short label
+ *   clients: the line under the card's name in the list
  */
 export const FEATURED = [
-  {
-    category: 'Product design',
-    cover: 'bullx-trading-terminal',
-    stat: { value: '$20B+', label: 'traded on BullX in its first 6 months' },
-    about: 'Trading platforms, AI agents and dashboards for BullX, Shuriken and Kore.ai.',
-  },
-  {
-    category: 'Pitch decks',
-    cover: 'coca-cola-adria-presentation',
-    stat: { value: '$300M+', label: 'raised by clients with decks I designed' },
-    about: 'Investor, sales and company decks for Lenovo, Coca-Cola Adria, The Back Nine and many more.',
-  },
-  {
-    category: 'Websites',
-    cover: 'site-welten-communication',
-    line: 'Designed and built in-house, from the first sketch to launch',
-    about: 'Sites for Reborn Naturals, Welten Communication, Insync International and more.',
-  },
-  {
-    category: 'Branding',
-    cover: 'value360-brand-system',
-    line: 'Logos, colours and type that hold together',
-    about: 'Brand systems for Value360 and Visionmark.',
-  },
-  {
-    category: 'Brochures',
-    cover: 'gulfbay-logistics-brochure',
-    line: 'Brochures and guides people actually read',
-    about: 'Print and PDF work for GulfBay Logistics, Caresyntax and Home Service Pro.',
-  },
+  { category: 'Product design', from: '#4f7cff', to: '#8a5cf6', icon: 'app', stat: '$20B+', label: 'traded on BullX', clients: 'BullX, Shuriken, Kore.ai' },
+  { category: 'Pitch decks', from: '#ff8a5c', to: '#e5413a', icon: 'deck', stat: '$300M+', label: 'raised by clients', clients: 'Lenovo, Coca-Cola Adria, The Back Nine' },
+  { category: 'Websites', from: '#22c1ad', to: '#2b8a5c', icon: 'globe', stat: '20', label: 'sites built', clients: 'Reborn Naturals, Welten, Insync' },
+  { category: 'Branding', from: '#f9bf3b', to: '#f0703f', icon: 'pen', stat: '2', label: 'brand systems', clients: 'Value360, Visionmark' },
+  { category: 'Brochures', from: '#b07a4a', to: '#6b3f22', icon: 'book', stat: '3', label: 'print and PDF', clients: 'GulfBay, Caresyntax, Home Service Pro' },
 ];
