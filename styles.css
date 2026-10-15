@@ -1,7 +1,6 @@
 /* self-hosted type (SIL Open Font License, see /assets/fonts) */
 @font-face { font-family: "Bricolage Grotesque"; font-style: normal; font-weight: 200 800; font-display: swap; src: url("/assets/fonts/bricolage-grotesque-latin.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
-@font-face { font-family: "Caveat"; font-style: normal; font-weight: 600; font-display: swap; src: url("/assets/fonts/caveat-latin-600.woff2") format("woff2"); }
-@font-face { font-family: "Caveat"; font-style: normal; font-weight: 700; font-display: swap; src: url("/assets/fonts/caveat-latin-700.woff2") format("woff2"); }
+@font-face { font-family: "Caveat"; font-style: normal; font-weight: 600 700; font-display: swap; src: url("/assets/fonts/caveat-latin-700.woff2") format("woff2"); }
 /* ==========================================================================
    Ishaque Nv. portfolio
    Paper, navy ink and a painted Kerala valley. Day and night.
@@ -193,8 +192,8 @@ h3 { font-weight: 800; line-height: 1.1; }
 /* ---------- valley (hero) ---------- */
 
 .valley { position: relative; height: 220svh; background: var(--paper); }
-.stage { position: sticky; top: 0; height: 100svh; min-height: 560px; overflow: clip; background: #7fb7ea; touch-action: pan-y; }
-:root[data-theme="dark"] .stage { background: #0d1a3d; }
+.stage { position: sticky; top: 0; height: 100svh; min-height: 560px; overflow: clip; background: linear-gradient(#7fb7ea 0, #a9d3f2 48%, #7fae5a 62%, #6a9a44 100%); touch-action: pan-y; }
+:root[data-theme="dark"] .stage { background: linear-gradient(#0d1a3d 0, #1b2f5e 48%, #1f3a26 62%, #16301c 100%); }
 /* the painted scene: a 1600 by 1000 camera, sized and moved by script */
 .cam { position: absolute; left: 0; top: 0; width: 1600px; height: 1000px; transform-origin: 0 0; will-change: transform; --u: 1px; }
 .ly { position: absolute; inset: 0; pointer-events: none; will-change: transform; transform-origin: 50% 62%; }
@@ -657,9 +656,9 @@ h3 { font-weight: 800; line-height: 1.1; }
 .vn-sleeve small { font-size: 12px; opacity: .85; }
 .vn-disc { position: absolute; right: 0; top: 6px; width: 106px; height: 106px; border-radius: 50%; background: radial-gradient(circle, #ff5f6d 0 16px, #1a1a1a 17px 22px, #2a2a2a 23px 24px, #1a1a1a 25px 30px, #2a2a2a 31px 32px, #1a1a1a 33px 100%); box-shadow: 0 10px 20px -10px rgba(0, 0, 0, .7); animation: spin 6s linear infinite; }
 @keyframes spin { to { rotate: 360deg; } }
-.sticky { --x: 4%; --y: 70%; --w: 200px; padding: 16px 18px 18px; background: #ffe98a; border-radius: 4px; color: #142640; }
+.sticky { --x: 4%; --y: 70%; --w: 200px; container-type: inline-size; padding: 16px 18px 18px; background: #ffe98a; border-radius: 4px; color: #142640; }
 .st-k { font-size: 12px; font-weight: 800; color: #7a5a00; }
-.st-time { margin-top: 4px; white-space: nowrap; font-size: 34px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.st-time { margin-top: 4px; white-space: nowrap; font-size: clamp(22px, 19.5cqi, 34px); font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
 .st-t { margin-top: 6px; font-family: var(--hand); font-size: 20px; font-weight: 700; line-height: 1.1; }
 .desk .pass { --x: 30%; --y: 60%; --w: min(380px, 44%); --sec-bg: var(--cork); z-index: 2; }
 .desk-hint { margin-top: 14px; font-family: var(--hand); font-size: 20px; font-weight: 700; opacity: .75; text-align: center; }
@@ -671,7 +670,7 @@ h3 { font-weight: 800; line-height: 1.1; }
   .polaroid.p-yellow { --x: 4%; --y: 49%; --w: 165px; --ph: 128px; }
   .polaroid.p-pink { --x: 53%; --y: 47%; --w: 150px; --ph: 140px; }
   .vinyl { --x: 4%; --y: 92%; --w: 180px; }
-  .sticky { --x: 5%; --y: 66%; --w: 160px; }
+  .sticky { --x: 5%; --y: 66%; --w: 170px; }
   .desk .pass { --x: 4%; --y: 79%; --w: 92%; }
 }
 
