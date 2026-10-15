@@ -50,14 +50,14 @@ const ICONS = {
 };
 const icon = k => `<svg class="i" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">${ICONS[k]}</svg>`;
 
-/* the cards standing in the box */
+/* the cards standing in the box; script places and animates them */
 export function workBox() {
   return FEATURED.map((f, i) => {
     const n = PROJECTS.filter(p => p.category === f.category).length;
-    return `<a class="ccard" href="/projects#${slugify(f.category)}" data-k="${i}" style="--k:${i};--from:${f.from};--to:${f.to}" aria-label="${esc(f.category)}, ${n} projects" tabindex="-1">
-  <span class="cc-ico">${icon(f.icon)}</span>
-  <span class="cc-text"><span class="cc-name">${esc(f.category)}</span><strong>${esc(f.stat)}</strong><span class="cc-label">${esc(f.label)}</span></span>
-  <span class="cc-num">${String(i + 1).padStart(2, '0')}</span>
+    return `<a class="wk" href="/projects#${slugify(f.category)}" data-k="${i}" style="--from:${f.from};--to:${f.to}" aria-label="${esc(f.category)}, ${n} projects" tabindex="-1">
+  <span class="wk-top"><span class="wk-ic">${icon(f.icon)}</span><span class="wk-tag">${String(i + 1).padStart(2, '0')}</span></span>
+  <span class="wk-body"><span class="wk-hand">${esc(f.category)}</span><strong class="wk-big">${esc(f.stat)}</strong><span class="wk-sub">${esc(f.label)}</span></span>
+  <span class="wk-foot">${n} projects</span>
 </a>`;
   }).join('\n');
 }

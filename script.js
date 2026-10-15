@@ -20,6 +20,29 @@ function queue() {
   requestAnimationFrame(tick);
 }
 addEventListener('scroll', queue, { passive: true });
+
+/* computers with a mouse get eased scrolling, which makes the fly-through and
+   the word reveal feel like one motion; phones keep their native scroll */
+if (!reduced && innerWidth >= 860 && matchMedia('(hover: hover) and (pointer: fine)').matches) {
+  const tag = document.createElement('script');
+  tag.src = 'https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js';
+  tag.onload = () => {
+    if (!window.Lenis) return;
+    const lenis = new window.Lenis({ lerp: .09, smoothWheel: true, wheelMultiplier: .9 });
+    const raf = t => { lenis.raf(t); requestAnimationFrame(raf); };
+    requestAnimationFrame(raf);
+    /* in-page links go through Lenis so they ease too */
+    document.addEventListener('click', e => {
+      const a = e.target.closest('a[href^="#"]');
+      if (!a || a.getAttribute('href') === '#') return;
+      const el = document.getElementById(a.getAttribute('href').slice(1));
+      if (!el) return;
+      e.preventDefault();
+      lenis.scrollTo(el, { offset: -8, duration: 1.1, easing: t => 1 - (1 - t) ** 4 });
+    });
+  };
+  document.head.append(tag);
+}
 addEventListener('resize', queue, { passive: true });
 
 /* ---------- toast ---------- */
@@ -108,47 +131,135 @@ if (dock) {
   place();
 }
 
-/* ---------- hero pins: small sheets about each place ---------- */
-const hsheet = $('[data-hsheet-panel]');
-if (hsheet) {
+/* ---------- the valley: a camera over the painted scene ----------
+ * The scene is a 1600 by 1000 picture in layers, each with a depth. On a
+ * computer, scrolling flies you through it: each layer grows by its depth and
+ * the foreground slips past; the pointer tilts it a little. On a phone the
+ * picture is wider than the screen and can be dragged. Tapping a pin zooms
+ * the camera to that place and opens its sheet. */
+const stage = $('[data-stage]');
+const cam = $('[data-cam]');
+if (stage && cam) {
+  const valley = stage.parentElement;
+  const layers = $$('.ly', cam).map(el => ({ el, d: Number(el.dataset.d) || 0 }));
+  const heroCopy = $('[data-hero-copy]', stage);
+  const shade = $('[data-shade]', stage);
+  const cue = $('[data-cue]', stage);
+  const hsheet = $('[data-hsheet-panel]', stage);
   const body = $('[data-hsheet-body]', hsheet);
-  const pinsEls = $$('[data-hsheet]');
-  let openPin = null;
-  let hideTimer;
+  const pins = $$('[data-hsheet]', cam);
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const smooth = t => t * t * (3 - 2 * t);
+  const range = (v, a, b) => clamp((v - a) / (b - a), 0, 1);
+  const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  let vw = 0; let vh = 0; let mobile = false; let SW = 0; let SH = 0; let u = 1;
+  let baseX = 0; let baseY = 0; let ax = .5; let vTop = 0; let vRange = 1; let pV = 0;
+  const cur = { x: 0, y: 0, s: reduced ? 1 : 1.18, ok: false };
+  const ptr = { x: 0, y: 0, sx: 0, sy: 0 };
+  let focusId = null; let rate = 2; const t0 = performance.now();
+  let lastT = t0;
+
+  function layout() {
+    vw = innerWidth; vh = stage.clientHeight; mobile = vw < 760;
+    if (!cur.ok) ax = mobile ? .4 : .5;
+    /* the picture always covers the stage; phones get a wider one to drag */
+    u = Math.max(vw / 1600, vh / 1000) * (mobile ? 1.1 : 1.06);
+    SW = 1600 * u; SH = 1000 * u;
+    cam.style.width = `${SW}px`; cam.style.height = `${SH}px`; cam.style.setProperty('--u', `${u}px`);
+    baseX = (vw - SW) * ax; baseY = vh - SH;
+    vTop = valley.getBoundingClientRect().top + scrollY; vRange = Math.max(1, valley.offsetHeight - vh);
+    if (!cur.ok) { cur.x = baseX - (cur.s - 1) * SW * .5; cur.y = baseY - (cur.s - 1) * SH * .6; cur.ok = true; }
+  }
+  const clampCam = o => { o.x = Math.min(0, Math.max(vw - o.s * SW, o.x)); o.y = Math.min(0, Math.max(vh - o.s * SH, o.y)); return o; };
+  function focusCam(pin) {
+    const fx = Number(pin.style.getPropertyValue('--px')) / 1600;
+    const fy = (Number(pin.style.getPropertyValue('--py')) - 40) / 1000;
+    const s = mobile ? 1.7 : 1.45;
+    const left = fx < .5;
+    const sx = mobile ? vw * .5 : (left ? vw * .68 : vw * .34);
+    const sy = mobile ? vh * .22 : vh * .5;
+    return clampCam({ x: sx - s * fx * SW, y: sy - s * fy * SH, s });
+  }
+
+  /* the sheet about a place */
+  let openPin = null; let hideTimer;
   const close = () => {
     if (!openPin) return;
     hsheet.classList.remove('is-open');
-    openPin.classList.remove('is-on');
-    openPin.setAttribute('aria-expanded', 'false');
-    openPin = null;
-    clearTimeout(hideTimer);
-    hideTimer = setTimeout(() => { hsheet.hidden = true; }, 260);
+    openPin.classList.remove('is-on'); openPin.setAttribute('aria-expanded', 'false');
+    openPin = null; focusId = null; rate = 2.6;
+    stage.classList.remove('is-focus');
+    clearTimeout(hideTimer); hideTimer = setTimeout(() => { hsheet.hidden = true; }, 260);
   };
   const open = pin => {
     if (openPin === pin) { close(); return; }
+    if (pV > .04) { scrollTo({ top: vTop, behavior: reduced ? 'auto' : 'smooth' }); setTimeout(() => open(pin), 700); return; }
     clearTimeout(hideTimer);
     openPin?.classList.remove('is-on');
-    openPin = pin;
-    pin.classList.add('is-on');
-    pin.setAttribute('aria-expanded', 'true');
+    openPin = pin; focusId = pin; rate = 3;
+    pin.classList.add('is-on'); pin.setAttribute('aria-expanded', 'true');
+    stage.classList.add('is-focus');
+    hsheet.classList.toggle('is-left', Number(pin.style.getPropertyValue('--px')) >= 800);
     body.replaceChildren($(`#hs-${pin.dataset.hsheet}`).content.cloneNode(true));
-    hsheet.hidden = false;
-    hsheet.scrollTop = 0;
-    hsheet.classList.remove('is-open');
-    void hsheet.offsetWidth;
-    hsheet.classList.add('is-open');
+    hsheet.hidden = false; hsheet.scrollTop = 0;
+    hsheet.classList.remove('is-open'); void hsheet.offsetWidth; hsheet.classList.add('is-open');
   };
-  pinsEls.forEach(pin => {
+  pins.forEach(pin => {
     pin.setAttribute('aria-expanded', 'false');
     pin.addEventListener('click', e => { e.stopPropagation(); open(pin); });
   });
-  hsheet.addEventListener('click', e => {
-    if (e.target.closest('[data-hsheet-close]')) close();
-    e.stopPropagation();
-  });
-  document.addEventListener('click', close);
+  hsheet.addEventListener('click', e => { if (e.target.closest('[data-hsheet-close]')) close(); e.stopPropagation(); });
+  document.addEventListener('click', e => { if (!e.target.closest('.hpin')) close(); });
   addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
-  addEventListener('scroll', () => { if (openPin && scrollY > innerHeight * .6) close(); }, { passive: true });
+
+  /* the pointer tilts the scene; a drag pans it on phones */
+  if (fine) {
+    stage.addEventListener('pointermove', e => { ptr.x = (e.clientX / vw - .5) * 2; ptr.y = (e.clientY / vh - .5) * 2; });
+    stage.addEventListener('pointerleave', () => { ptr.x = 0; ptr.y = 0; });
+  }
+  let drag = null;
+  stage.addEventListener('pointerdown', e => { if (!mobile || e.target.closest('.hpin, .hsheet')) return; drag = { x: e.clientX, ax }; });
+  stage.addEventListener('pointermove', e => { if (!drag) return; ax = clamp(drag.ax - (e.clientX - drag.x) / (SW - vw), 0, 1); baseX = (vw - SW) * ax; });
+  const endDrag = () => { drag = null; };
+  stage.addEventListener('pointerup', endDrag); stage.addEventListener('pointercancel', endDrag);
+
+  /* the scroll cue shows after a quiet moment at the top */
+  let cueT;
+  const armCue = (wait = 1500) => { clearTimeout(cueT); cueT = setTimeout(() => { if (pV < .002 && !focusId && !document.hidden) cue.classList.add('is-idle'); }, wait); };
+  ['scroll', 'wheel', 'keydown', 'touchstart'].forEach(ev => addEventListener(ev, () => armCue(), { passive: true }));
+  if (!mobile) armCue(3500);
+
+  function frame() {
+    const now = performance.now(); const dt = Math.min(.1, (now - lastT) / 1000); lastT = now;
+    const top = stage.getBoundingClientRect().top;
+    if (top < -vh * 1.5 && !focusId) return;
+    pV = mobile || reduced ? 0 : clamp((scrollY - vTop) / vRange, 0, 1);
+    if (focusId && pV > .04) close();
+    const e = smooth(pV);
+    rate += ((focusId ? 3 : 2.2) - rate) * clamp(dt, 0, 1);
+    const T = focusId ? focusCam(focusId) : { x: baseX, y: baseY, s: 1 };
+    const k = reduced ? 1 : 1 - Math.exp(-dt * rate);
+    cur.x = lerp(cur.x, T.x, k); cur.y = lerp(cur.y, T.y, k); cur.s = lerp(cur.s, T.s, k);
+    ptr.sx = lerp(ptr.sx, ptr.x, clamp(dt * 2.6, 0, 1)); ptr.sy = lerp(ptr.sy, ptr.y, clamp(dt * 2.6, 0, 1));
+    cam.style.transform = `translate3d(${cur.x.toFixed(2)}px, ${cur.y.toFixed(2)}px, 0) scale(${cur.s.toFixed(4)})`;
+    stage.classList.toggle('is-flying', pV > .03);
+    for (const L of layers) {
+      const sc = 1 + e * (.04 + L.d * .16);
+      const tx = -ptr.sx * L.d * 26;
+      const ty = -ptr.sy * L.d * 12 + e * L.d * 30 * u;
+      L.el.style.transform = `translate3d(${tx.toFixed(1)}px, ${ty.toFixed(1)}px, 0) scale(${sc.toFixed(4)})`;
+    }
+    const t = range(pV, .02, .3);
+    heroCopy.style.transform = `translate3d(0, ${(-t * vh * .35).toFixed(1)}px, 0)`;
+    heroCopy.style.opacity = focusId ? '0' : (1 - t * 1.2).toFixed(3);
+    shade.style.opacity = range(pV, .25, .65).toFixed(3);
+    if (pV > .002 || focusId) cue.classList.remove('is-idle');
+  }
+  const loop = () => { frame(); requestAnimationFrame(loop); };
+  addEventListener('resize', () => { layout(); });
+  layout();
+  requestAnimationFrame(loop);
 }
 
 /* ---------- journey: drive the road, stop by stop ----------
@@ -598,126 +709,205 @@ if (qv) {
 }
 const plainClick = e => !(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0);
 
-/* ---------- selected work: a box of cards ---------- */
+/* ---------- selected work: a box of cards ----------
+ * A real box: floor, walls and a lid in a 660 by 260 by 96 world, tilted
+ * towards you. The cards start sunk below the floor, the lid swings open
+ * when the box comes into view and the cards rise one by one. Hovering lifts
+ * a card; picking one turns it to face you, then opens that kind of work. */
 const cbox = $('[data-cbox]');
 if (cbox) {
-  const cards = $$('.ccard', cbox);
+  const scene = $('[data-cbox-scene]', cbox);
+  const box3 = $('[data-box3]', cbox);
+  const fit = $('.box-fit', cbox);
+  const cap = $('[data-box-cap]', cbox);
   const items = $$('.citem', cbox);
   const list = $('[data-clist]', cbox);
-  const scene = $('.cbox-scene', cbox);
-  const n = cards.length;
-  let active = 0;
-  let fromList = false;
-  const set = (i, { scrollList = true } = {}) => {
-    active = (i + n) % n;
-    cards.forEach((c, k) => c.classList.toggle('is-up', k === active));
-    items.forEach((it, k) => it.classList.toggle('is-on', k === active));
-    if (scrollList && list.scrollWidth > list.clientWidth) {
-      fromList = true;
-      list.scrollTo({ left: items[active].parentElement.offsetLeft - list.offsetLeft - parseFloat(getComputedStyle(list).paddingLeft), behavior: reduced ? 'auto' : 'smooth' });
-      setTimeout(() => { fromList = false; }, 600);
-    }
+  const BW = 660; const BD = 260; const BH = 96; const CW = 224; const CH = 304;
+  const SUNK = -(CH - BH + 40);
+  const face = (cls, w, h, x, y, z, rot, html = '') => {
+    const el = document.createElement('div');
+    el.className = `f ${cls}`;
+    el.style.width = `${w}px`; el.style.height = `${h}px`;
+    el.style.left = `${x - w / 2}px`; el.style.top = `${y - h}px`;
+    el.style.transform = `translate3d(0,0,${z}px) ${rot}`;
+    el.innerHTML = html;
+    return el;
   };
-  const openCard = (k, e) => {
+  const cards = $$('.wk', box3);
+  const n = cards.length;
+  const shadow = document.createElement('div'); shadow.className = 'box-shadow';
+  const floor = document.createElement('div'); floor.className = 'box-floor';
+  box3.prepend(shadow, floor,
+    face('wall-i', BW, BH, BW / 2, 0, 0, 'rotateX(-90deg)'),
+    face('wall-i', BD, BH, 0, BD / 2, 0, 'rotateZ(90deg) rotateX(-90deg)'));
+  const lid = face('box-lid', BW, BD, BW / 2, 0, BH, 'rotateX(-180deg)');
+  box3.insertBefore(lid, cards[0]);
+  box3.append(
+    face('wall-o', BD, BH, BW, BD / 2, 0, 'rotateZ(-90deg) rotateX(-90deg)'),
+    face('wall-o', BW, BH, BW / 2, BD, 0, 'rotateX(-90deg)', '<span class="brand">Things I designed</span>'));
+  const stand = z => `translate3d(0, 0, ${z}px) rotateZ(-90deg) rotateX(-90deg)`;
+  const faced = k => `translate3d(${(BW / 2 - k.x).toFixed(1)}px, ${BD * .95}px, 210px) rotateZ(-30deg) rotateX(-57deg)`;
+  /* a card below the floor is clipped there, so nothing pokes out underneath */
+  const rim = (k, z) => { k.el.style.clipPath = z < 0 ? `inset(${z <= SUNK ? 0 : -90}px -90px ${-z}px -90px)` : (k.el.style.clipPath ? 'inset(-90px -90px 0 -90px)' : ''); };
+  const wks = cards.map((el, i) => {
+    const x = 108 + i * ((BW - 216) / (n - 1));
+    el.style.left = `${x - CW / 2}px`; el.style.top = `${BD / 2 - CH}px`;
+    const k = { el, i, x, z: SUNK };
+    el.style.transform = stand(SUNK); rim(k, SUNK);
+    return k;
+  });
+  let open = false; let picked = null; let hoverK = null; let active = -1;
+
+  const fitBox = () => {
+    const w = scene.clientWidth;
+    const bs = clamp(Math.min(w / 760, scene.clientHeight / 560), .42, 1);
+    fit.style.setProperty('--bs', bs.toFixed(3));
+  };
+  const mark = k => {
+    active = k ? k.i : -1;
+    items.forEach((it, j) => it.classList.toggle('is-on', j === active));
+    if (k && list.scrollWidth > list.clientWidth) list.scrollTo({ left: items[active].parentElement.offsetLeft - list.offsetLeft - parseFloat(getComputedStyle(list).paddingLeft), behavior: reduced ? 'auto' : 'smooth' });
+  };
+  const enter = k => { if (picked || !open) return; hoverK = k; k.el.classList.add('hover'); k.el.style.transform = stand(70); rim(k, 70); mark(k); };
+  const leave = k => { if (picked) return; k.el.classList.remove('hover'); k.el.style.transform = stand(k.z); rim(k, k.z); if (hoverK === k) { hoverK = null; } };
+  const pick = (k, e) => {
+    if (!open) return;
     if (e && !plainClick(e)) return;
     e?.preventDefault();
-    const card = cards[k];
-    set(k);
-    card.classList.add('is-open');
-    setTimeout(() => { location.href = card.getAttribute('href'); }, reduced ? 0 : 520);
-    setTimeout(() => card.classList.remove('is-open'), 1500);
+    if (picked) return;
+    picked = k; mark(k);
+    k.el.classList.add('is-pick'); k.el.style.clipPath = ''; k.el.style.transform = faced(k);
+    setTimeout(() => { location.href = k.el.getAttribute('href'); }, reduced ? 0 : 700);
+    setTimeout(() => { picked = null; k.el.classList.remove('is-pick'); k.el.style.transform = stand(0); }, 2200);
   };
-  cards.forEach((c, k) => c.addEventListener('click', e => {
-    if (k !== active) { e.preventDefault(); set(k); return; }
-    openCard(k, e);
-  }));
-  items.forEach((it, k) => {
-    it.addEventListener('click', e => {
-      if (k !== active && list.scrollWidth > list.clientWidth) { e.preventDefault(); set(k); return; }
-      openCard(k, e);
+  const openBox = () => {
+    if (open) return; open = true; scene.classList.add('is-open');
+    lid.style.transform = `translate3d(0,0,${BH}px) rotateX(-72deg)`;
+    wks.forEach((k, i) => setTimeout(() => {
+      k.z = 0; k.el.style.transform = stand(0); rim(k, 0);
+      setTimeout(() => { if (k.z === 0 && !k.el.classList.contains('hover')) k.el.style.clipPath = ''; }, 1300);
+      if (i === n - 1) setTimeout(() => { cards.forEach(c => { c.tabIndex = 0; }); }, 1300);
+    }, (reduced ? 0 : 800) + i * (reduced ? 0 : 130)));
+  };
+  wks.forEach(k => {
+    k.el.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse' && hoverK !== k) { hoverK && leave(hoverK); enter(k); } });
+    k.el.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') leave(k); });
+    k.el.addEventListener('focus', () => { hoverK && leave(hoverK); enter(k); });
+    k.el.addEventListener('blur', () => leave(k));
+    k.el.addEventListener('click', e => {
+      /* on a phone the first tap lifts the card, the second opens it */
+      if (!matchMedia('(hover: hover)').matches && hoverK !== k) { e.preventDefault(); hoverK && leave(hoverK); enter(k); return; }
+      pick(k, e);
     });
-    it.addEventListener('mouseenter', () => set(k, { scrollList: false }));
-    it.addEventListener('focus', () => set(k, { scrollList: false }));
   });
-  /* swiping the list moves the lifted card with it */
-  let scrollT;
-  list.addEventListener('scroll', () => {
-    if (fromList) return;
-    clearTimeout(scrollT);
-    scrollT = setTimeout(() => {
-      const x = list.scrollLeft;
-      let best = 0;
-      items.forEach((it, k) => { if (Math.abs(it.parentElement.offsetLeft - list.offsetLeft - x) < Math.abs(items[best].parentElement.offsetLeft - list.offsetLeft - x)) best = k; });
-      if (best !== active) set(best, { scrollList: false });
-    }, 90);
-  }, { passive: true });
-  /* swiping the box steps through the cards */
+  items.forEach((it, i) => {
+    it.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse' && open && hoverK !== wks[i]) { hoverK && leave(hoverK); enter(wks[i]); } });
+    it.addEventListener('click', e => {
+      if (!open) return;
+      if (!matchMedia('(hover: hover)').matches && active !== i) { e.preventDefault(); hoverK && leave(hoverK); enter(wks[i]); return; }
+      pick(wks[i], e);
+    });
+  });
+  /* swiping the box moves the lifted card along */
   let sx = null;
   scene.addEventListener('pointerdown', e => { sx = e.clientX; });
   scene.addEventListener('pointerup', e => {
     if (sx === null) return;
-    const dx = e.clientX - sx;
-    sx = null;
-    if (Math.abs(dx) > 40) { scene.dataset.swiped = '1'; set(active + (dx < 0 ? 1 : -1)); }
+    const dx = e.clientX - sx; sx = null;
+    if (Math.abs(dx) > 40 && open) { scene.dataset.swiped = '1'; const j = clamp((hoverK ? hoverK.i : -1) + (dx < 0 ? 1 : -1), 0, n - 1); hoverK && leave(hoverK); enter(wks[j]); }
   });
   scene.addEventListener('click', e => { if (scene.dataset.swiped) { e.preventDefault(); e.stopPropagation(); delete scene.dataset.swiped; } }, true);
   cbox.addEventListener('keydown', e => {
-    if (e.key === 'ArrowRight') { e.preventDefault(); set(active + 1); items[active].focus({ preventScroll: true }); }
-    if (e.key === 'ArrowLeft') { e.preventDefault(); set(active - 1); items[active].focus({ preventScroll: true }); }
+    if (!open || !['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+    e.preventDefault();
+    const j = clamp((hoverK ? hoverK.i : -1) + (e.key === 'ArrowRight' ? 1 : -1), 0, n - 1);
+    wks[j].el.focus({ preventScroll: true });
   });
-  /* the cards rise out of the box the first time it comes into view */
-  const lift = () => {
-    cbox.classList.add('is-in');
-    setTimeout(() => { cbox.classList.add('is-ready'); set(0, { scrollList: false }); }, reduced ? 0 : 900);
-  };
-  if (reduced || !('IntersectionObserver' in window)) lift();
+  fitBox();
+  addEventListener('resize', fitBox);
+  if (reduced || !('IntersectionObserver' in window)) openBox();
   else {
-    const o = new IntersectionObserver(([en]) => { if (en.isIntersecting) { o.disconnect(); lift(); } }, { threshold: .35 });
+    const o = new IntersectionObserver(([en]) => { if (en.isIntersecting) { o.disconnect(); openBox(); } }, { threshold: .45 });
     o.observe(scene);
   }
 }
 
 /* ---------- stack: the gift box ---------- */
 const gift = $('[data-gift]');
-if (gift && !reduced) {
+if (gift) {
   const tools = $$('.tool', gift);
   const stage = $('.gift-stage', gift);
+  const lid = $('.gb-lid', gift);
+  const burst = $('.gift-burst', gift);
+  const beam = $('.gift-beam', gift);
+  const strings = $('[data-strings]', gift);
+  const confetti = $('[data-confetti]', gift);
+  const btn = $('[data-unwrap]', gift);
+  const range = (v, a, b) => clamp((v - a) / (b - a), 0, 1);
+  const COLORS = ['#ffd23f', '#ff6b4a', '#2f7fd8', '#4f9e4a', '#b7a2ff'];
+  const bits = Array.from({ length: 16 }, (_, k) => {
+    const el = document.createElement('i');
+    el.style.setProperty('--c', COLORS[k % 5]);
+    confetti.append(el);
+    return { el, x0: ((k * 37) % 120) - 60, x1: ((k * 71) % 300) - 150, h: 180 + (k * 29 % 10) * 22, r: (k * 53) % 360, t: (k % 6) * .04 };
+  });
+  const paths = tools.map(() => { const p = document.createElementNS('http://www.w3.org/2000/svg', 'path'); strings.append(p); return p; });
+  let from = [];
+  let mouth = { x: 0, y: 0 };
   const aim = () => {
+    const g = gift.getBoundingClientRect();
     const b = stage.getBoundingClientRect();
-    const cx = b.left + b.width / 2;
-    const cy = b.top + b.height * .45;
-    tools.forEach((t, i) => {
-      t.style.transition = 'none';
-      t.style.removeProperty('--fx');
-      t.style.removeProperty('--fy');
-      const r = t.getBoundingClientRect();
-      t.style.setProperty('--fx', `${(cx - (r.left + r.width / 2)).toFixed(0)}px`);
-      t.style.setProperty('--fy', `${(cy - (r.top + r.height / 2)).toFixed(0)}px`);
-      t.style.setProperty('--ti', String(i));
-      void t.offsetWidth;
-      t.style.transition = '';
+    mouth = { x: b.left + b.width / 2 - g.left, y: b.top + b.height * .42 - g.top };
+    from = tools.map(t => { const r = t.getBoundingClientRect(); return { x: r.left + r.width / 2 - g.left, y: r.top + r.height / 2 - g.top }; });
+    strings.setAttribute('viewBox', `0 0 ${g.width} ${g.height}`);
+  };
+  let q = 0; let t0 = 0; let going = false; let done = false; let auto;
+  const paint = () => {
+    const u = going ? Math.min(1, (performance.now() - t0) / 7000) : 0;
+    q = reduced ? (going ? 1 : 0) : (u < 1 ? .5 - .5 * Math.cos(Math.PI * u) : 1);
+    const l = range(q, 0, .4);
+    const S = parseFloat(getComputedStyle(stage).getPropertyValue('--s')) || 190;
+    lid.style.transform = `translate3d(${(l * 150).toFixed(1)}px, ${(-S * .39 - Math.sin(l * Math.PI) * 260 - l * 40).toFixed(1)}px, ${(l * 40).toFixed(1)}px) rotateZ(${(l * 34).toFixed(1)}deg) rotateX(${(-l * 16).toFixed(1)}deg)`;
+    burst.style.opacity = (range(q, .08, .3) * (1 - range(q, .55, 1) * .55)).toFixed(3);
+    beam.style.opacity = (range(q, .14, .45) * (1 - range(q, .8, 1) * .4)).toFixed(3);
+    bits.forEach(c => {
+      const p = range(q, .1 + c.t, .55 + c.t);
+      const x = c.x0 + (c.x1 - c.x0) * p;
+      const y = -Math.sin(p * Math.PI) * c.h + p * p * 120;
+      c.el.style.opacity = p > 0 && p < 1 ? (1 - p * .6).toFixed(2) : '0';
+      c.el.style.transform = `translate(${x.toFixed(0)}px, ${y.toFixed(0)}px) rotate(${(c.r + p * 540).toFixed(0)}deg)`;
     });
+    tools.forEach((t, i) => {
+      const p = range(q, .22 + i * .04, .62 + i * .04);
+      const e = 1 - (1 - p) ** 3;
+      const f = from[i] || mouth;
+      const dx = mouth.x - f.x; const dy = mouth.y - f.y;
+      const lift = -Math.sin(p * Math.PI) * 90;
+      t.style.opacity = p > 0 ? '1' : '0';
+      t.style.transform = p >= 1 ? '' : `translate(${(dx * (1 - e)).toFixed(1)}px, ${(dy * (1 - e) + lift).toFixed(1)}px) scale(${(.3 + .7 * e).toFixed(3)}) rotate(${((1 - e) * -25).toFixed(1)}deg)`;
+      const sx = f.x + dx * (1 - e); const sy = f.y + dy * (1 - e) + lift;
+      paths[i].setAttribute('d', `M${mouth.x.toFixed(1)} ${mouth.y.toFixed(1)} Q${((mouth.x + sx) / 2).toFixed(1)} ${(Math.max(mouth.y, sy) + 30).toFixed(1)} ${sx.toFixed(1)} ${sy.toFixed(1)}`);
+      paths[i].style.opacity = (p * (1 - range(q, .9, 1))).toFixed(2);
+    });
+    if (going && u < 1) requestAnimationFrame(paint);
+    else if (going) { done = true; gift.classList.add('is-done'); strings.hidden = true; }
+  };
+  const unwrap = () => {
+    if (going) return;
+    clearTimeout(auto);
+    aim();
+    going = true; t0 = performance.now();
+    gift.classList.add('is-open');
+    btn.classList.add('is-gone');
+    requestAnimationFrame(paint);
   };
   gift.classList.add('is-wrapped');
-  aim();
-  addEventListener('resize', () => { if (gift.classList.contains('is-wrapped')) aim(); });
-  let auto;
-  const unwrap = () => {
-    clearTimeout(auto);
-    if (!gift.classList.contains('is-wrapped')) return;
-    gift.classList.add('is-open');
-    gift.classList.remove('is-wrapped');
-  };
-  $('[data-unwrap]', gift).addEventListener('click', unwrap);
+  aim(); paint();
+  addEventListener('resize', () => { if (!done) { aim(); paint(); } });
+  btn.addEventListener('click', unwrap);
   stage.addEventListener('click', unwrap);
-  /* nobody should miss the tools: it opens by itself after a moment in view */
-  const o = new IntersectionObserver(([en]) => {
-    clearTimeout(auto);
-    if (en.isIntersecting) auto = setTimeout(unwrap, 3200);
-  }, { threshold: .7 });
+  const o = new IntersectionObserver(([en]) => { clearTimeout(auto); if (en.isIntersecting && !going) auto = setTimeout(unwrap, 4000); }, { threshold: .7 });
   o.observe(stage);
-} else if (gift) {
-  gift.classList.add('is-open');
 }
 
 /* ---------- contact: press a key ---------- */
