@@ -299,12 +299,12 @@ if (journey) {
     'm-park': { fill: 'park' },
     'm-water': { fill: 'water' },
     'm-river': { stroke: 'water', width: 46 },
-    'm-street': { stroke: 'road', width: 14, alpha: .85, cap: 'butt' },
-    'm-road-case': { stroke: 'hwyC', width: 64 },
-    'm-road-main': { stroke: 'hwy', width: 52 },
-    'm-road-line': { stroke: 'land', width: 3, alpha: .9, dash: [22, 26] },
+    'm-street': { stroke: 'road', width: 10, alpha: .9, cap: 'butt' },
+    'm-hwy': { stroke: 'hwy', width: 22, alpha: .9 },
+    'm-road-main': { stroke: 'route', width: 5, alpha: .6, dash: [1, 12], fixed: 2.6 },
   };
   const shapes = [];
+  const labels = $$('text', svg).map(el => ({ text: el.textContent, x: +el.getAttribute('x'), y: +el.getAttribute('y'), size: +el.getAttribute('font-size') || 36 }));
   $$('rect, path', svg).forEach(el => {
     const st = STYLE[el.getAttribute('class')];
     if (!st) return;
@@ -337,20 +337,6 @@ if (journey) {
     img.src = href;
     marks.push(m);
   };
-  stops.forEach(s => {
-    if (!s.mark) return;
-    const a = at(s.len - 8);
-    const b = at(s.len + 8);
-    const tx = b.x - a.x;
-    const ty = b.y - a.y;
-    const k = Math.hypot(tx, ty) || 1;
-    let nx = -ty / k;
-    let ny = tx / k;
-    if (-nx + ny * .6 < 0) { nx = -nx; ny = -ny; }
-    place(s.mark, s.x + nx * 175, s.y + ny * 175, 230);
-  });
-  place('/assets/map/boat.webp', 1290, 1215, 170);
-  place('/assets/map/mountains.webp', 1830, 2230, 260);
   /* at night the landmarks are dimmed once into their own small canvas */
   const darkened = m => {
     if (!m.dark) {
@@ -377,8 +363,8 @@ if (journey) {
      it is handed something it cannot read, which painted the whole map black
      on iPhones where the variables came back empty */
   const PALETTE = {
-    light: { land: '#f8f5ee', block: '#e7e1d5', park: '#d2e9c8', water: '#aad3f2', road: '#ffffff', hwy: '#fcde86', hwyC: '#edc458', route: '#2e7dda' },
-    dark: { land: '#161e2c', block: '#212b3d', park: '#1c3329', water: '#19314f', road: '#232d40', hwy: '#5c4a1f', hwyC: '#3f3418', route: '#78b2ff' },
+    light: { land: '#faf8f3', block: '#e6e0d6', park: '#d4ead0', water: '#b6d8f5', road: '#ffffff', hwy: '#f6dc8a', hwyC: '#edc458', route: '#2e7dda', label: '#8e95a8' },
+    dark: { land: '#161e2c', block: '#212b3d', park: '#1c3329', water: '#19314f', road: '#232d40', hwy: '#5c4a1f', hwyC: '#3f3418', route: '#78b2ff', label: '#6d7891' },
   };
   const probe = document.createElement('canvas').getContext('2d');
   const valid = c => { if (!c) return false; probe.fillStyle = '#010203'; probe.fillStyle = c; return probe.fillStyle !== '#010203' || c === '#010203'; };
@@ -389,7 +375,7 @@ if (journey) {
     let cs;
     try { cs = getComputedStyle(journey); } catch { cs = null; }
     const v = (n, k) => { const c = cs ? cs.getPropertyValue(n).trim() : ''; return valid(c) ? c : base[k]; };
-    colors = { land: v('--m-land', 'land'), block: v('--m-block', 'block'), park: v('--m-park', 'park'), water: v('--m-water', 'water'), road: v('--m-road', 'road'), hwy: v('--m-hwy', 'hwy'), hwyC: v('--m-hwy-c', 'hwyC'), route: v('--route', 'route') };
+    colors = { land: v('--m-land', 'land'), block: v('--m-block', 'block'), park: v('--m-park', 'park'), water: v('--m-water', 'water'), road: v('--m-road', 'road'), hwy: v('--m-hwy', 'hwy'), hwyC: v('--m-hwy-c', 'hwyC'), route: v('--route', 'route'), label: v('--m-label', 'label') };
     colorsStale = false;
   }
   new MutationObserver(() => { colorsStale = true; redraw(); }).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
@@ -412,18 +398,26 @@ if (journey) {
         ctx.fill(s.path);
       } else {
         ctx.strokeStyle = colors[s.stroke];
-        ctx.lineWidth = s.width;
+        /* the trail keeps the same thickness on screen however far out the map is */
+        ctx.lineWidth = s.fixed ? s.fixed / z : s.width;
         ctx.lineCap = s.cap || 'round';
-        ctx.setLineDash(s.dash || []);
+        ctx.setLineDash(s.fixed ? [1 / z, 10 / z] : (s.dash || []));
         ctx.stroke(s.path);
       }
     }
     ctx.setLineDash([]);
     ctx.globalAlpha = 1;
+    ctx.fillStyle = colors.label;
+    ctx.textAlign = 'center';
+    ctx.font = '700 36px ' + getComputedStyle(root).getPropertyValue('--sans');
+    for (const t of labels) {
+      if (t.x + 300 < vx || t.y < vy || t.x - 300 > vx + vw || t.y - 40 > vy + vh) continue;
+      ctx.fillText(t.text, t.x, t.y);
+    }
     if (walked > 0) {
-      ctx.globalAlpha = .9;
+      ctx.globalAlpha = .95;
       ctx.strokeStyle = colors.route;
-      ctx.lineWidth = 18;
+      ctx.lineWidth = 9;
       ctx.lineCap = 'round';
       ctx.setLineDash([walked, L + 20]);
       ctx.stroke(roadPath);

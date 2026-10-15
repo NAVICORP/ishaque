@@ -361,13 +361,14 @@ h3 { font-weight: 800; line-height: 1.1; }
 /* ---------- journey: the map ---------- */
 
 .journey { position: relative; z-index: 2;
-  --m-land: #f8f5ee; --m-block: #e7e1d5; --m-park: #d2e9c8; --m-water: #aad3f2;
-  --m-road: #ffffff; --m-hwy: #fcde86; --m-hwy-c: #edc458; --route: #2e7dda; --sec-bg: var(--m-land); background: var(--m-land); }
+  --m-land: #faf8f3; --m-block: #e6e0d6; --m-park: #d4ead0; --m-water: #b6d8f5; --m-label: #8e95a8;
+  --m-road: #ffffff; --m-hwy: #f6dc8a; --m-hwy-c: #edc458; --route: #2e7dda; --sec-bg: var(--m-land); background: var(--m-land); }
 :root[data-theme="dark"] .journey {
-  --m-land: #161e2c; --m-block: #212b3d; --m-park: #1c3329; --m-water: #19314f;
+  --m-land: #161e2c; --m-block: #212b3d; --m-park: #1c3329; --m-water: #19314f; --m-label: #6d7891;
   --m-road: #232d40; --m-hwy: #5c4a1f; --m-hwy-c: #3f3418; --route: #78b2ff; }
 .j-pin { position: relative; height: 100svh; min-height: 560px; overflow: hidden; }
 .mapview { position: absolute; inset: 0; background: var(--m-land); touch-action: pan-y; }
+.mapview::after { content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none; background: radial-gradient(ellipse 62% 56% at 50% 52%, transparent 60%, var(--m-land) 100%); }
 .mk { cursor: pointer; }
 .map { position: absolute; inset: 0; width: 100%; height: 100%; }
 
