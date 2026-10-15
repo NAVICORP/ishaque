@@ -287,6 +287,7 @@ if (journey) {
       icon: $('.j-icon', li).innerHTML, place: $('.j-place', li).textContent, meta: $('.j-meta', li).textContent,
       when: $('.j-when', li).textContent, title: $('h3', li).textContent, text: $('.j-text', li).textContent,
       pic: li.dataset.pic || '', mark: li.dataset.landmark || '',
+      link: li.dataset.link || '', linkLabel: li.dataset.linkLabel || 'See more',
     };
   });
   const N = stops.length;
@@ -298,12 +299,12 @@ if (journey) {
     'm-park': { fill: 'park' },
     'm-water': { fill: 'water' },
     'm-river': { stroke: 'water', width: 46 },
-    'm-street': { stroke: 'road', width: 14, alpha: .85, cap: 'butt' },
-    'm-road-case': { stroke: 'hwyC', width: 64 },
-    'm-road-main': { stroke: 'hwy', width: 52 },
-    'm-road-line': { stroke: 'land', width: 3, alpha: .9, dash: [22, 26] },
+    'm-street': { stroke: 'road', width: 10, alpha: .9, cap: 'butt' },
+    'm-hwy': { stroke: 'hwy', width: 22, alpha: .9 },
+    'm-road-main': { stroke: 'route', width: 5, alpha: .6, dash: [1, 12], fixed: 2.6 },
   };
   const shapes = [];
+  const labels = $$('text', svg).map(el => ({ text: el.textContent, x: +el.getAttribute('x'), y: +el.getAttribute('y'), size: +el.getAttribute('font-size') || 36 }));
   $$('rect, path', svg).forEach(el => {
     const st = STYLE[el.getAttribute('class')];
     if (!st) return;
@@ -336,20 +337,6 @@ if (journey) {
     img.src = href;
     marks.push(m);
   };
-  stops.forEach(s => {
-    if (!s.mark) return;
-    const a = at(s.len - 8);
-    const b = at(s.len + 8);
-    const tx = b.x - a.x;
-    const ty = b.y - a.y;
-    const k = Math.hypot(tx, ty) || 1;
-    let nx = -ty / k;
-    let ny = tx / k;
-    if (-nx + ny * .6 < 0) { nx = -nx; ny = -ny; }
-    place(s.mark, s.x + nx * 175, s.y + ny * 175, 230);
-  });
-  place('/assets/map/boat.webp', 1290, 1215, 170);
-  place('/assets/map/mountains.webp', 1830, 2230, 260);
   /* at night the landmarks are dimmed once into their own small canvas */
   const darkened = m => {
     if (!m.dark) {
@@ -376,8 +363,8 @@ if (journey) {
      it is handed something it cannot read, which painted the whole map black
      on iPhones where the variables came back empty */
   const PALETTE = {
-    light: { land: '#f8f5ee', block: '#e7e1d5', park: '#d2e9c8', water: '#aad3f2', road: '#ffffff', hwy: '#fcde86', hwyC: '#edc458', route: '#2e7dda' },
-    dark: { land: '#161e2c', block: '#212b3d', park: '#1c3329', water: '#19314f', road: '#232d40', hwy: '#5c4a1f', hwyC: '#3f3418', route: '#78b2ff' },
+    light: { land: '#faf8f3', block: '#e6e0d6', park: '#d4ead0', water: '#b6d8f5', road: '#ffffff', hwy: '#f6dc8a', hwyC: '#edc458', route: '#2e7dda', label: '#8e95a8' },
+    dark: { land: '#161e2c', block: '#212b3d', park: '#1c3329', water: '#19314f', road: '#232d40', hwy: '#5c4a1f', hwyC: '#3f3418', route: '#78b2ff', label: '#6d7891' },
   };
   const probe = document.createElement('canvas').getContext('2d');
   const valid = c => { if (!c) return false; probe.fillStyle = '#010203'; probe.fillStyle = c; return probe.fillStyle !== '#010203' || c === '#010203'; };
@@ -388,7 +375,7 @@ if (journey) {
     let cs;
     try { cs = getComputedStyle(journey); } catch { cs = null; }
     const v = (n, k) => { const c = cs ? cs.getPropertyValue(n).trim() : ''; return valid(c) ? c : base[k]; };
-    colors = { land: v('--m-land', 'land'), block: v('--m-block', 'block'), park: v('--m-park', 'park'), water: v('--m-water', 'water'), road: v('--m-road', 'road'), hwy: v('--m-hwy', 'hwy'), hwyC: v('--m-hwy-c', 'hwyC'), route: v('--route', 'route') };
+    colors = { land: v('--m-land', 'land'), block: v('--m-block', 'block'), park: v('--m-park', 'park'), water: v('--m-water', 'water'), road: v('--m-road', 'road'), hwy: v('--m-hwy', 'hwy'), hwyC: v('--m-hwy-c', 'hwyC'), route: v('--route', 'route'), label: v('--m-label', 'label') };
     colorsStale = false;
   }
   new MutationObserver(() => { colorsStale = true; redraw(); }).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
@@ -411,18 +398,26 @@ if (journey) {
         ctx.fill(s.path);
       } else {
         ctx.strokeStyle = colors[s.stroke];
-        ctx.lineWidth = s.width;
+        /* the trail keeps the same thickness on screen however far out the map is */
+        ctx.lineWidth = s.fixed ? s.fixed / z : s.width;
         ctx.lineCap = s.cap || 'round';
-        ctx.setLineDash(s.dash || []);
+        ctx.setLineDash(s.fixed ? [1 / z, 10 / z] : (s.dash || []));
         ctx.stroke(s.path);
       }
     }
     ctx.setLineDash([]);
     ctx.globalAlpha = 1;
+    ctx.fillStyle = colors.label;
+    ctx.textAlign = 'center';
+    ctx.font = '700 36px ' + getComputedStyle(root).getPropertyValue('--sans');
+    for (const t of labels) {
+      if (t.x + 300 < vx || t.y < vy || t.x - 300 > vx + vw || t.y - 40 > vy + vh) continue;
+      ctx.fillText(t.text, t.x, t.y);
+    }
     if (walked > 0) {
-      ctx.globalAlpha = .9;
+      ctx.globalAlpha = .95;
       ctx.strokeStyle = colors.route;
-      ctx.lineWidth = 18;
+      ctx.lineWidth = 9;
       ctx.lineCap = 'round';
       ctx.setLineDash([walked, L + 20]);
       ctx.stroke(roadPath);
@@ -533,7 +528,7 @@ if (journey) {
     const s = stops[i];
     card.style.setProperty('--c', s.c);
     const pic = s.pic ? `<span class="jc-pic media"><img src="${s.pic}" alt="" loading="lazy"></span>` : '';
-    card.innerHTML = `<div class="jc-in"><div class="jc-top"><span class="jc-tile">${s.icon}</span><p>${esc(s.place)}<span class="jc-meta"><svg class="i" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M20 10c0 5-5.54 10.19-7.4 11.8a1 1 0 0 1-1.2 0C9.54 20.19 4 15 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>${esc(s.meta)}</span></p></div><div class="jc-body"><h3>${esc(s.title)}</h3><p>${esc(s.text)}</p></div>${pic}</div>`;
+    card.innerHTML = `<div class="jc-in"><div class="jc-top"><span class="jc-tile">${s.icon}</span><p>${esc(s.place)}<span class="jc-meta"><svg class="i" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M20 10c0 5-5.54 10.19-7.4 11.8a1 1 0 0 1-1.2 0C9.54 20.19 4 15 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>${esc(s.meta)}</span></p></div><div class="jc-body"><h3>${esc(s.title)}</h3><p>${esc(s.text)}</p>${s.link ? `<a class="jc-link" href="${esc(s.link)}"${/^https?:/.test(s.link) ? ' target="_blank" rel="noopener"' : ''}>${esc(s.linkLabel)}<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>` : ''}</div>${pic}</div>`;
   }
   function showCard(i) {
     if (i === shown) return;
@@ -774,14 +769,29 @@ if (cbox) {
   };
   const enter = k => { if (picked || !open) return; hoverK = k; k.el.classList.add('hover'); k.el.style.transform = stand(70); rim(k, 70); mark(k); };
   const leave = k => { if (picked) return; k.el.classList.remove('hover'); k.el.style.transform = stand(k.z); rim(k, k.z); if (hoverK === k) { hoverK = null; } };
+  /* on a phone the first tap turns the card to face you and it stays; the second tap opens it */
+  const touch = () => !matchMedia('(hover: hover)').matches;
+  let facedK = null;
+  const unface = () => { if (!facedK) return; const k = facedK; facedK = null; k.el.classList.remove('is-pick'); k.el.style.transform = stand(0); rim(k, 0); };
+  const faceUp = (k) => {
+    if (facedK === k) return;
+    unface(); hoverK && leave(hoverK);
+    facedK = k; mark(k);
+    k.el.classList.add('is-pick'); k.el.style.clipPath = ''; k.el.style.transform = faced(k);
+  };
+  const go = k => { location.href = k.el.getAttribute('href'); };
   const pick = (k, e) => {
     if (!open) return;
     if (e && !plainClick(e)) return;
     e?.preventDefault();
     if (picked) return;
+    if (touch()) {
+      if (facedK === k) { picked = k; go(k); return; }
+      faceUp(k); return;
+    }
     picked = k; mark(k);
     k.el.classList.add('is-pick'); k.el.style.clipPath = ''; k.el.style.transform = faced(k);
-    setTimeout(() => { location.href = k.el.getAttribute('href'); }, reduced ? 0 : 700);
+    setTimeout(() => go(k), reduced ? 0 : 700);
     setTimeout(() => { picked = null; k.el.classList.remove('is-pick'); k.el.style.transform = stand(0); }, 2200);
   };
   const openBox = () => {
@@ -799,17 +809,12 @@ if (cbox) {
     k.el.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') leave(k); });
     k.el.addEventListener('focus', () => { hoverK && leave(hoverK); enter(k); });
     k.el.addEventListener('blur', () => leave(k));
-    k.el.addEventListener('click', e => {
-      /* on a phone the first tap lifts the card, the second opens it */
-      if (!matchMedia('(hover: hover)').matches && hoverK !== k) { e.preventDefault(); hoverK && leave(hoverK); enter(k); return; }
-      pick(k, e);
-    });
+    k.el.addEventListener('click', e => pick(k, e));
   });
   items.forEach((it, i) => {
     it.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse' && open && hoverK !== wks[i]) { hoverK && leave(hoverK); enter(wks[i]); } });
     it.addEventListener('click', e => {
       if (!open) return;
-      if (!matchMedia('(hover: hover)').matches && active !== i) { e.preventDefault(); hoverK && leave(hoverK); enter(wks[i]); return; }
       pick(wks[i], e);
     });
   });
@@ -819,7 +824,7 @@ if (cbox) {
   scene.addEventListener('pointerup', e => {
     if (sx === null) return;
     const dx = e.clientX - sx; sx = null;
-    if (Math.abs(dx) > 40 && open) { scene.dataset.swiped = '1'; const j = clamp((hoverK ? hoverK.i : -1) + (dx < 0 ? 1 : -1), 0, n - 1); hoverK && leave(hoverK); enter(wks[j]); }
+    if (Math.abs(dx) > 40 && open) { scene.dataset.swiped = '1'; const cur = touch() ? (facedK ? facedK.i : -1) : (hoverK ? hoverK.i : -1); const j = clamp(cur + (dx < 0 ? 1 : -1), 0, n - 1); if (touch()) faceUp(wks[j]); else { hoverK && leave(hoverK); enter(wks[j]); } }
   });
   scene.addEventListener('click', e => { if (scene.dataset.swiped) { e.preventDefault(); e.stopPropagation(); delete scene.dataset.swiped; } }, true);
   cbox.addEventListener('keydown', e => {
@@ -947,6 +952,18 @@ $$('[data-item]').forEach(item => {
   /* a dragged link should not also open */
   item.addEventListener('click', e => { if (item.dataset.moved) { e.preventDefault(); delete item.dataset.moved; } });
 });
+/* share the site from a phone; on a desktop the button copies the link */
+const shareBtn = $('[data-share]');
+if (shareBtn) {
+  const data = { title: 'Ishaque Nv.', text: 'I design products, and the pitch decks that sell them.', url: 'https://ishaquenv.com/' };
+  if (navigator.share || navigator.clipboard) shareBtn.hidden = false;
+  shareBtn.addEventListener('click', async () => {
+    try {
+      if (navigator.share) await navigator.share(data);
+      else { await navigator.clipboard.writeText(data.url); shareBtn.lastChild.textContent = 'Link copied'; setTimeout(() => { shareBtn.lastChild.textContent = 'Share this site'; }, 1600); }
+    } catch {}
+  });
+}
 const vinyl = $('[data-playlist]');
 if (vinyl && vinyl.dataset.playlist) { vinyl.href = vinyl.dataset.playlist; vinyl.hidden = false; }
 const kt = $('[data-kannur-time]');
@@ -974,6 +991,46 @@ if (Object.keys(keyLinks).length) {
     a.classList.add('is-pressed');
     setTimeout(() => a.classList.remove('is-pressed'), 160);
     setTimeout(() => a.click(), 120);
+  });
+}
+
+/* ---------- book a free call: a short brief, then the calendar ---------- */
+const bookSheet = $('[data-book-sheet]');
+if (bookSheet) {
+  const form = $('[data-book-step="1"]', bookSheet);
+  const step2 = $('[data-book-step="2"]', bookSheet);
+  const cal = $('[data-book-cal]', bookSheet);
+  const alt = $('[data-book-alt]', bookSheet);
+  const openNew = $('[data-book-open-new]', bookSheet);
+  const status = $('[data-book-status]', bookSheet);
+  const url = bookSheet.dataset.booking;
+  let frame = null;
+  const show = n => { form.hidden = n !== 1; step2.hidden = n !== 2; bookSheet.scrollTop = 0; };
+  const open = () => { if (bookSheet.open) return; show(1); bookSheet.showModal(); $('#book-company', bookSheet).focus({ preventScroll: true }); };
+  const close = () => { bookSheet.close(); };
+  $$('[data-book]').forEach(b => b.addEventListener('click', e => { e.preventDefault(); open(); }));
+  $('[data-book-close]', bookSheet).addEventListener('click', close);
+  $('[data-book-back]', bookSheet).addEventListener('click', () => show(1));
+  bookSheet.addEventListener('click', e => { if (e.target === bookSheet) close(); });
+  const loadCal = () => {
+    if (!url) { cal.hidden = true; alt.hidden = false; return; }
+    openNew.href = url; openNew.hidden = false;
+    if (frame) return;
+    frame = document.createElement('iframe');
+    frame.src = url; frame.title = 'Pick a time'; frame.loading = 'eager';
+    frame.addEventListener('load', () => { $('.book-wait', cal)?.remove(); });
+    cal.append(frame);
+  };
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const company = $('#book-company', bookSheet).value.trim();
+    if (!company) { status.textContent = 'Add your company or project name.'; status.className = 'form-status is-error'; $('#book-company', bookSheet).focus(); return; }
+    status.textContent = ''; status.className = 'form-status';
+    const needs = $$('[data-book-needs] input:checked', bookSheet).map(i => i.value).join(', ');
+    const role = $('#book-role', bookSheet).value.trim();
+    /* the brief goes ahead of the booking, so the call starts with context */
+    fetch('https://api.web3forms.com/submit', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ access_key: '44e58263-9bb0-4c59-98ec-e9c82910ddf9', subject: `Call booking: ${company}`, from_name: 'ishaquenv.com', company, role, needs: needs || 'not picked', page: location.href }) }).catch(() => {});
+    show(2); loadCal();
   });
 }
 

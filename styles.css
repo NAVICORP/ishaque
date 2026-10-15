@@ -361,13 +361,14 @@ h3 { font-weight: 800; line-height: 1.1; }
 /* ---------- journey: the map ---------- */
 
 .journey { position: relative; z-index: 2;
-  --m-land: #f8f5ee; --m-block: #e7e1d5; --m-park: #d2e9c8; --m-water: #aad3f2;
-  --m-road: #ffffff; --m-hwy: #fcde86; --m-hwy-c: #edc458; --route: #2e7dda; --sec-bg: var(--m-land); background: var(--m-land); }
+  --m-land: #faf8f3; --m-block: #e6e0d6; --m-park: #d4ead0; --m-water: #b6d8f5; --m-label: #8e95a8;
+  --m-road: #ffffff; --m-hwy: #f6dc8a; --m-hwy-c: #edc458; --route: #2e7dda; --sec-bg: var(--m-land); background: var(--m-land); }
 :root[data-theme="dark"] .journey {
-  --m-land: #161e2c; --m-block: #212b3d; --m-park: #1c3329; --m-water: #19314f;
+  --m-land: #161e2c; --m-block: #212b3d; --m-park: #1c3329; --m-water: #19314f; --m-label: #6d7891;
   --m-road: #232d40; --m-hwy: #5c4a1f; --m-hwy-c: #3f3418; --route: #78b2ff; }
 .j-pin { position: relative; height: 100svh; min-height: 560px; overflow: hidden; }
 .mapview { position: absolute; inset: 0; background: var(--m-land); touch-action: pan-y; }
+.mapview::after { content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none; background: radial-gradient(ellipse 62% 56% at 50% 52%, transparent 60%, var(--m-land) 100%); }
 .mk { cursor: pointer; }
 .map { position: absolute; inset: 0; width: 100%; height: 100%; }
 
@@ -486,7 +487,7 @@ h3 { font-weight: 800; line-height: 1.1; }
 .wk-ic .i { width: 24px; height: 24px; }
 .wk-tag { font-size: 14px; font-weight: 800; opacity: .8; }
 .wk-body { display: grid; align-content: end; gap: 2px; }
-.wk-hand { font-family: var(--hand); font-size: 24px; font-weight: 700; line-height: 1; }
+.wk-hand { font-size: 15px; font-weight: 800; line-height: 1.1; opacity: .92; }
 .wk-big { font-size: 42px; font-weight: 800; line-height: 1; }
 .wk-sub { font-size: 14px; font-weight: 600; opacity: .9; line-height: 1.2; }
 .wk-foot { margin-top: 10px; font-size: 13px; font-weight: 700; opacity: .75; }
@@ -736,9 +737,9 @@ h3 { font-weight: 800; line-height: 1.1; }
 .point-me { position: absolute; z-index: 1; right: clamp(0px, 2vw, 32px); bottom: calc(100% - 40px); width: clamp(110px, 11vw, 170px); height: auto; pointer-events: none; }
 .keys-mat { position: relative; z-index: 2; margin-top: clamp(36px, 5vw, 56px); padding: clamp(18px, 2.4vw, 30px); border-radius: 32px; background: var(--paper); color: var(--ink); box-shadow: 0 40px 80px -40px rgba(20, 38, 64, .55); }
 kbd { display: inline-grid; place-items: center; min-width: 26px; height: 22px; padding: 0 6px; border-radius: 6px; background: var(--card); box-shadow: 0 2px 0 var(--line), inset 0 0 0 1px var(--line); font-family: var(--sans); font-size: 12px; font-weight: 800; color: var(--ink); }
-.keys { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: clamp(14px, 2vw, 28px) clamp(10px, 1.6vw, 20px); margin-top: 18px; }
+.keys { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: clamp(14px, 2vw, 28px) clamp(10px, 1.6vw, 20px); margin-top: 18px; }
 .kw-item { display: grid; justify-items: center; align-content: start; gap: 14px; }
-.kw { display: block; width: 100%; max-width: 150px; border-radius: 30px; }
+.kw { display: block; width: 100%; max-width: 140px; border-radius: 30px; }
 /* a keycap: dark bezel, brand coloured face with a lit top and a thicker bottom lip, the shortcut letter in the corner */
 .key { --c: #e8622a; --d: color-mix(in srgb, var(--c) 72%, #000); position: relative; display: grid; place-items: center; width: 100%; aspect-ratio: 1 / 1; padding: 8%; border-radius: 26%; background: linear-gradient(#2a2a30, #141418); box-shadow: 0 14px 26px -14px rgba(20, 38, 64, .7), inset 0 1px 0 rgba(255, 255, 255, .12); transition: transform .14s var(--ease), box-shadow .14s var(--ease); }
 .key::before { content: ""; position: absolute; inset: 8%; border-radius: 22%; background: linear-gradient(180deg, color-mix(in srgb, var(--c) 78%, #fff) 0%, var(--c) 42%, var(--c) 78%, var(--d) 100%); box-shadow: inset 0 2px 0 rgba(255, 255, 255, .35), inset 0 -10% 0 var(--d); transition: box-shadow .14s var(--ease); }
@@ -752,6 +753,8 @@ kbd { display: inline-grid; place-items: center; min-width: 26px; height: 22px; 
 .key-behance { --c: #2066f2; }
 .key-fiverr { --c: #1dbf73; }
 .key-resume { --c: #ffcf3f; }
+.key-cal { --c: #7c5cf3; }
+.key .kg-cal { width: 46%; height: 46%; }
 .key-resume .kk { color: rgba(20, 38, 64, .55); }
 .kw:hover .key { transform: translateY(2px); }
 .kw.is-pressed .key, .kw:active .key { transform: translateY(6px); box-shadow: 0 6px 14px -10px rgba(20, 38, 64, .7), inset 0 1px 0 rgba(255, 255, 255, .12); }
@@ -766,6 +769,14 @@ kbd { display: inline-grid; place-items: center; min-width: 26px; height: 22px; 
 .keys-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: clamp(22px, 3vw, 30px); padding-top: 18px; border-top: 1px dashed color-mix(in srgb, var(--ink) 18%, transparent); }
 .keys-foot p { font-family: var(--hand); font-size: 20px; font-weight: 700; color: var(--ink-2); }
 .keys-foot .btn-ghost { display: inline-flex; align-items: center; gap: 8px; }
+.keys-foot > div { display: flex; flex-wrap: wrap; gap: 10px; }
+.avail { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 14px; padding: 6px 14px 6px 10px; border-radius: 999px; background: rgba(255, 255, 255, .16); font-size: 14px; font-weight: 700; color: #fff; }
+.avail i { width: 9px; height: 9px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 0 4px rgba(74, 222, 128, .25); animation: ping-soft 2.4s ease-in-out infinite; }
+.avail[data-available="no"] { display: none; }
+@keyframes ping-soft { 50% { box-shadow: 0 0 0 7px rgba(74, 222, 128, .1); } }
+/* a stop can point at the work it led to */
+.jc-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; font-size: 14px; font-weight: 800; color: var(--c); }
+.jc-link .i { width: 16px; height: 16px; stroke-width: 2.4; }
 .kcopy { display: grid; place-items: center; width: 44px; height: 44px; margin-top: -4px; border-radius: 14px; background: color-mix(in srgb, var(--ink) 7%, transparent); color: var(--ink-2); transition: background-color .25s, transform .3s var(--spring); }
 .kcopy svg { width: 20px; height: 20px; }
 .kcopy:hover { background: color-mix(in srgb, var(--ink) 12%, transparent); }
@@ -1037,3 +1048,47 @@ kbd { display: inline-grid; place-items: center; min-width: 26px; height: 22px; 
 .lost-sub { max-width: 34ch; font-size: clamp(17px, 1.6vw, 21px); color: var(--ink-2); }
 .lost-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 10px; }
 .lost-me { width: clamp(120px, 16vw, 200px); height: auto; margin-bottom: 8px; }
+
+/* ---------- book a call ---------- */
+.studio-ctas { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+.studio-ctas .studio-cta { margin-top: 0; }
+.book-btn { display: inline-flex; align-items: center; gap: 10px; }
+.book-btn i, .avail i { width: 10px; height: 10px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 0 4px rgba(74, 222, 128, .25); animation: ping-soft 2.4s ease-in-out infinite; }
+.studio-sec .btn-line { border-color: rgba(255, 255, 255, .5); color: #fff; }
+.studio-sec .btn-line:hover { background: rgba(255, 255, 255, .12); }
+.avail { cursor: pointer; }
+.book-sheet { position: fixed; inset: auto 0 0 0; width: 100%; max-width: none; max-height: 92dvh; margin: 0; border-radius: 28px 28px 0 0; overflow: auto; overscroll-behavior: contain; padding-bottom: calc(24px + var(--safe-b)); }
+.book-sheet[open] { animation: sheet-up .45s var(--spring); }
+.book-sheet::backdrop { background: rgba(14, 26, 44, .42); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+@keyframes sheet-up { from { opacity: 0; transform: translateY(24px); } }
+.book-k { font-size: 13px; font-weight: 800; color: var(--ink-2); }
+.book-step h2 { max-width: 12ch; font-size: clamp(28px, 3.2vw, 40px); line-height: 1; }
+.book-step .lead { margin-top: 12px; font-size: 16px; color: var(--ink-2); }
+.book-step .lead b { color: var(--ink); }
+.book-step .field { margin-top: 16px; }
+.chips { margin: 18px 0 0; padding: 0; border: 0; }
+.chips legend { display: flex; justify-content: space-between; width: 100%; margin-bottom: 10px; font-size: 14px; font-weight: 700; color: var(--ink-2); }
+.chips legend em { font-style: normal; font-weight: 500; opacity: .7; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips label { position: relative; }
+.chips input { position: absolute; inset: 0; opacity: 0; }
+.chips label > span { display: inline-flex; align-items: center; min-height: 42px; padding: 0 16px; border-radius: 999px; background: color-mix(in srgb, var(--ink) 7%, transparent); font-size: 15px; font-weight: 700; color: var(--ink); cursor: pointer; transition: background-color .2s, color .2s, transform .2s var(--spring); }
+.chips input:checked + span { background: var(--ink); color: var(--paper); }
+.chips input:focus-visible + span { box-shadow: 0 0 0 3px var(--sun); }
+.chips label:active span { transform: scale(.97); }
+.book-next { display: inline-flex; align-items: center; gap: 8px; width: 100%; justify-content: center; margin-top: 20px; }
+.book-back { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 14px; }
+.book-cal { position: relative; min-height: 560px; border-radius: 18px; overflow: hidden; background: #fff; }
+.book-cal iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.book-wait { position: absolute; inset: 0; display: grid; place-items: center; font-size: 15px; font-weight: 700; color: var(--ink-2); }
+.book-alt { padding: 8px 0 4px; }
+.book-alt h3 { font-size: 22px; }
+.book-alt p { margin-top: 8px; color: var(--ink-2); }
+.book-alt-links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.book-fine { margin-top: 12px; text-align: center; font-size: 14px; }
+.book-fine a { text-decoration: underline; color: var(--ink-2); }
+@media (min-width: 760px) {
+  .book-sheet { inset: 50% auto auto 50%; width: min(560px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); border-radius: 28px; transform: translate(-50%, -50%); }
+  .book-sheet[open] { animation: sheet-in .4s var(--spring); }
+  .book-cal { min-height: 640px; }
+}
