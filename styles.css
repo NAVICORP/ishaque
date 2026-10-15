@@ -736,9 +736,9 @@ h3 { font-weight: 800; line-height: 1.1; }
 .point-me { position: absolute; z-index: 1; right: clamp(0px, 2vw, 32px); bottom: calc(100% - 40px); width: clamp(110px, 11vw, 170px); height: auto; pointer-events: none; }
 .keys-mat { position: relative; z-index: 2; margin-top: clamp(36px, 5vw, 56px); padding: clamp(18px, 2.4vw, 30px); border-radius: 32px; background: var(--paper); color: var(--ink); box-shadow: 0 40px 80px -40px rgba(20, 38, 64, .55); }
 kbd { display: inline-grid; place-items: center; min-width: 26px; height: 22px; padding: 0 6px; border-radius: 6px; background: var(--card); box-shadow: 0 2px 0 var(--line), inset 0 0 0 1px var(--line); font-family: var(--sans); font-size: 12px; font-weight: 800; color: var(--ink); }
-.keys { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: clamp(14px, 2vw, 28px) clamp(10px, 1.6vw, 20px); margin-top: 18px; }
+.keys { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: clamp(14px, 2vw, 28px) clamp(10px, 1.6vw, 20px); margin-top: 18px; }
 .kw-item { display: grid; justify-items: center; align-content: start; gap: 14px; }
-.kw { display: block; width: 100%; max-width: 150px; border-radius: 30px; }
+.kw { display: block; width: 100%; max-width: 140px; border-radius: 30px; }
 /* a keycap: dark bezel, brand coloured face with a lit top and a thicker bottom lip, the shortcut letter in the corner */
 .key { --c: #e8622a; --d: color-mix(in srgb, var(--c) 72%, #000); position: relative; display: grid; place-items: center; width: 100%; aspect-ratio: 1 / 1; padding: 8%; border-radius: 26%; background: linear-gradient(#2a2a30, #141418); box-shadow: 0 14px 26px -14px rgba(20, 38, 64, .7), inset 0 1px 0 rgba(255, 255, 255, .12); transition: transform .14s var(--ease), box-shadow .14s var(--ease); }
 .key::before { content: ""; position: absolute; inset: 8%; border-radius: 22%; background: linear-gradient(180deg, color-mix(in srgb, var(--c) 78%, #fff) 0%, var(--c) 42%, var(--c) 78%, var(--d) 100%); box-shadow: inset 0 2px 0 rgba(255, 255, 255, .35), inset 0 -10% 0 var(--d); transition: box-shadow .14s var(--ease); }
@@ -752,6 +752,8 @@ kbd { display: inline-grid; place-items: center; min-width: 26px; height: 22px; 
 .key-behance { --c: #2066f2; }
 .key-fiverr { --c: #1dbf73; }
 .key-resume { --c: #ffcf3f; }
+.key-cal { --c: #7c5cf3; }
+.key .kg-cal { width: 46%; height: 46%; }
 .key-resume .kk { color: rgba(20, 38, 64, .55); }
 .kw:hover .key { transform: translateY(2px); }
 .kw.is-pressed .key, .kw:active .key { transform: translateY(6px); box-shadow: 0 6px 14px -10px rgba(20, 38, 64, .7), inset 0 1px 0 rgba(255, 255, 255, .12); }
@@ -766,6 +768,14 @@ kbd { display: inline-grid; place-items: center; min-width: 26px; height: 22px; 
 .keys-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: clamp(22px, 3vw, 30px); padding-top: 18px; border-top: 1px dashed color-mix(in srgb, var(--ink) 18%, transparent); }
 .keys-foot p { font-family: var(--hand); font-size: 20px; font-weight: 700; color: var(--ink-2); }
 .keys-foot .btn-ghost { display: inline-flex; align-items: center; gap: 8px; }
+.keys-foot > div { display: flex; flex-wrap: wrap; gap: 10px; }
+.avail { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 14px; padding: 6px 14px 6px 10px; border-radius: 999px; background: rgba(255, 255, 255, .16); font-size: 14px; font-weight: 700; color: #fff; }
+.avail i { width: 9px; height: 9px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 0 4px rgba(74, 222, 128, .25); animation: ping-soft 2.4s ease-in-out infinite; }
+.avail[data-available="no"] { display: none; }
+@keyframes ping-soft { 50% { box-shadow: 0 0 0 7px rgba(74, 222, 128, .1); } }
+/* a stop can point at the work it led to */
+.jc-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; font-size: 14px; font-weight: 800; color: var(--c); }
+.jc-link .i { width: 16px; height: 16px; stroke-width: 2.4; }
 .kcopy { display: grid; place-items: center; width: 44px; height: 44px; margin-top: -4px; border-radius: 14px; background: color-mix(in srgb, var(--ink) 7%, transparent); color: var(--ink-2); transition: background-color .25s, transform .3s var(--spring); }
 .kcopy svg { width: 20px; height: 20px; }
 .kcopy:hover { background: color-mix(in srgb, var(--ink) 12%, transparent); }

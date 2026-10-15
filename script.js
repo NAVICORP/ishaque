@@ -287,6 +287,7 @@ if (journey) {
       icon: $('.j-icon', li).innerHTML, place: $('.j-place', li).textContent, meta: $('.j-meta', li).textContent,
       when: $('.j-when', li).textContent, title: $('h3', li).textContent, text: $('.j-text', li).textContent,
       pic: li.dataset.pic || '', mark: li.dataset.landmark || '',
+      link: li.dataset.link || '', linkLabel: li.dataset.linkLabel || 'See more',
     };
   });
   const N = stops.length;
@@ -533,7 +534,7 @@ if (journey) {
     const s = stops[i];
     card.style.setProperty('--c', s.c);
     const pic = s.pic ? `<span class="jc-pic media"><img src="${s.pic}" alt="" loading="lazy"></span>` : '';
-    card.innerHTML = `<div class="jc-in"><div class="jc-top"><span class="jc-tile">${s.icon}</span><p>${esc(s.place)}<span class="jc-meta"><svg class="i" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M20 10c0 5-5.54 10.19-7.4 11.8a1 1 0 0 1-1.2 0C9.54 20.19 4 15 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>${esc(s.meta)}</span></p></div><div class="jc-body"><h3>${esc(s.title)}</h3><p>${esc(s.text)}</p></div>${pic}</div>`;
+    card.innerHTML = `<div class="jc-in"><div class="jc-top"><span class="jc-tile">${s.icon}</span><p>${esc(s.place)}<span class="jc-meta"><svg class="i" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M20 10c0 5-5.54 10.19-7.4 11.8a1 1 0 0 1-1.2 0C9.54 20.19 4 15 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>${esc(s.meta)}</span></p></div><div class="jc-body"><h3>${esc(s.title)}</h3><p>${esc(s.text)}</p>${s.link ? `<a class="jc-link" href="${esc(s.link)}"${/^https?:/.test(s.link) ? ' target="_blank" rel="noopener"' : ''}>${esc(s.linkLabel)}<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>` : ''}</div>${pic}</div>`;
   }
   function showCard(i) {
     if (i === shown) return;
@@ -947,6 +948,18 @@ $$('[data-item]').forEach(item => {
   /* a dragged link should not also open */
   item.addEventListener('click', e => { if (item.dataset.moved) { e.preventDefault(); delete item.dataset.moved; } });
 });
+/* share the site from a phone; on a desktop the button copies the link */
+const shareBtn = $('[data-share]');
+if (shareBtn) {
+  const data = { title: 'Ishaque Nv.', text: 'I design products, and the pitch decks that sell them.', url: 'https://ishaquenv.com/' };
+  if (navigator.share || navigator.clipboard) shareBtn.hidden = false;
+  shareBtn.addEventListener('click', async () => {
+    try {
+      if (navigator.share) await navigator.share(data);
+      else { await navigator.clipboard.writeText(data.url); shareBtn.lastChild.textContent = 'Link copied'; setTimeout(() => { shareBtn.lastChild.textContent = 'Share this site'; }, 1600); }
+    } catch {}
+  });
+}
 const vinyl = $('[data-playlist]');
 if (vinyl && vinyl.dataset.playlist) { vinyl.href = vinyl.dataset.playlist; vinyl.hidden = false; }
 const kt = $('[data-kannur-time]');
