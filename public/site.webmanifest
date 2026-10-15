@@ -1,0 +1,13 @@
+{
+  "name": "Ishaque Nv.",
+  "short_name": "Ishaque",
+  "description": "I design products, and the pitch decks that sell them.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fff7ea",
+  "theme_color": "#2f7fd8",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

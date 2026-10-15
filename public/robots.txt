@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /wall-admin
+Disallow: /api/
+
+Sitemap: https://ishaquenv.com/sitemap.xml

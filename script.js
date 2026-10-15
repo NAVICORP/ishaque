@@ -924,6 +924,44 @@ if (gift) {
   o.observe(stage);
 }
 
+/* ---------- off the clock: a corkboard you can rearrange ---------- */
+$$('[data-item]').forEach(item => {
+  item.addEventListener('pointerdown', e => {
+    if (e.button !== 0 || e.target.closest('a, button') && item.tagName !== 'A') return;
+    const sx = e.clientX; const sy = e.clientY;
+    const ox = Number(item.dataset.x || 0); const oy = Number(item.dataset.y || 0);
+    let moved = false;
+    item.setPointerCapture(e.pointerId);
+    item.classList.add('is-drag');
+    const move = ev => {
+      const dx = ev.clientX - sx; const dy = ev.clientY - sy;
+      if (Math.abs(dx) + Math.abs(dy) > 4) moved = true;
+      item.dataset.x = String(ox + dx); item.dataset.y = String(oy + dy);
+      item.style.setProperty('--dx', `${item.dataset.x}px`); item.style.setProperty('--dy', `${item.dataset.y}px`);
+    };
+    const up = () => { item.classList.remove('is-drag'); item.removeEventListener('pointermove', move); if (moved) item.dataset.moved = '1'; };
+    item.addEventListener('pointermove', move);
+    item.addEventListener('pointerup', up, { once: true });
+    item.addEventListener('pointercancel', up, { once: true });
+  });
+  /* a dragged link should not also open */
+  item.addEventListener('click', e => { if (item.dataset.moved) { e.preventDefault(); delete item.dataset.moved; } });
+});
+const vinyl = $('[data-playlist]');
+if (vinyl && vinyl.dataset.playlist) { vinyl.href = vinyl.dataset.playlist; vinyl.hidden = false; }
+const kt = $('[data-kannur-time]');
+if (kt) {
+  const fmt = new Intl.DateTimeFormat('en-IN', { hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Kolkata' });
+  const tick = () => { kt.textContent = fmt.format(new Date()).replace(/\s?(am|pm)/i, (m, a) => ' ' + a.toLowerCase()); };
+  tick(); setInterval(tick, 30000);
+}
+/* the process steps light up as they scroll into view */
+const procSteps = $$('[data-proc] .proc-step');
+if (procSteps.length && 'IntersectionObserver' in window && !reduced) {
+  const po = new IntersectionObserver(entries => entries.forEach(en => { if (en.isIntersecting) { en.target.classList.add('is-on'); po.unobserve(en.target); } }), { rootMargin: '0px 0px -30% 0px', threshold: .4 });
+  procSteps.forEach(st => po.observe(st));
+} else procSteps.forEach(st => st.classList.add('is-on'));
+
 /* ---------- contact: press a key ---------- */
 const keyLinks = Object.fromEntries($$('[data-key]').map(a => [a.dataset.key, a]));
 if (Object.keys(keyLinks).length) {
@@ -1056,7 +1094,7 @@ const visits = $('[data-visits]');
 if (visits) {
   let first = false;
   try { first = !localStorage.getItem('seen'); localStorage.setItem('seen', '1'); } catch {}
-  fetch(`${API}/visit`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ first }) })
+  fetch(`${API}/visit`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ first, ref: document.referrer || '' }) })
     .then(r => (r.ok ? r.json() : Promise.reject()))
     .then(d => {
       if (!Number.isFinite(d.visitors) || d.visitors < 1) return;
@@ -1174,29 +1212,6 @@ if (wall) {
     if (show) $('#wall-name', form).focus({ preventScroll: true });
   });
 
-  /* the boarding pass can be moved around */
-  const pass = $('[data-pass]', wall);
-  if (pass && matchMedia('(min-width: 901px) and (pointer: fine)').matches) {
-    pass.addEventListener('pointerdown', e => {
-      if (e.button !== 0) return;
-      const sx = e.clientX;
-      const sy = e.clientY;
-      const ox = Number(pass.dataset.x || 0);
-      const oy = Number(pass.dataset.y || 0);
-      pass.setPointerCapture(e.pointerId);
-      pass.classList.add('is-drag');
-      const move = ev => {
-        pass.dataset.x = String(ox + ev.clientX - sx);
-        pass.dataset.y = String(oy + ev.clientY - sy);
-        pass.style.setProperty('--dx', `${pass.dataset.x}px`);
-        pass.style.setProperty('--dy', `${pass.dataset.y}px`);
-      };
-      const up = () => { pass.classList.remove('is-drag'); pass.removeEventListener('pointermove', move); };
-      pass.addEventListener('pointermove', move);
-      pass.addEventListener('pointerup', up, { once: true });
-      pass.addEventListener('pointercancel', up, { once: true });
-    });
-  }
 }
 
 /* ---------- motion ---------- */

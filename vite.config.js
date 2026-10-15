@@ -34,6 +34,7 @@ export default defineConfig({
       input: {
         home: resolve(__dirname, 'index.html'),
         projects: resolve(__dirname, 'projects.html'),
+        lost: resolve(__dirname, '404.html'),
       },
     },
   },

@@ -26,9 +26,11 @@ for (const vp of [{ name: 'desktop', width: 1440, height: 900 }, { name: 'mobile
   check(await page.locator('.client-logos').first().locator('img').count() === 16, `${vp.name}: all client logos in the row`);
   check(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1), `${vp.name}: no sideways scroll on home`);
 
+  const before = await page.evaluate(() => document.documentElement.dataset.theme);
   await page.locator('[data-theme-toggle]').click();
-  check(await page.evaluate(() => document.documentElement.dataset.theme) === 'dark', `${vp.name}: night mode switches on`);
+  check(await page.evaluate(() => document.documentElement.dataset.theme) === (before === 'dark' ? 'light' : 'dark'), `${vp.name}: the theme toggle switches ${before === 'dark' ? 'day' : 'night'} mode on`);
   await page.locator('[data-theme-toggle]').click();
+  check(await page.locator('#process .proc-step').count() === 6 && await page.locator('#life [data-item]').count() >= 6, `${vp.name}: how I work and the corkboard are on the page`);
 
   // The wall and visitor count only appear when the SkiFi server's /api answers.
   const hasApi = await page.evaluate(() => fetch('/api/stats').then(r => r.ok && (r.headers.get('content-type') || '').includes('json')).catch(() => false));
