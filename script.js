@@ -983,10 +983,9 @@ if (!reduced) {
   group('.notes', '.note', 'anim-drop');
   group('.deck-stage', '.deck-card', 'anim-deal', true);
   group('.tools', '.tool', 'anim-pop');
-  group('.hats', 'li', 'anim-rise');
   group('.keys', '.kw', 'anim-pop');
   group('.work-grid', '.work-card:nth-child(-n+6)', 'anim-rise');
-  $$('.sec-head, .hello h2, .hello-sub, .studio-grid h2, .deck-side, .brief, .app-head').forEach(el => {
+  $$('.sec-head, .hello h2, .hello-sub, .studio-grid h2, .deck-side, .brief').forEach(el => {
     el.classList.add('anim-rise');
     io.observe(el);
   });
