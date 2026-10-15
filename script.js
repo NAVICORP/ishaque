@@ -164,7 +164,7 @@ if (stage && cam) {
 
   function layout() {
     vw = innerWidth; vh = stage.clientHeight; mobile = vw < 760;
-    if (!cur.ok) ax = mobile ? .4 : .5;
+    if (!cur.ok) ax = mobile ? .44 : .5;
     /* the picture always covers the stage; phones get a wider one to drag */
     u = Math.max(vw / 1600, vh / 1000) * (mobile ? 1.1 : 1.06);
     SW = 1600 * u; SH = 1000 * u;
@@ -762,8 +762,10 @@ if (cbox) {
 
   const fitBox = () => {
     const w = scene.clientWidth;
-    const bs = clamp(Math.min(w / 760, scene.clientHeight / 560), .42, 1);
+    const bs = clamp(Math.min(w / 800, scene.clientHeight / 560), .4, 1);
     fit.style.setProperty('--bs', bs.toFixed(3));
+    /* the open lid leans back and to the right, so the box sits a touch left of centre */
+    fit.style.left = `calc(50% - ${(28 * bs).toFixed(1)}px)`;
   };
   const mark = k => {
     active = k ? k.i : -1;
@@ -785,6 +787,7 @@ if (cbox) {
   const openBox = () => {
     if (open) return; open = true; scene.classList.add('is-open');
     lid.style.transform = `translate3d(0,0,${BH}px) rotateX(-72deg)`;
+    setTimeout(() => scene.classList.add('is-cards'), reduced ? 0 : 520);
     wks.forEach((k, i) => setTimeout(() => {
       k.z = 0; k.el.style.transform = stand(0); rim(k, 0);
       setTimeout(() => { if (k.z === 0 && !k.el.classList.contains('hover')) k.el.style.clipPath = ''; }, 1300);
@@ -838,6 +841,7 @@ if (cbox) {
 const gift = $('[data-gift]');
 if (gift) {
   const tools = $$('.tool', gift);
+  const grid = $('.tools', gift);
   const stage = $('.gift-stage', gift);
   const lid = $('.gb-lid', gift);
   const burst = $('.gift-burst', gift);
@@ -856,22 +860,29 @@ if (gift) {
   const paths = tools.map(() => { const p = document.createElementNS('http://www.w3.org/2000/svg', 'path'); strings.append(p); return p; });
   let from = [];
   let mouth = { x: 0, y: 0 };
-  const aim = () => {
+  /* the box slides down as the shelf unfolds, so its mouth is measured every frame while it moves */
+  const aimMouth = () => {
     const g = gift.getBoundingClientRect();
     const b = stage.getBoundingClientRect();
     mouth = { x: b.left + b.width / 2 - g.left, y: b.top + b.height * .42 - g.top };
-    from = tools.map(t => { const r = t.getBoundingClientRect(); return { x: r.left + r.width / 2 - g.left, y: r.top + r.height / 2 - g.top }; });
     strings.setAttribute('viewBox', `0 0 ${g.width} ${g.height}`);
+  };
+  const aim = () => {
+    gift.style.setProperty('--th', `${grid.offsetHeight + parseFloat(getComputedStyle(grid).marginTop)}px`);
+    const g = gift.getBoundingClientRect();
+    from = tools.map(t => { const r = t.getBoundingClientRect(); return { x: r.left + r.width / 2 - g.left, y: r.top + r.height / 2 - g.top }; });
+    aimMouth();
   };
   let q = 0; let t0 = 0; let going = false; let done = false; let auto;
   const paint = () => {
     const u = going ? Math.min(1, (performance.now() - t0) / 7000) : 0;
     q = reduced ? (going ? 1 : 0) : (u < 1 ? .5 - .5 * Math.cos(Math.PI * u) : 1);
     const l = range(q, 0, .4);
+    if (going && u < .2) aimMouth();
     const S = parseFloat(getComputedStyle(stage).getPropertyValue('--s')) || 190;
-    lid.style.transform = `translate3d(${(l * 150).toFixed(1)}px, ${(-S * .39 - Math.sin(l * Math.PI) * 260 - l * 40).toFixed(1)}px, ${(l * 40).toFixed(1)}px) rotateZ(${(l * 34).toFixed(1)}deg) rotateX(${(-l * 16).toFixed(1)}deg)`;
+    lid.style.transform = `translate3d(${(l * S * .5).toFixed(1)}px, ${(-S * .39 - Math.sin(l * Math.PI) * 260 - l * 40).toFixed(1)}px, ${(l * 40).toFixed(1)}px) rotateZ(${(l * 34).toFixed(1)}deg) rotateX(${(-l * 16).toFixed(1)}deg)`;
     burst.style.opacity = (range(q, .08, .3) * (1 - range(q, .55, 1) * .55)).toFixed(3);
-    beam.style.opacity = (range(q, .14, .45) * (1 - range(q, .8, 1) * .4)).toFixed(3);
+    beam.style.opacity = (range(q, .14, .45) * (1 - range(q, .8, 1) * .75)).toFixed(3);
     bits.forEach(c => {
       const p = range(q, .1 + c.t, .55 + c.t);
       const x = c.x0 + (c.x1 - c.x0) * p;
@@ -884,7 +895,7 @@ if (gift) {
       const e = 1 - (1 - p) ** 3;
       const f = from[i] || mouth;
       const dx = mouth.x - f.x; const dy = mouth.y - f.y;
-      const lift = -Math.sin(p * Math.PI) * 90;
+      const lift = -Math.sin(p * Math.PI) * 36;
       t.style.opacity = p > 0 ? '1' : '0';
       t.style.transform = p >= 1 ? '' : `translate(${(dx * (1 - e)).toFixed(1)}px, ${(dy * (1 - e) + lift).toFixed(1)}px) scale(${(.3 + .7 * e).toFixed(3)}) rotate(${((1 - e) * -25).toFixed(1)}deg)`;
       const sx = f.x + dx * (1 - e); const sy = f.y + dy * (1 - e) + lift;
