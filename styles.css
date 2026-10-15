@@ -393,7 +393,7 @@ h3 { font-weight: 800; line-height: 1.1; }
 @keyframes ping { from { transform: scale(.6); opacity: 1; } to { transform: scale(1.5); opacity: 0; } }
 .me-dot.is-on { opacity: 1; }
 
-.j-head { padding-top: clamp(44px, 6vw, 80px); padding-bottom: clamp(24px, 3vw, 40px); text-align: center; }
+.j-head { padding-top: var(--sec); padding-bottom: clamp(24px, 3vw, 40px); text-align: center; }
 .j-head .kicker { justify-content: center; }
 .j-head h2 { font-size: clamp(40px, 5.6vw, 82px); }
 .j-sub { margin: 18px auto 0; max-width: 34ch; font-size: clamp(18px, 1.7vw, 24px); color: var(--ink-2); line-height: 1.35; }
@@ -453,7 +453,7 @@ h3 { font-weight: 800; line-height: 1.1; }
 
 /* ---------- selected work: the deck ---------- */
 
-.work { position: relative; z-index: 2; background: var(--paper); padding: var(--sec) 0; overflow-x: clip; }
+.work { --sec-bg: var(--paper); padding: var(--sec) 0; overflow-x: clip; }
 /* selected work: a box of cards, one per kind of work */
 .work .sec-head { text-align: center; }
 .work .eyebrow { justify-content: center; }
@@ -470,6 +470,7 @@ h3 { font-weight: 800; line-height: 1.1; }
 .wall-i { background: linear-gradient(0deg, var(--kraft-3), var(--wall)); }
 .wall-o { background: linear-gradient(0deg, var(--kraft-2), var(--kraft)); display: grid; place-items: center; }
 .wall-o .brand { font-size: 30px; font-weight: 800; color: color-mix(in srgb, var(--kraft-3) 85%, #fff); text-shadow: 0 1px 0 rgba(255, 255, 255, .35), 0 -1px 0 rgba(0, 0, 0, .12); transform: rotateX(180deg); white-space: nowrap; }
+.box3 .box-lid { backface-visibility: visible; }
 .box-lid { background: linear-gradient(0deg, var(--kraft-2), var(--kraft-in)); border: 6px solid var(--kraft-3); box-sizing: border-box; transition: transform 1.9s cubic-bezier(.65, 0, .2, 1) .1s; box-shadow: inset 0 0 0 10px color-mix(in srgb, var(--kraft-in) 70%, transparent); }
 .wk { position: absolute; width: 224px; height: 304px; border-radius: 24px; padding: 18px; display: grid; grid-template-rows: auto 1fr auto; color: #fff; transform-origin: 50% 100%;
   background: linear-gradient(160deg, var(--from), var(--to)); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .25), 0 20px 40px -20px rgba(40, 20, 0, .55); cursor: pointer; backface-visibility: hidden; outline-offset: 4px; }
@@ -484,6 +485,8 @@ h3 { font-weight: 800; line-height: 1.1; }
 .wk-sub { font-size: 14px; font-weight: 600; opacity: .9; line-height: 1.2; }
 .wk-foot { margin-top: 10px; font-size: 13px; font-weight: 700; opacity: .75; }
 .wk.hover, .wk.is-pick { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .35), 0 36px 50px -22px rgba(40, 20, 0, .6); }
+/* the cards stay out of sight until the lid has swung clear, so nothing shows through it */
+.cbox-scene:not(.is-cards) .wk { visibility: hidden; }
 .cbox-scene.is-open .wk { transition: transform 1.2s cubic-bezier(.2, .9, .25, 1), clip-path 1.2s cubic-bezier(.2, .9, .25, 1), box-shadow .5s; }
 .wk.hover { transition-duration: .5s !important; }
 .wk.is-pick { transition: transform .8s var(--ease) !important; }
@@ -533,8 +536,11 @@ h3 { font-weight: 800; line-height: 1.1; }
 .gift-strings path { fill: none; stroke: color-mix(in srgb, var(--ink) 35%, transparent); stroke-width: 1.2; stroke-dasharray: 3 5; }
 .confetti { position: absolute; left: 50%; bottom: 150px; width: 0; height: 0; pointer-events: none; }
 .confetti i { position: absolute; left: 0; top: 0; width: 10px; height: 14px; border-radius: 3px; background: var(--c); opacity: 0; will-change: transform; }
-.gift .tools { position: relative; z-index: 2; }
+.gift .tools { position: relative; z-index: 2; transition: margin-bottom .9s cubic-bezier(.65, 0, .2, 1); }
+/* until the box is unwrapped the shelf for the tools is folded away, so the box sits right under the heading */
+.gift:not(.is-open) .tools { margin-bottom: calc(var(--th, 0px) * -1); }
 .gift .tool { opacity: 0; will-change: transform; }
+.gift:not(.is-done) .tool { pointer-events: none; }
 .gift.is-done .tool { opacity: 1; transform: none; }
 .gift-stage { --s: min(42vw, 190px); position: relative; z-index: 1; width: calc(var(--s) * 1.8); height: calc(var(--s) * 1.45); margin-top: clamp(20px, 4vw, 36px); perspective: 900px; perspective-origin: 50% -30%; }
 .gift-3d { position: absolute; left: 50%; top: 58%; transform-style: preserve-3d; transform: rotateX(-14deg) rotateY(-32deg); }
@@ -835,6 +841,7 @@ kbd { display: inline-grid; place-items: center; min-width: 26px; height: 22px; 
 }
 
 @media (max-width: 760px) {
+  :root { --sec: 84px; }
   .valley { height: 100svh; }
   .scroll-cue { display: none; }
   .kn { font-size: 16px; }
@@ -847,6 +854,9 @@ kbd { display: inline-grid; place-items: center; min-width: 26px; height: 22px; 
   .hs-links a { height: 36px; font-size: 13px; padding: 0 12px; }
   .hp-tag { height: 36px; font-size: 14px; padding-right: 13px; }
   .hp-ico { width: 27px; height: 27px; }
+  /* a pin near the right edge hangs its label to the left of the dot so it stays on screen */
+  .hpin.hp-end { align-items: flex-end; transform: translate(calc(-100% + 9px), calc(-100% + 9px)); }
+  .hpin.hp-end .hp-tag::after { left: auto; right: 8px; translate: 0; }
   .hello-sub { padding-right: 86px; }
   .tools { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 22px 6px; }
   .tm { width: 54px; height: 54px; border-radius: 16px; }
