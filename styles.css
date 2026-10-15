@@ -465,6 +465,18 @@ h3 { font-weight: 800; line-height: 1.1; }
 .tool:hover .tm { transform: translateY(-4px) rotate(-6deg); }
 .tool b { font-size: 14px; font-weight: 700; line-height: 1.2; color: var(--ink-2); }
 
+/* a small coral star over each section title */
+.eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; font-size: 15px; font-weight: 700; color: var(--ink-2); }
+.eyebrow .star { width: 22px; height: 22px; flex: none; fill: var(--coral); }
+.j-head .eyebrow, .stack .eyebrow { justify-content: center; }
+.studio-sec .eyebrow { color: rgba(255, 255, 255, .72); }
+
+/* big paragraphs fill in word by word as you scroll, like ink catching up */
+[data-reveal-words].is-live .rw { opacity: .16; transition: opacity .35s var(--ease); }
+[data-reveal-words].is-live .rw.on { opacity: 1; }
+[data-reveal-words].is-live .hl { background-size: 0% 100%; transition: background-size .7s var(--ease); }
+[data-reveal-words].is-live .hl.on { background-size: 100% 100%; }
+
 /* highlighter marks behind a few words, in a handful of pastel inks */
 .hl { --hl: #c4e9cf; background: linear-gradient(transparent 30%, var(--hl) 30%, var(--hl) 94%, transparent 94%) no-repeat; border-radius: .32em; padding: 0 .08em; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 .hl-sky { --hl: #bfdcff; }

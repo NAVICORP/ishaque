@@ -907,6 +907,55 @@ if (!reduced) {
       .then(() => requestAnimationFrame(() => requestAnimationFrame(() => stageEl.classList.remove('is-pre'))));
   }
 
+  /* big paragraphs: words fill in with the scroll, marks draw as they arrive */
+  const reveals = $$('[data-reveal-words]').map(el => {
+    let n = 0;
+    const walk = node => {
+      [...node.childNodes].forEach(ch => {
+        if (ch.nodeType === 3) {
+          const frag = document.createDocumentFragment();
+          ch.textContent.split(/(\s+)/).forEach(part => {
+            if (!part) return;
+            if (/^\s+$/.test(part)) { frag.append(part); return; }
+            const span = document.createElement('span');
+            span.className = 'rw';
+            span.textContent = part;
+            span.dataset.n = String(n++);
+            frag.append(span);
+          });
+          ch.replaceWith(frag);
+        } else if (ch.tagName === 'IMG') {
+          ch.classList.add('rw');
+          ch.dataset.n = String(n++);
+        } else if (ch.nodeType === 1) {
+          walk(ch);
+        }
+      });
+    };
+    walk(el);
+    el.classList.add('is-live');
+    const words = $$('.rw', el);
+    const marks = $$('.hl', el).map(h => ({ h, first: Number($('.rw', h)?.dataset.n ?? 0) }));
+    marks.forEach(m => m.h.classList.remove('anim-hl'));
+    return { el, words, marks, shown: -1 };
+  });
+  if (reveals.length) {
+    onFrame.push(() => {
+      const vh = innerHeight;
+      reveals.forEach(r => {
+        const box = r.el.getBoundingClientRect();
+        if (box.top > vh || box.bottom < 0) return;
+        const p = clamp((vh * .82 - box.top) / (box.height + vh * .3), 0, 1);
+        const k = Math.round(p * r.words.length);
+        if (k === r.shown) return;
+        r.shown = k;
+        r.words.forEach((w, i) => w.classList.toggle('on', i < k));
+        r.marks.forEach(m => m.h.classList.toggle('on', m.first < k));
+      });
+    });
+    queue();
+  }
+
   /* entrances */
   const io = new IntersectionObserver(entries => {
     entries.forEach(entry => {
@@ -937,11 +986,11 @@ if (!reduced) {
   group('.hats', 'li', 'anim-rise');
   group('.keys', '.kw', 'anim-pop');
   group('.work-grid', '.work-card:nth-child(-n+6)', 'anim-rise');
-  $$('.sec-head, .proof h2, .hello h2, .hello-sub, .studio-grid h2, .deck-side, .brief, .app-head, .app-story').forEach(el => {
+  $$('.sec-head, .hello h2, .hello-sub, .studio-grid h2, .deck-side, .brief, .app-head').forEach(el => {
     el.classList.add('anim-rise');
     io.observe(el);
   });
-  $$('.hl').forEach(el => { el.classList.add('anim-hl'); io.observe(el); });
+  $$('.hl').forEach(el => { if (el.closest('[data-reveal-words]')) return; el.classList.add('anim-hl'); io.observe(el); });
 
   /* numbers count up the first time they show */
   const countEls = $$('.note strong');
