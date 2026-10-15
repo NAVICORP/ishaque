@@ -486,7 +486,7 @@ h3 { font-weight: 800; line-height: 1.1; }
 .wk-ic .i { width: 24px; height: 24px; }
 .wk-tag { font-size: 14px; font-weight: 800; opacity: .8; }
 .wk-body { display: grid; align-content: end; gap: 2px; }
-.wk-hand { font-family: var(--hand); font-size: 24px; font-weight: 700; line-height: 1; }
+.wk-hand { font-size: 15px; font-weight: 800; line-height: 1.1; opacity: .92; }
 .wk-big { font-size: 42px; font-weight: 800; line-height: 1; }
 .wk-sub { font-size: 14px; font-weight: 600; opacity: .9; line-height: 1.2; }
 .wk-foot { margin-top: 10px; font-size: 13px; font-weight: 700; opacity: .75; }

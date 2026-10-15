@@ -775,14 +775,29 @@ if (cbox) {
   };
   const enter = k => { if (picked || !open) return; hoverK = k; k.el.classList.add('hover'); k.el.style.transform = stand(70); rim(k, 70); mark(k); };
   const leave = k => { if (picked) return; k.el.classList.remove('hover'); k.el.style.transform = stand(k.z); rim(k, k.z); if (hoverK === k) { hoverK = null; } };
+  /* on a phone the first tap turns the card to face you and it stays; the second tap opens it */
+  const touch = () => !matchMedia('(hover: hover)').matches;
+  let facedK = null;
+  const unface = () => { if (!facedK) return; const k = facedK; facedK = null; k.el.classList.remove('is-pick'); k.el.style.transform = stand(0); rim(k, 0); };
+  const faceUp = (k) => {
+    if (facedK === k) return;
+    unface(); hoverK && leave(hoverK);
+    facedK = k; mark(k);
+    k.el.classList.add('is-pick'); k.el.style.clipPath = ''; k.el.style.transform = faced(k);
+  };
+  const go = k => { location.href = k.el.getAttribute('href'); };
   const pick = (k, e) => {
     if (!open) return;
     if (e && !plainClick(e)) return;
     e?.preventDefault();
     if (picked) return;
+    if (touch()) {
+      if (facedK === k) { picked = k; go(k); return; }
+      faceUp(k); return;
+    }
     picked = k; mark(k);
     k.el.classList.add('is-pick'); k.el.style.clipPath = ''; k.el.style.transform = faced(k);
-    setTimeout(() => { location.href = k.el.getAttribute('href'); }, reduced ? 0 : 700);
+    setTimeout(() => go(k), reduced ? 0 : 700);
     setTimeout(() => { picked = null; k.el.classList.remove('is-pick'); k.el.style.transform = stand(0); }, 2200);
   };
   const openBox = () => {
@@ -800,17 +815,12 @@ if (cbox) {
     k.el.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') leave(k); });
     k.el.addEventListener('focus', () => { hoverK && leave(hoverK); enter(k); });
     k.el.addEventListener('blur', () => leave(k));
-    k.el.addEventListener('click', e => {
-      /* on a phone the first tap lifts the card, the second opens it */
-      if (!matchMedia('(hover: hover)').matches && hoverK !== k) { e.preventDefault(); hoverK && leave(hoverK); enter(k); return; }
-      pick(k, e);
-    });
+    k.el.addEventListener('click', e => pick(k, e));
   });
   items.forEach((it, i) => {
     it.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse' && open && hoverK !== wks[i]) { hoverK && leave(hoverK); enter(wks[i]); } });
     it.addEventListener('click', e => {
       if (!open) return;
-      if (!matchMedia('(hover: hover)').matches && active !== i) { e.preventDefault(); hoverK && leave(hoverK); enter(wks[i]); return; }
       pick(wks[i], e);
     });
   });
@@ -820,7 +830,7 @@ if (cbox) {
   scene.addEventListener('pointerup', e => {
     if (sx === null) return;
     const dx = e.clientX - sx; sx = null;
-    if (Math.abs(dx) > 40 && open) { scene.dataset.swiped = '1'; const j = clamp((hoverK ? hoverK.i : -1) + (dx < 0 ? 1 : -1), 0, n - 1); hoverK && leave(hoverK); enter(wks[j]); }
+    if (Math.abs(dx) > 40 && open) { scene.dataset.swiped = '1'; const cur = touch() ? (facedK ? facedK.i : -1) : (hoverK ? hoverK.i : -1); const j = clamp(cur + (dx < 0 ? 1 : -1), 0, n - 1); if (touch()) faceUp(wks[j]); else { hoverK && leave(hoverK); enter(wks[j]); } }
   });
   scene.addEventListener('click', e => { if (scene.dataset.swiped) { e.preventDefault(); e.stopPropagation(); delete scene.dataset.swiped; } }, true);
   cbox.addEventListener('keydown', e => {
