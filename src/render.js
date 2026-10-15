@@ -42,16 +42,17 @@ export function projectFilters() {
 }
 
 export function workDeck() {
-  return FEATURED.map(({ slug, stat }, i) => {
-    const p = bySlug[slug];
-    if (!p) throw new Error(`Featured project not found: ${slug}`);
+  return FEATURED.map(({ category, cover, stat, line: text, about }, i) => {
+    const p = bySlug[cover];
+    if (!p) throw new Error(`Deck cover project not found: ${cover}`);
+    const n = PROJECTS.filter(x => x.category === category).length;
     const lead = stat
       ? `<span class="deck-stat"><strong>${esc(stat.value)}</strong><span>${esc(stat.label)}</span></span>`
-      : `<span class="deck-line">${esc(p.headline || p.summary)}</span>`;
-    return `<a class="deck-card" href="${esc(p.href)}" target="_blank" rel="noopener" data-slug="${esc(p.slug)}" data-index="${i}" aria-label="${esc(p.name)}, ${esc(p.category)}">
+      : `<span class="deck-line">${esc(text)}</span>`;
+    return `<a class="deck-card" href="/projects#${slugify(category)}" data-index="${i}" data-about="${esc(about)}" data-category="${esc(category)}" aria-label="${esc(category)}, ${n} projects">
   ${media(p, { eager: i < 2 })}
   <span class="deck-card-body">
-    <span class="deck-card-top"><strong>${esc(p.name)}</strong><span class="tag">${esc(p.category)}</span></span>
+    <span class="deck-card-top"><strong>${esc(category)}</strong><span class="tag">${n} projects</span></span>
     ${lead}
   </span>
 </a>`;

@@ -22,7 +22,7 @@ for (const vp of [{ name: 'desktop', width: 1440, height: 900 }, { name: 'mobile
 
   await page.goto(`${base}/`, { waitUntil: 'load' });
   check(await page.getByRole('heading', { level: 1 }).isVisible(), `${vp.name}: hero headline visible`);
-  check(await page.locator('.deck-card').count() === 8, `${vp.name}: 8 cards in the selected work deck`);
+  check(await page.locator('.deck-card').count() === 5, `${vp.name}: one deck card per kind of work`);
   check(await page.locator('.client-logos').first().locator('img').count() === 16, `${vp.name}: all client logos in the row`);
   check(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1), `${vp.name}: no sideways scroll on home`);
 
@@ -60,9 +60,7 @@ for (const vp of [{ name: 'desktop', width: 1440, height: 900 }, { name: 'mobile
   await page.locator('[data-deck-next]').click();
   await page.waitForTimeout(450);
   check(await page.locator('[data-deck-index]').textContent() !== first, `${vp.name}: deck moves to the next card`);
-  await page.locator('[data-deck-open]').click();
-  check(await page.locator('[data-quick-view]').isVisible(), `${vp.name}: deck opens the project sheet`);
-  await page.locator('[data-qv-close]').click();
+  check((await page.locator('[data-deck-open]').getAttribute('href')).startsWith('/projects#'), `${vp.name}: the deck button opens that kind of work`);
 
   const form = page.locator('[data-contact-form]');
   await form.locator('[name="name"]').fill('Test');

@@ -318,7 +318,7 @@ if (journey) {
     zStop = mobile ? clamp(W / 560, .58, .8) : clamp(H / 1000, .7, 1.05);
     const cardRight = mobile ? 0 : card.offsetLeft + card.offsetWidth;
     fx = mobile ? W * .38 : cardRight + (W - cardRight) / 2;
-    fy = mobile ? clamp(H * .24, 140, 200) : H * .5;
+    fy = mobile ? clamp(H * .27, 168, 214) : H * .5;
     if (!anim) cam = cur < 0 ? overview : stopCam(cur);
     drawn = '';
     paint();
@@ -534,9 +534,9 @@ const plainClick = e => !(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.
 const deck = $('[data-deck]');
 if (deck) {
   const cards = $$('.deck-card', deck);
-  const slugs = cards.map(c => c.dataset.slug);
   const sumEl = $('[data-deck-summary]', deck);
   const idxEl = $('[data-deck-index]', deck);
+  const openEl = $('[data-deck-open]', deck);
   $('[data-deck-total]', deck).textContent = String(cards.length);
   let front = 0;
   let busy = false;
@@ -549,9 +549,11 @@ if (deck) {
       card.tabIndex = i === 0 ? 0 : -1;
       card.setAttribute('aria-hidden', String(i !== 0));
     });
-    const p = bySlug[slugs[front]];
-    sumEl.textContent = p.summary;
+    const c = cards[front];
+    sumEl.textContent = c.dataset.about;
     idxEl.textContent = String(front + 1);
+    openEl.href = c.getAttribute('href');
+    openEl.textContent = `See ${c.dataset.category.toLowerCase()}`;
   };
   const go = dir => {
     if (busy) return;
@@ -572,11 +574,6 @@ if (deck) {
   };
   $('[data-deck-next]', deck).addEventListener('click', () => go(1));
   $('[data-deck-prev]', deck).addEventListener('click', () => go(-1));
-  $('[data-deck-open]', deck).addEventListener('click', () => openSheet(slugs[front], slugs));
-  cards.forEach(card => card.addEventListener('click', e => {
-    if (!plainClick(e)) return;
-    if (openSheet(card.dataset.slug, slugs)) e.preventDefault();
-  }));
 
   const stage = $('[data-deck-stage]', deck);
   let startX = null;
@@ -931,18 +928,18 @@ if (!reduced) {
   };
   group('.notes', '.note', 'anim-drop');
   group('.deck-stage', '.deck-card', 'anim-deal', true);
-  group('.studio-stats', 'li', 'anim-rise');
   group('.tools', '.tool', 'anim-pop');
+  group('.hats', 'li', 'anim-rise');
   group('.keys', '.kw', 'anim-pop');
   group('.work-grid', '.work-card:nth-child(-n+6)', 'anim-rise');
-  $$('.sec-head, .proof h2, .hello h2, .hello-sub, .studio-grid h2, .deck-side, .brief').forEach(el => {
+  $$('.sec-head, .proof h2, .hello h2, .hello-sub, .studio-grid h2, .deck-side, .brief, .app-head, .app-story').forEach(el => {
     el.classList.add('anim-rise');
     io.observe(el);
   });
   $$('.hl').forEach(el => { el.classList.add('anim-hl'); io.observe(el); });
 
   /* numbers count up the first time they show */
-  const countEls = [...$$('.studio-stats b'), ...$$('.note strong')].filter(Boolean);
+  const countEls = $$('.note strong');
   countEls.forEach(el => {
     const m = el.textContent.match(/^(\D*)([\d,]+)(.*)$/);
     if (!m || m[2] === '2020' || m[3].startsWith('.')) return;
