@@ -22,7 +22,7 @@ for (const vp of [{ name: 'desktop', width: 1440, height: 900 }, { name: 'mobile
 
   await page.goto(`${base}/`, { waitUntil: 'load' });
   check(await page.getByRole('heading', { level: 1 }).isVisible(), `${vp.name}: hero headline visible`);
-  check(await page.locator('.deck-card').count() === 5, `${vp.name}: one deck card per kind of work`);
+  check(await page.locator('.ccard').count() === 5 && await page.locator('.citem').count() === 5, `${vp.name}: one card in the box per kind of work`);
   check(await page.locator('.client-logos').first().locator('img').count() === 16, `${vp.name}: all client logos in the row`);
   check(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1), `${vp.name}: no sideways scroll on home`);
 
@@ -38,6 +38,8 @@ for (const vp of [{ name: 'desktop', width: 1440, height: 900 }, { name: 'mobile
     await page.route('**/api/notes', r => r.request().method() === 'POST'
       ? r.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ note: { id: 'test-note-1', name: 'Tester', work: '', message: 'Hello from the test.', avatar: 2, at: new Date().toISOString() } }) })
       : r.continue());
+    await page.locator('[data-wall-open]').scrollIntoViewIfNeeded();
+    await page.locator('[data-wall-open]').click();
     const wf = page.locator('[data-wall-form]');
     await wf.scrollIntoViewIfNeeded();
     await wf.locator('#wall-name').fill('Tester');
@@ -55,12 +57,10 @@ for (const vp of [{ name: 'desktop', width: 1440, height: 900 }, { name: 'mobile
   await page.waitForTimeout(1400);
   check((await page.locator('[data-jcard] h3').textContent()).length > 0 && (await page.locator('[data-j-count]').textContent()).startsWith('2 /'), `${vp.name}: next stop moves along the road`);
 
-  await page.locator('#work').scrollIntoViewIfNeeded();
-  const first = await page.locator('[data-deck-index]').textContent();
-  await page.locator('[data-deck-next]').click();
-  await page.waitForTimeout(450);
-  check(await page.locator('[data-deck-index]').textContent() !== first, `${vp.name}: deck moves to the next card`);
-  check((await page.locator('[data-deck-open]').getAttribute('href')).startsWith('/projects#'), `${vp.name}: the deck button opens that kind of work`);
+  await page.locator('.cbox-scene').scrollIntoViewIfNeeded();
+  await page.waitForTimeout(1300);
+  check(await page.locator('.ccard.is-up').count() === 1, `${vp.name}: one card is lifted out of the box`);
+  check((await page.locator('.citem').first().getAttribute('href')).startsWith('/projects#'), `${vp.name}: each kind of work opens its filter`);
 
   const form = page.locator('[data-contact-form]');
   await form.locator('[name="name"]').fill('Test');

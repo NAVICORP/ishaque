@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
-import { counts, projectFilters, projectsGrid, websitesStrip, workDeck } from './src/render.js';
+import { counts, projectFilters, projectsGrid, workBox, workList } from './src/render.js';
 
 /* Swaps <!--@name--> markers in the HTML for markup built from the project
    data, in dev and in the build alike. */
@@ -10,8 +10,8 @@ function projectMarkup() {
   const blocks = {
     'projects-grid': projectsGrid,
     'projects-filters': projectFilters,
-    'work-deck': workDeck,
-    'websites-strip': websitesStrip,
+    'work-box': workBox,
+    'work-list': workList,
     'journey-map': () => readFileSync(resolve(__dirname, 'src/journey-map.svg'), 'utf8'),
     'count-all': () => String(n.all),
     'count-websites': () => String(n.websites),

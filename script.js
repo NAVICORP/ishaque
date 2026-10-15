@@ -68,6 +68,13 @@ themeButtons.forEach(btn => btn.addEventListener('click', () => {
 }));
 syncThemeUI();
 
+/* ---------- top bar: the visitor pill gets shorter once you scroll ---------- */
+let scrolledState = null;
+onFrame.push(() => {
+  const on = scrollY > innerHeight * .5;
+  if (on !== scrolledState) { scrolledState = on; root.classList.toggle('is-scrolled', on); }
+});
+
 /* ---------- dock: the pill slides to the section you're in ---------- */
 const dock = $('[data-dock]');
 const dockInd = $('[data-dock-ind]');
@@ -99,6 +106,49 @@ if (dock) {
   document.fonts?.ready.then(place);
   addEventListener('resize', place);
   place();
+}
+
+/* ---------- hero pins: small sheets about each place ---------- */
+const hsheet = $('[data-hsheet-panel]');
+if (hsheet) {
+  const body = $('[data-hsheet-body]', hsheet);
+  const pinsEls = $$('[data-hsheet]');
+  let openPin = null;
+  let hideTimer;
+  const close = () => {
+    if (!openPin) return;
+    hsheet.classList.remove('is-open');
+    openPin.classList.remove('is-on');
+    openPin.setAttribute('aria-expanded', 'false');
+    openPin = null;
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(() => { hsheet.hidden = true; }, 260);
+  };
+  const open = pin => {
+    if (openPin === pin) { close(); return; }
+    clearTimeout(hideTimer);
+    openPin?.classList.remove('is-on');
+    openPin = pin;
+    pin.classList.add('is-on');
+    pin.setAttribute('aria-expanded', 'true');
+    body.replaceChildren($(`#hs-${pin.dataset.hsheet}`).content.cloneNode(true));
+    hsheet.hidden = false;
+    hsheet.scrollTop = 0;
+    hsheet.classList.remove('is-open');
+    void hsheet.offsetWidth;
+    hsheet.classList.add('is-open');
+  };
+  pinsEls.forEach(pin => {
+    pin.setAttribute('aria-expanded', 'false');
+    pin.addEventListener('click', e => { e.stopPropagation(); open(pin); });
+  });
+  hsheet.addEventListener('click', e => {
+    if (e.target.closest('[data-hsheet-close]')) close();
+    e.stopPropagation();
+  });
+  document.addEventListener('click', close);
+  addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+  addEventListener('scroll', () => { if (openPin && scrollY > innerHeight * .6) close(); }, { passive: true });
 }
 
 /* ---------- journey: drive the road, stop by stop ----------
@@ -534,69 +584,126 @@ if (qv) {
 }
 const plainClick = e => !(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0);
 
-/* ---------- selected work: the deck ---------- */
-const deck = $('[data-deck]');
-if (deck) {
-  const cards = $$('.deck-card', deck);
-  const sumEl = $('[data-deck-summary]', deck);
-  const idxEl = $('[data-deck-index]', deck);
-  const openEl = $('[data-deck-open]', deck);
-  const openLabel = $('[data-deck-open-label]', deck);
-  $('[data-deck-total]', deck).textContent = String(cards.length);
-  let front = 0;
-  let busy = false;
-
-  const render = () => {
-    cards.forEach((card, n) => {
-      const i = (n - front + cards.length) % cards.length;
-      card.style.setProperty('--i', String(i));
-      card.dataset.depth = i === 0 ? 'front' : i > 3 ? 'far' : 'back';
-      card.tabIndex = i === 0 ? 0 : -1;
-      card.setAttribute('aria-hidden', String(i !== 0));
-    });
-    const c = cards[front];
-    sumEl.textContent = c.dataset.about;
-    idxEl.textContent = String(front + 1);
-    openEl.href = c.getAttribute('href');
-    openLabel.textContent = `See ${c.dataset.category.toLowerCase()}`;
-  };
-  const go = dir => {
-    if (busy) return;
-    if (dir > 0 && !reduced) {
-      busy = true;
-      const leaving = cards[front];
-      leaving.classList.add('is-out');
-      setTimeout(() => {
-        front = (front + 1) % cards.length;
-        leaving.classList.remove('is-out');
-        render();
-        busy = false;
-      }, 300);
-    } else {
-      front = (front + dir + cards.length) % cards.length;
-      render();
+/* ---------- selected work: a box of cards ---------- */
+const cbox = $('[data-cbox]');
+if (cbox) {
+  const cards = $$('.ccard', cbox);
+  const items = $$('.citem', cbox);
+  const list = $('[data-clist]', cbox);
+  const scene = $('.cbox-scene', cbox);
+  const n = cards.length;
+  let active = 0;
+  let fromList = false;
+  const set = (i, { scrollList = true } = {}) => {
+    active = (i + n) % n;
+    cards.forEach((c, k) => c.classList.toggle('is-up', k === active));
+    items.forEach((it, k) => it.classList.toggle('is-on', k === active));
+    if (scrollList && list.scrollWidth > list.clientWidth) {
+      fromList = true;
+      list.scrollTo({ left: items[active].parentElement.offsetLeft - list.offsetLeft - parseFloat(getComputedStyle(list).paddingLeft), behavior: reduced ? 'auto' : 'smooth' });
+      setTimeout(() => { fromList = false; }, 600);
     }
   };
-  $('[data-deck-next]', deck).addEventListener('click', () => go(1));
-  $('[data-deck-prev]', deck).addEventListener('click', () => go(-1));
+  const openCard = (k, e) => {
+    if (e && !plainClick(e)) return;
+    e?.preventDefault();
+    const card = cards[k];
+    set(k);
+    card.classList.add('is-open');
+    setTimeout(() => { location.href = card.getAttribute('href'); }, reduced ? 0 : 520);
+    setTimeout(() => card.classList.remove('is-open'), 1500);
+  };
+  cards.forEach((c, k) => c.addEventListener('click', e => {
+    if (k !== active) { e.preventDefault(); set(k); return; }
+    openCard(k, e);
+  }));
+  items.forEach((it, k) => {
+    it.addEventListener('click', e => {
+      if (k !== active && list.scrollWidth > list.clientWidth) { e.preventDefault(); set(k); return; }
+      openCard(k, e);
+    });
+    it.addEventListener('mouseenter', () => set(k, { scrollList: false }));
+    it.addEventListener('focus', () => set(k, { scrollList: false }));
+  });
+  /* swiping the list moves the lifted card with it */
+  let scrollT;
+  list.addEventListener('scroll', () => {
+    if (fromList) return;
+    clearTimeout(scrollT);
+    scrollT = setTimeout(() => {
+      const x = list.scrollLeft;
+      let best = 0;
+      items.forEach((it, k) => { if (Math.abs(it.parentElement.offsetLeft - list.offsetLeft - x) < Math.abs(items[best].parentElement.offsetLeft - list.offsetLeft - x)) best = k; });
+      if (best !== active) set(best, { scrollList: false });
+    }, 90);
+  }, { passive: true });
+  /* swiping the box steps through the cards */
+  let sx = null;
+  scene.addEventListener('pointerdown', e => { sx = e.clientX; });
+  scene.addEventListener('pointerup', e => {
+    if (sx === null) return;
+    const dx = e.clientX - sx;
+    sx = null;
+    if (Math.abs(dx) > 40) { scene.dataset.swiped = '1'; set(active + (dx < 0 ? 1 : -1)); }
+  });
+  scene.addEventListener('click', e => { if (scene.dataset.swiped) { e.preventDefault(); e.stopPropagation(); delete scene.dataset.swiped; } }, true);
+  cbox.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') { e.preventDefault(); set(active + 1); items[active].focus({ preventScroll: true }); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); set(active - 1); items[active].focus({ preventScroll: true }); }
+  });
+  /* the cards rise out of the box the first time it comes into view */
+  const lift = () => {
+    cbox.classList.add('is-in');
+    setTimeout(() => { cbox.classList.add('is-ready'); set(0, { scrollList: false }); }, reduced ? 0 : 900);
+  };
+  if (reduced || !('IntersectionObserver' in window)) lift();
+  else {
+    const o = new IntersectionObserver(([en]) => { if (en.isIntersecting) { o.disconnect(); lift(); } }, { threshold: .35 });
+    o.observe(scene);
+  }
+}
 
-  const stage = $('[data-deck-stage]', deck);
-  let startX = null;
-  stage.addEventListener('pointerdown', e => { startX = e.clientX; });
-  stage.addEventListener('pointerup', e => {
-    if (startX === null) return;
-    const dx = e.clientX - startX;
-    startX = null;
-    if (Math.abs(dx) > 50) { stage.dataset.swiped = '1'; go(dx < 0 ? 1 : -1); }
-  });
-  stage.addEventListener('click', e => {
-    if (stage.dataset.swiped) { e.preventDefault(); delete stage.dataset.swiped; }
-  }, true);
-  deck.addEventListener('keydown', e => {
-    if (e.key === 'ArrowRight') go(1);
-    if (e.key === 'ArrowLeft') go(-1);
-  });
-  render();
+/* ---------- stack: the gift box ---------- */
+const gift = $('[data-gift]');
+if (gift && !reduced) {
+  const tools = $$('.tool', gift);
+  const stage = $('.gift-stage', gift);
+  const aim = () => {
+    const b = stage.getBoundingClientRect();
+    const cx = b.left + b.width / 2;
+    const cy = b.top + b.height * .45;
+    tools.forEach((t, i) => {
+      t.style.transition = 'none';
+      t.style.removeProperty('--fx');
+      t.style.removeProperty('--fy');
+      const r = t.getBoundingClientRect();
+      t.style.setProperty('--fx', `${(cx - (r.left + r.width / 2)).toFixed(0)}px`);
+      t.style.setProperty('--fy', `${(cy - (r.top + r.height / 2)).toFixed(0)}px`);
+      t.style.setProperty('--ti', String(i));
+      void t.offsetWidth;
+      t.style.transition = '';
+    });
+  };
+  gift.classList.add('is-wrapped');
+  aim();
+  addEventListener('resize', () => { if (gift.classList.contains('is-wrapped')) aim(); });
+  let auto;
+  const unwrap = () => {
+    clearTimeout(auto);
+    if (!gift.classList.contains('is-wrapped')) return;
+    gift.classList.add('is-open');
+    gift.classList.remove('is-wrapped');
+  };
+  $('[data-unwrap]', gift).addEventListener('click', unwrap);
+  stage.addEventListener('click', unwrap);
+  /* nobody should miss the tools: it opens by itself after a moment in view */
+  const o = new IntersectionObserver(([en]) => {
+    clearTimeout(auto);
+    if (en.isIntersecting) auto = setTimeout(unwrap, 3200);
+  }, { threshold: .7 });
+  o.observe(stage);
+} else if (gift) {
+  gift.classList.add('is-open');
 }
 
 /* ---------- contact: press a key ---------- */
@@ -769,7 +876,7 @@ if (wall) {
     who.className = 'wn-who';
     const av = document.createElement('span');
     av.className = 'avatar avatar-sm';
-    av.style.setProperty('--a', '#fff');
+    av.style.setProperty('--a', 'rgba(255, 255, 255, .85)');
     av.style.setProperty('--ai-ink', INKS[n.avatar % INKS.length]);
     av.textContent = n.name[0].toUpperCase();
     const meta = document.createElement('p');
@@ -831,6 +938,15 @@ if (wall) {
     } finally {
       button.disabled = false;
     }
+  });
+
+  /* the form stays folded away until someone wants to write */
+  const openBtn = $('[data-wall-open]', wall);
+  openBtn?.addEventListener('click', () => {
+    const show = form.hidden;
+    form.hidden = !show;
+    openBtn.setAttribute('aria-expanded', String(show));
+    if (show) $('#wall-name', form).focus({ preventScroll: true });
   });
 
   /* the boarding pass can be moved around */
@@ -981,11 +1097,10 @@ if (!reduced) {
     });
   };
   group('.notes', '.note', 'anim-drop');
-  group('.deck-stage', '.deck-card', 'anim-deal', true);
-  group('.tools', '.tool', 'anim-pop');
   group('.keys', '.kw', 'anim-pop');
+  $$('.keys').forEach(k => k.classList.add('anim-wait'));
   group('.work-grid', '.work-card:nth-child(-n+6)', 'anim-rise');
-  $$('.sec-head, .hello h2, .hello-sub, .studio-grid h2, .deck-side, .brief').forEach(el => {
+  $$('.sec-head, .hello h2, .hello-sub, .studio-grid h2, .brief').forEach(el => {
     el.classList.add('anim-rise');
     io.observe(el);
   });
@@ -1013,28 +1128,6 @@ if (!reduced) {
     }, { threshold: .6 });
     obs.observe(el);
   });
-
-  /* the front deck card tilts under the pointer */
-  const stage = $('[data-deck-stage]');
-  if (stage && matchMedia('(hover: hover) and (pointer: fine)').matches) {
-    stage.addEventListener('pointermove', e => {
-      const card = $('.deck-card[data-depth="front"]', stage);
-      if (!card) return;
-      const r = card.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width - .5;
-      const y = (e.clientY - r.top) / r.height - .5;
-      card.classList.add('is-tilting');
-      card.style.setProperty('--ry', `${(x * 8).toFixed(2)}deg`);
-      card.style.setProperty('--rx', `${(-y * 8).toFixed(2)}deg`);
-    });
-    stage.addEventListener('pointerleave', () => {
-      $$('.deck-card', stage).forEach(card => {
-        card.classList.remove('is-tilting');
-        card.style.removeProperty('--rx');
-        card.style.removeProperty('--ry');
-      });
-    });
-  }
 
   /* the keyboard types its own shortcuts once when it comes into view */
   const keys = $('.keys');

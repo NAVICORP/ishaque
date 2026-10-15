@@ -41,35 +41,37 @@ export function projectFilters() {
   return chips.join('\n');
 }
 
-export function workDeck() {
-  return FEATURED.map(({ category, cover, stat, line: text, about }, i) => {
-    const p = bySlug[cover];
-    if (!p) throw new Error(`Deck cover project not found: ${cover}`);
-    const n = PROJECTS.filter(x => x.category === category).length;
-    const lead = stat
-      ? `<span class="deck-stat"><strong>${esc(stat.value)}</strong><span>${esc(stat.label)}</span></span>`
-      : `<span class="deck-line">${esc(text)}</span>`;
-    return `<a class="deck-card" href="/projects#${slugify(category)}" data-index="${i}" data-about="${esc(about)}" data-category="${esc(category)}" aria-label="${esc(category)}, ${n} projects">
-  ${media(p, { eager: i < 2 })}
-  <span class="deck-card-body">
-    <span class="deck-card-top"><strong>${esc(category)}</strong><span class="tag">${n} projects</span></span>
-    ${lead}
-  </span>
+const ICONS = {
+  app: '<rect width="20" height="16" x="2" y="4" rx="2"/><path d="M2 9h20M6 4v5M10 4v5"/>',
+  deck: '<path d="M2 3h20M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3M7 21l5-5 5 5"/>',
+  globe: '<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/>',
+  pen: '<path d="m12 19 7-7 3 3-7 7-3-3z"/><path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5zM2 2l7.59 7.59"/><circle cx="11" cy="11" r="2"/>',
+  book: '<path d="M12 7v14M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>',
+};
+const icon = k => `<svg class="i" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">${ICONS[k]}</svg>`;
+
+/* the cards standing in the box */
+export function workBox() {
+  return FEATURED.map((f, i) => {
+    const n = PROJECTS.filter(p => p.category === f.category).length;
+    return `<a class="ccard" href="/projects#${slugify(f.category)}" data-k="${i}" style="--k:${i};--from:${f.from};--to:${f.to}" aria-label="${esc(f.category)}, ${n} projects" tabindex="-1">
+  <span class="cc-ico">${icon(f.icon)}</span>
+  <span class="cc-text"><span class="cc-name">${esc(f.category)}</span><strong>${esc(f.stat)}</strong><span class="cc-label">${esc(f.label)}</span></span>
+  <span class="cc-num">${String(i + 1).padStart(2, '0')}</span>
 </a>`;
   }).join('\n');
 }
 
-const domain = url => {
-  try { return new URL(url).host.replace(/^www\./, ''); } catch { return ''; }
-};
-
-export function websitesStrip() {
-  const local = p => (p.cover.startsWith('/') ? 0 : 1);
-  return PROJECTS.filter(p => p.category === 'Websites').sort((a, b) => local(a) - local(b)).map(p => `<a class="site" href="${esc(p.live || p.href)}" target="_blank" rel="noopener" data-slug="${esc(p.slug)}">
-  <span class="chrome" aria-hidden="true"><i></i><i></i><i></i><span>${esc(domain(p.live || p.href))}</span></span>
-  ${media(p)}
-  <strong>${esc(p.name)}</strong>
-</a>`).join('\n');
+/* the same cards as a list you can swipe through */
+export function workList() {
+  return FEATURED.map((f, i) => {
+    const n = PROJECTS.filter(p => p.category === f.category).length;
+    return `<li><a class="citem" href="/projects#${slugify(f.category)}" data-k="${i}" style="--from:${f.from};--to:${f.to}">
+  <span class="ci-num">${String(i + 1).padStart(2, '0')}</span>
+  <span class="ci-text"><b>${esc(f.category)}</b><span>${esc(f.clients)}</span></span>
+  <span class="ci-count">${n}</span>
+</a></li>`;
+  }).join('\n');
 }
 
 export const counts = () => ({
