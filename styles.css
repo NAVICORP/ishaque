@@ -1048,3 +1048,47 @@ kbd { display: inline-grid; place-items: center; min-width: 26px; height: 22px; 
 .lost-sub { max-width: 34ch; font-size: clamp(17px, 1.6vw, 21px); color: var(--ink-2); }
 .lost-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 10px; }
 .lost-me { width: clamp(120px, 16vw, 200px); height: auto; margin-bottom: 8px; }
+
+/* ---------- book a call ---------- */
+.studio-ctas { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+.studio-ctas .studio-cta { margin-top: 0; }
+.book-btn { display: inline-flex; align-items: center; gap: 10px; }
+.book-btn i, .avail i { width: 10px; height: 10px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 0 4px rgba(74, 222, 128, .25); animation: ping-soft 2.4s ease-in-out infinite; }
+.studio-sec .btn-line { border-color: rgba(255, 255, 255, .5); color: #fff; }
+.studio-sec .btn-line:hover { background: rgba(255, 255, 255, .12); }
+.avail { cursor: pointer; }
+.book-sheet { position: fixed; inset: auto 0 0 0; width: 100%; max-width: none; max-height: 92dvh; margin: 0; border-radius: 28px 28px 0 0; overflow: auto; overscroll-behavior: contain; padding-bottom: calc(24px + var(--safe-b)); }
+.book-sheet[open] { animation: sheet-up .45s var(--spring); }
+.book-sheet::backdrop { background: rgba(14, 26, 44, .42); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+@keyframes sheet-up { from { opacity: 0; transform: translateY(24px); } }
+.book-k { font-size: 13px; font-weight: 800; color: var(--ink-2); }
+.book-step h2 { max-width: 12ch; font-size: clamp(28px, 3.2vw, 40px); line-height: 1; }
+.book-step .lead { margin-top: 12px; font-size: 16px; color: var(--ink-2); }
+.book-step .lead b { color: var(--ink); }
+.book-step .field { margin-top: 16px; }
+.chips { margin: 18px 0 0; padding: 0; border: 0; }
+.chips legend { display: flex; justify-content: space-between; width: 100%; margin-bottom: 10px; font-size: 14px; font-weight: 700; color: var(--ink-2); }
+.chips legend em { font-style: normal; font-weight: 500; opacity: .7; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips label { position: relative; }
+.chips input { position: absolute; inset: 0; opacity: 0; }
+.chips label > span { display: inline-flex; align-items: center; min-height: 42px; padding: 0 16px; border-radius: 999px; background: color-mix(in srgb, var(--ink) 7%, transparent); font-size: 15px; font-weight: 700; color: var(--ink); cursor: pointer; transition: background-color .2s, color .2s, transform .2s var(--spring); }
+.chips input:checked + span { background: var(--ink); color: var(--paper); }
+.chips input:focus-visible + span { box-shadow: 0 0 0 3px var(--sun); }
+.chips label:active span { transform: scale(.97); }
+.book-next { display: inline-flex; align-items: center; gap: 8px; width: 100%; justify-content: center; margin-top: 20px; }
+.book-back { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 14px; }
+.book-cal { position: relative; min-height: 560px; border-radius: 18px; overflow: hidden; background: #fff; }
+.book-cal iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.book-wait { position: absolute; inset: 0; display: grid; place-items: center; font-size: 15px; font-weight: 700; color: var(--ink-2); }
+.book-alt { padding: 8px 0 4px; }
+.book-alt h3 { font-size: 22px; }
+.book-alt p { margin-top: 8px; color: var(--ink-2); }
+.book-alt-links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.book-fine { margin-top: 12px; text-align: center; font-size: 14px; }
+.book-fine a { text-decoration: underline; color: var(--ink-2); }
+@media (min-width: 760px) {
+  .book-sheet { inset: 50% auto auto 50%; width: min(560px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); border-radius: 28px; transform: translate(-50%, -50%); }
+  .book-sheet[open] { animation: sheet-in .4s var(--spring); }
+  .book-cal { min-height: 640px; }
+}

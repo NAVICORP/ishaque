@@ -994,6 +994,46 @@ if (Object.keys(keyLinks).length) {
   });
 }
 
+/* ---------- book a free call: a short brief, then the calendar ---------- */
+const bookSheet = $('[data-book-sheet]');
+if (bookSheet) {
+  const form = $('[data-book-step="1"]', bookSheet);
+  const step2 = $('[data-book-step="2"]', bookSheet);
+  const cal = $('[data-book-cal]', bookSheet);
+  const alt = $('[data-book-alt]', bookSheet);
+  const openNew = $('[data-book-open-new]', bookSheet);
+  const status = $('[data-book-status]', bookSheet);
+  const url = bookSheet.dataset.booking;
+  let frame = null;
+  const show = n => { form.hidden = n !== 1; step2.hidden = n !== 2; bookSheet.scrollTop = 0; };
+  const open = () => { if (bookSheet.open) return; show(1); bookSheet.showModal(); $('#book-company', bookSheet).focus({ preventScroll: true }); };
+  const close = () => { bookSheet.close(); };
+  $$('[data-book]').forEach(b => b.addEventListener('click', e => { e.preventDefault(); open(); }));
+  $('[data-book-close]', bookSheet).addEventListener('click', close);
+  $('[data-book-back]', bookSheet).addEventListener('click', () => show(1));
+  bookSheet.addEventListener('click', e => { if (e.target === bookSheet) close(); });
+  const loadCal = () => {
+    if (!url) { cal.hidden = true; alt.hidden = false; return; }
+    openNew.href = url; openNew.hidden = false;
+    if (frame) return;
+    frame = document.createElement('iframe');
+    frame.src = url; frame.title = 'Pick a time'; frame.loading = 'eager';
+    frame.addEventListener('load', () => { $('.book-wait', cal)?.remove(); });
+    cal.append(frame);
+  };
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const company = $('#book-company', bookSheet).value.trim();
+    if (!company) { status.textContent = 'Add your company or project name.'; status.className = 'form-status is-error'; $('#book-company', bookSheet).focus(); return; }
+    status.textContent = ''; status.className = 'form-status';
+    const needs = $$('[data-book-needs] input:checked', bookSheet).map(i => i.value).join(', ');
+    const role = $('#book-role', bookSheet).value.trim();
+    /* the brief goes ahead of the booking, so the call starts with context */
+    fetch('https://api.web3forms.com/submit', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ access_key: '44e58263-9bb0-4c59-98ec-e9c82910ddf9', subject: `Call booking: ${company}`, from_name: 'ishaquenv.com', company, role, needs: needs || 'not picked', page: location.href }) }).catch(() => {});
+    show(2); loadCal();
+  });
+}
+
 /* copy the email with one tap */
 $$('[data-copy]').forEach(b => b.addEventListener('click', async () => {
   try { await navigator.clipboard.writeText(b.dataset.copy); } catch { return; }
