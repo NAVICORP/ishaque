@@ -1,0 +1,47 @@
+name: Check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm i --no-save playwright@1.56.0
+      - run: npx playwright install --with-deps chromium
+      - name: Smoke test the built site
+        run: |
+          npx vite preview --host 127.0.0.1 --port 4173 &
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:4173/ >/dev/null && break; sleep 1; done
+          curl -sf http://127.0.0.1:4173/ >/dev/null
+          PORTFOLIO_URL=http://127.0.0.1:4173 npm run check 2>&1 | tee check-preview.log
+          test "${PIPESTATUS[0]}" = 0
+      - name: Smoke test the Node server with the API
+        run: |
+          mkdir -p /tmp/ishaque-data
+          DATA_DIR=/tmp/ishaque-data PORT=8090 node server/site.mjs &
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:8090/api/stats >/dev/null && break; sleep 1; done
+          curl -sf http://127.0.0.1:8090/api/stats >/dev/null
+          PORTFOLIO_URL=http://127.0.0.1:8090 npm run check 2>&1 | tee check-server.log
+          test "${PIPESTATUS[0]}" = 0
+      - name: Report failures on the PR
+        if: failure() && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          { echo '**Check failed.** Lines that did not pass:'; echo; echo '```'; grep -h -v '^ok ' check-preview.log check-server.log 2>/dev/null | tail -40; echo '```'; } > comment.md
+          gh pr comment ${{ github.event.pull_request.number }} --body-file comment.md

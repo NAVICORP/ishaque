@@ -1,6 +1,7 @@
 # Dokploy: Docker Compose from GitHub (NAVICORP/ishaque, branch main,
 # ./deploy/docker-compose.yml). Domain ishaquenv.com (and www) to service
-# `site`, port 8000. Set ADMIN_TOKEN in the Environment tab.
+# `site`, port 8000. Set ADMIN_TOKEN in the Environment tab; NOTIFY_URL and
+# NOTIFY_CHAT are optional (a message for every new wall note).
 services:
   site:
     build:
@@ -9,10 +10,28 @@ services:
     restart: unless-stopped
     environment:
       - ADMIN_TOKEN=${ADMIN_TOKEN}
+      - NOTIFY_URL=${NOTIFY_URL:-}
+      - NOTIFY_CHAT=${NOTIFY_CHAT:-}
     volumes:
       - ishaque_data:/data
     expose:
       - "8000"
 
+  # Copies the wall and the visit counts into a second volume every night and
+  # keeps two weeks of them. Restore: see deploy/README.md.
+  backup:
+    image: alpine:3.20
+    restart: unless-stopped
+    volumes:
+      - ishaque_data:/data:ro
+      - ishaque_backups:/backups
+    command: >
+      sh -c 'while true; do
+        tar -czf /backups/ishaque-$$(date +%Y%m%d-%H%M).tar.gz -C /data . &&
+        ls -1t /backups/ishaque-*.tar.gz | tail -n +15 | xargs -r rm -f;
+        sleep 86400;
+      done'
+
 volumes:
   ishaque_data:
+  ishaque_backups:
