@@ -74,10 +74,10 @@ const dockInd = $('[data-dock-ind]');
 function moveDockTo(link) {
   if (!dock || !dockInd) return;
   if (!link || link.offsetParent === null) { dockInd.style.opacity = '0'; return; }
+  $$('a', dock).forEach(a => a.classList.toggle('is-on', a === link));
   dockInd.style.opacity = '1';
   dockInd.style.width = `${link.offsetWidth}px`;
   dockInd.style.transform = `translateX(${link.offsetLeft - 7}px)`;
-  $$('a', dock).forEach(a => a.classList.toggle('is-on', a === link));
 }
 if (dock) {
   const current = $('a[aria-current="page"]', dock);
@@ -356,7 +356,7 @@ if (journey) {
     const s = stops[i];
     card.style.setProperty('--c', s.c);
     const pic = s.pic ? `<span class="jc-pic media"><img src="${s.pic}" alt="" loading="lazy"></span>` : '';
-    card.innerHTML = `<div class="jc-in"><div class="jc-top"><span class="jc-tile">${s.icon}</span><p>${esc(s.place)}<span>${esc(s.meta)}</span></p></div><div class="jc-body"><h3>${esc(s.title)}</h3><p>${esc(s.text)}</p></div>${pic}</div>`;
+    card.innerHTML = `<div class="jc-in"><div class="jc-top"><span class="jc-tile">${s.icon}</span><p>${esc(s.place)}<span class="jc-meta"><svg class="i" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M20 10c0 5-5.54 10.19-7.4 11.8a1 1 0 0 1-1.2 0C9.54 20.19 4 15 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>${esc(s.meta)}</span></p></div><div class="jc-body"><h3>${esc(s.title)}</h3><p>${esc(s.text)}</p></div>${pic}</div>`;
   }
   function showCard(i) {
     if (i === shown) return;
@@ -473,7 +473,11 @@ function link(href, label, cls, external = true) {
   a.href = href;
   a.className = cls;
   a.textContent = label;
-  if (external) { a.target = '_blank'; a.rel = 'noopener'; }
+  if (external) {
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.insertAdjacentHTML('beforeend', '<svg class="i" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M7 7h10v10M7 17 17 7"/></svg>');
+  }
   return a;
 }
 function fillSheet(p) {
@@ -537,6 +541,7 @@ if (deck) {
   const sumEl = $('[data-deck-summary]', deck);
   const idxEl = $('[data-deck-index]', deck);
   const openEl = $('[data-deck-open]', deck);
+  const openLabel = $('[data-deck-open-label]', deck);
   $('[data-deck-total]', deck).textContent = String(cards.length);
   let front = 0;
   let busy = false;
@@ -553,7 +558,7 @@ if (deck) {
     sumEl.textContent = c.dataset.about;
     idxEl.textContent = String(front + 1);
     openEl.href = c.getAttribute('href');
-    openEl.textContent = `See ${c.dataset.category.toLowerCase()}`;
+    openLabel.textContent = `See ${c.dataset.category.toLowerCase()}`;
   };
   const go = dir => {
     if (busy) return;
