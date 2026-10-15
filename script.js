@@ -258,20 +258,34 @@ if (journey) {
   canvas.className = 'map';
   view.prepend(canvas);
   const ctx = canvas.getContext('2d');
+  /* the map's colours come from the CSS variables, with the palette as a
+     fallback: a canvas quietly keeps its last colour (black at first) when
+     it is handed something it cannot read, which painted the whole map black
+     on iPhones where the variables came back empty */
+  const PALETTE = {
+    light: { land: '#f8f5ee', block: '#e7e1d5', park: '#d2e9c8', water: '#aad3f2', road: '#ffffff', hwy: '#fcde86', hwyC: '#edc458', route: '#2e7dda' },
+    dark: { land: '#161e2c', block: '#212b3d', park: '#1c3329', water: '#19314f', road: '#232d40', hwy: '#5c4a1f', hwyC: '#3f3418', route: '#78b2ff' },
+  };
+  const probe = document.createElement('canvas').getContext('2d');
+  const valid = c => { if (!c) return false; probe.fillStyle = '#010203'; probe.fillStyle = c; return probe.fillStyle !== '#010203' || c === '#010203'; };
   let colors = {};
+  let colorsStale = true;
   function readColors() {
-    const cs = getComputedStyle(journey);
-    const v = n => cs.getPropertyValue(n).trim();
-    colors = { land: v('--m-land'), block: v('--m-block'), park: v('--m-park'), water: v('--m-water'), road: v('--m-road'), hwy: v('--m-hwy'), hwyC: v('--m-hwy-c'), route: v('--route') };
+    const base = PALETTE[root.dataset.theme === 'dark' ? 'dark' : 'light'];
+    let cs;
+    try { cs = getComputedStyle(journey); } catch { cs = null; }
+    const v = (n, k) => { const c = cs ? cs.getPropertyValue(n).trim() : ''; return valid(c) ? c : base[k]; };
+    colors = { land: v('--m-land', 'land'), block: v('--m-block', 'block'), park: v('--m-park', 'park'), water: v('--m-water', 'water'), road: v('--m-road', 'road'), hwy: v('--m-hwy', 'hwy'), hwyC: v('--m-hwy-c', 'hwyC'), route: v('--route', 'route') };
+    colorsStale = false;
   }
-  readColors();
-  new MutationObserver(() => { readColors(); redraw(); }).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+  new MutationObserver(() => { colorsStale = true; redraw(); }).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
 
   let dpr = 1;
   function draw(vx, vy, z, walked) {
     const vw = W / z;
     const vh = H / z;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
+    if (colorsStale) readColors();
     ctx.fillStyle = colors.land;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.setTransform(dpr * z, 0, 0, dpr * z, -vx * dpr * z, -vy * dpr * z);
