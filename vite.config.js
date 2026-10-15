@@ -12,7 +12,6 @@ function projectMarkup() {
     'projects-filters': projectFilters,
     'work-box': workBox,
     'work-list': workList,
-    'journey-map': () => readFileSync(resolve(__dirname, 'src/journey-map.svg'), 'utf8'),
     'count-all': () => String(n.all),
     'count-websites': () => String(n.websites),
   };
