@@ -242,6 +242,9 @@ h3 { font-weight: 800; line-height: 1.1; }
 .hp-dot { position: relative; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: inset 0 0 0 5px var(--c), 0 4px 10px -3px rgba(0, 0, 0, .5); }
 .hp-dot::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 2px solid var(--c); opacity: .6; animation: ping 2.2s var(--ease) infinite; }
 .hpin:hover .hp-tag, .hpin.is-on .hp-tag { transform: translateY(-3px) scale(1.04); background: rgba(22, 34, 26, .66); }
+/* a pin beside something hangs its label to the right of the dot */
+.hpin.hp-start { align-items: flex-start; transform: translate(-9px, calc(-100% + 9px)); }
+.hpin.hp-start .hp-tag::after { left: 8px; translate: 0; }
 .hpin:focus-visible { outline: none; }
 .hpin:focus-visible .hp-tag { box-shadow: 0 0 0 3px var(--sun); }
 .stage.is-pre .hpin, .stage.is-flying .hpin { opacity: 0; translate: 0 12px; pointer-events: none; }
@@ -634,18 +637,19 @@ h3 { font-weight: 800; line-height: 1.1; }
 .desk-item:focus-visible { outline: 3px solid var(--sun); outline-offset: 4px; }
 /* a push pin on each item */
 .desk-item::before { content: ""; position: absolute; z-index: 2; left: 50%; top: -9px; width: 18px; height: 18px; border-radius: 50%; translate: -50% 0; background: radial-gradient(circle at 35% 30%, #fff 0, var(--pin, #e0423c) 28%, color-mix(in srgb, var(--pin, #e0423c) 65%, #000) 100%); box-shadow: 0 6px 8px -4px rgba(0, 0, 0, .55); }
-.p-red { --pin: #e0423c; } .p-blue { --pin: #2a7bd1; } .p-green { --pin: #2f9e6a; } .p-yellow { --pin: #f2b705; } .p-lilac { --pin: #8b6cf2; }
+.p-red { --pin: #e0423c; } .p-blue { --pin: #2a7bd1; } .p-green { --pin: #2f9e6a; } .p-yellow { --pin: #f2b705; } .p-lilac { --pin: #8b6cf2; } .p-pink { --pin: #e85d9a; }
 .about-card { --x: 3%; --y: 5%; --w: min(330px, 42%); padding: 22px 24px; border-radius: 18px; background: #fffaf1; }
 .about-card .ab-k { font-size: 12px; font-weight: 800; letter-spacing: 0; color: #a0522d; }
 .about-card h3 { margin-top: 4px; font-size: clamp(20px, 1.7vw, 24px); line-height: 1.15; }
 .about-card .ab-h { margin-top: 14px; font-size: 14px; font-weight: 800; color: var(--ink-2); }
 .about-card ul { margin: 6px 0 0; padding-left: 18px; font-size: 15px; line-height: 1.5; }
 .polaroid { margin: 0; padding: 10px 10px 8px; border-radius: 6px; background: #fff; }
-.polaroid img { display: block; width: 100%; height: var(--ph, 150px); object-fit: cover; object-position: 50% 15%; border-radius: 3px; background: #e9eef6; }
+.polaroid img { display: block; width: 100%; height: var(--ph, 150px); object-fit: cover; object-position: 50% 20%; border-radius: 3px; background: #e9eef6; }
 .polaroid figcaption { padding: 8px 2px 2px; font-family: var(--hand); font-size: 21px; font-weight: 700; line-height: 1; color: #2b2b2b; text-align: center; }
-.polaroid.p-red { --x: 50%; --y: 4%; --w: 150px; --ph: 170px; }
-.polaroid.p-green { --x: 73%; --y: 10%; --w: 160px; --ph: 140px; }
-.polaroid.p-yellow { --x: 52%; --y: 50%; --w: 190px; --ph: 128px; }
+.polaroid.p-red { --x: 42%; --y: 5%; --w: 150px; --ph: 170px; }
+.polaroid.p-green { --x: 59%; --y: 10%; --w: 160px; --ph: 160px; }
+.polaroid.p-yellow { --x: 76%; --y: 52%; --w: 190px; --ph: 128px; }
+.polaroid.p-pink { --x: 78%; --y: 6%; --w: 160px; --ph: 150px; }
 .vinyl { --x: 72%; --y: 54%; --w: 200px; display: block; height: 118px; color: #fff; text-decoration: none; }
 .vn-sleeve { position: absolute; inset: 0 44px 0 0; display: grid; align-content: end; gap: 2px; padding: 14px; border-radius: 14px; background: linear-gradient(145deg, #ff5f6d, #a33cd6 70%, #4c2bd1); box-shadow: 0 12px 24px -12px rgba(0, 0, 0, .6); }
 .vn-sleeve svg { position: absolute; top: 12px; left: 12px; width: 26px; height: 26px; }
@@ -657,17 +661,18 @@ h3 { font-weight: 800; line-height: 1.1; }
 .st-k { font-size: 12px; font-weight: 800; color: #7a5a00; }
 .st-time { margin-top: 4px; white-space: nowrap; font-size: 34px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
 .st-t { margin-top: 6px; font-family: var(--hand); font-size: 20px; font-weight: 700; line-height: 1.1; }
-.desk .pass { --x: 30%; --y: 64%; --w: min(380px, 44%); --sec-bg: var(--cork); z-index: 2; }
+.desk .pass { --x: 30%; --y: 60%; --w: min(380px, 44%); --sec-bg: var(--cork); z-index: 2; }
 .desk-hint { margin-top: 14px; font-family: var(--hand); font-size: 20px; font-weight: 700; opacity: .75; text-align: center; }
 @media (max-width: 900px) {
-  .desk { height: 1180px; }
+  .desk { height: 1240px; }
   .about-card { --x: 4%; --y: 2%; --w: 92%; }
-  .polaroid.p-red { --x: 6%; --y: 35%; --w: 150px; }
-  .polaroid.p-green { --x: 52%; --y: 33%; --w: 160px; }
-  .polaroid.p-yellow { --x: 50%; --y: 57%; --w: 170px; }
-  .vinyl { --x: 4%; --y: 91%; --w: 180px; }
-  .sticky { --x: 5%; --y: 59%; --w: 160px; }
-  .desk .pass { --x: 4%; --y: 78%; --w: 92%; }
+  .polaroid.p-red { --x: 6%; --y: 29%; --w: 150px; }
+  .polaroid.p-green { --x: 52%; --y: 27%; --w: 160px; --ph: 150px; }
+  .polaroid.p-yellow { --x: 4%; --y: 49%; --w: 165px; --ph: 128px; }
+  .polaroid.p-pink { --x: 53%; --y: 47%; --w: 150px; --ph: 140px; }
+  .vinyl { --x: 4%; --y: 92%; --w: 180px; }
+  .sticky { --x: 5%; --y: 66%; --w: 160px; }
+  .desk .pass { --x: 4%; --y: 79%; --w: 92%; }
 }
 
 /* ---------- the wall ---------- */
