@@ -433,25 +433,6 @@ h3 { font-weight: 800; line-height: 1.1; }
 /* ---------- stack ---------- */
 
 .stack { --sec-bg: var(--paper); padding: var(--sec) 0; }
-/* my app: FarmiLife, told the way the reference tells LastLook */
-.app-sec { --sec-bg: #eef5e3; padding: var(--sec) 0; }
-:root[data-theme="dark"] .app-sec { --sec-bg: #13221a; }
-.app-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; }
-.app-head h2 { font-size: clamp(40px, 5.4vw, 76px); }
-.app-who { width: clamp(120px, 16vw, 210px); height: auto; margin-bottom: -10px; }
-.app-story { max-width: 24ch; margin-top: 22px; font-size: clamp(28px, 3.6vw, 52px); font-weight: 800; line-height: 1.16; }
-.app-story b { font-weight: 800; }
-.app-ico { display: inline-block; width: 1.05em; height: 1.05em; margin: 0 .18em 0 .08em; vertical-align: -.16em; border-radius: .26em; box-shadow: 0 6px 14px -8px rgba(20, 38, 64, .5); }
-.app-cta { margin-top: 30px; }
-.hats-title { margin-top: clamp(48px, 6vw, 80px); font-size: 20px; font-weight: 800; color: var(--ink-2); }
-.hats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; margin-top: 18px; }
-.hats li { display: grid; gap: 12px; align-content: start; padding: 18px; border-radius: 22px; background: var(--card); box-shadow: var(--shadow-sm); }
-.hat { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 15px; background: color-mix(in srgb, var(--c) 16%, var(--card)); color: var(--c); }
-.hat svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.hats p { display: grid; gap: 4px; }
-.hats b { font-size: 17px; font-weight: 800; }
-.hats span { font-size: 15px; line-height: 1.4; color: var(--ink-2); }
-
 /* the stack: app icons with their names, nothing more */
 .stack .sec-head { text-align: center; }
 .stack .sec-head h2 { margin-inline: auto; }
@@ -698,7 +679,6 @@ kbd { display: inline-grid; place-items: center; min-width: 26px; height: 22px; 
 /* ---------- responsive ---------- */
 
 @media (max-width: 900px) {
-  .hats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .wall-body { grid-template-columns: 1fr; }
   .wall-form { position: static; }
   .pass { transform: rotate(2deg); cursor: default; }
@@ -708,8 +688,6 @@ kbd { display: inline-grid; place-items: center; min-width: 26px; height: 22px; 
 }
 
 @media (max-width: 760px) {
-  .hats { grid-template-columns: 1fr; gap: 10px; }
-  .hats li { grid-template-columns: auto 1fr; align-items: center; padding: 14px 16px; }
   .hello-sub { padding-right: 86px; }
   .tools { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 22px 6px; }
   .tm { width: 54px; height: 54px; border-radius: 16px; }
@@ -792,10 +770,6 @@ kbd { display: inline-grid; place-items: center; min-width: 26px; height: 22px; 
   .deck-stat strong { font-size: 26px; }
   .deck-side h3 { font-size: 26px; }
   .studio-line { font-size: 16px; }
-  .app-head h2 { font-size: 32px; }
-  .app-story { font-size: 23px; line-height: 1.2; }
-  .hats b { font-size: 16px; }
-  .hats span { font-size: 14px; }
   .hello h2 { font-size: 44px; }
   .hello-sub { font-size: 17px; }
   .projects-head h1 { font-size: 48px; }
