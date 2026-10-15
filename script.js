@@ -843,7 +843,7 @@ if (gift) {
   const tools = $$('.tool', gift);
   const grid = $('.tools', gift);
   const stage = $('.gift-stage', gift);
-  const lid = $('.gb-lid', gift);
+  const lid = $('[data-lid]', gift);
   const burst = $('.gift-burst', gift);
   const beam = $('.gift-beam', gift);
   const strings = $('[data-strings]', gift);
@@ -864,7 +864,7 @@ if (gift) {
   const aimMouth = () => {
     const g = gift.getBoundingClientRect();
     const b = stage.getBoundingClientRect();
-    mouth = { x: b.left + b.width / 2 - g.left, y: b.top + b.height * .42 - g.top };
+    mouth = { x: b.left + b.width / 2 - g.left, y: b.top + b.height * .4 - g.top };
     strings.setAttribute('viewBox', `0 0 ${g.width} ${g.height}`);
   };
   const aim = () => {
@@ -879,8 +879,8 @@ if (gift) {
     q = reduced ? (going ? 1 : 0) : (u < 1 ? .5 - .5 * Math.cos(Math.PI * u) : 1);
     const l = range(q, 0, .4);
     if (going && u < .2) aimMouth();
-    const S = parseFloat(getComputedStyle(stage).getPropertyValue('--s')) || 190;
-    lid.style.transform = `translate3d(${(l * S * .5).toFixed(1)}px, ${(-S * .39 - Math.sin(l * Math.PI) * 260 - l * 40).toFixed(1)}px, ${(l * 40).toFixed(1)}px) rotateZ(${(l * 34).toFixed(1)}deg) rotateX(${(-l * 16).toFixed(1)}deg)`;
+    /* the lid moves in the picture's own units, so the throw scales with the box */
+    lid.style.transform = `translate(${(l * 110).toFixed(1)}px, ${(-Math.sin(l * Math.PI) * 230 + l * 118).toFixed(1)}px) rotate(${(l * 30).toFixed(1)}deg)`;
     burst.style.opacity = (range(q, .08, .3) * (1 - range(q, .55, 1) * .55)).toFixed(3);
     beam.style.opacity = (range(q, .14, .45) * (1 - range(q, .8, 1) * .75)).toFixed(3);
     bits.forEach(c => {
@@ -890,8 +890,9 @@ if (gift) {
       c.el.style.opacity = p > 0 && p < 1 ? (1 - p * .6).toFixed(2) : '0';
       c.el.style.transform = `translate(${x.toFixed(0)}px, ${y.toFixed(0)}px) rotate(${(c.r + p * 540).toFixed(0)}deg)`;
     });
+    const st = .4 / tools.length;
     tools.forEach((t, i) => {
-      const p = range(q, .22 + i * .04, .62 + i * .04);
+      const p = range(q, .2 + i * st, .58 + i * st);
       const e = 1 - (1 - p) ** 3;
       const f = from[i] || mouth;
       const dx = mouth.x - f.x; const dy = mouth.y - f.y;
@@ -937,6 +938,13 @@ if (Object.keys(keyLinks).length) {
     setTimeout(() => a.click(), 120);
   });
 }
+
+/* copy the email with one tap */
+$$('[data-copy]').forEach(b => b.addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(b.dataset.copy); } catch { return; }
+  b.classList.add('is-done'); b.setAttribute('aria-label', 'Copied');
+  setTimeout(() => { b.classList.remove('is-done'); b.setAttribute('aria-label', 'Copy email address'); }, 1600);
+}));
 
 /* ---------- contact form ---------- */
 const form = $('[data-contact-form]');
