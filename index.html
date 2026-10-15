@@ -59,16 +59,50 @@
   <main id="main">
     <section class="valley" id="top" aria-labelledby="hero-title">
       <div class="stage" data-stage>
-        <div class="scene" aria-hidden="true">
-          <div class="birds"><i class="bird b1"><svg viewBox="0 0 24 10"><path d="M1 8C5 2 9 2 12 7C15 2 19 2 23 8"/></svg></i><i class="bird b2"><svg viewBox="0 0 24 10"><path d="M1 8C5 2 9 2 12 7C15 2 19 2 23 8"/></svg></i><i class="bird b3"><svg viewBox="0 0 24 10"><path d="M1 8C5 2 9 2 12 7C15 2 19 2 23 8"/></svg></i></div>
+        <div class="cam" data-cam aria-hidden="true">
+          <div class="ly" data-d=".04"><img class="sky day-only" src="/assets/scene/sky-day.webp" alt="" width="1920" height="1081" fetchpriority="high"><img class="sky night-only" src="/assets/scene/sky-night.webp" alt="" width="1920" height="1081" loading="lazy"></div>
+          <div class="ly" data-d=".08">
+            <img class="piece cloud cloud-a" src="/assets/scene/cloud-1.webp" alt="" style="--x:1150;--y:250;--w:280" width="720" height="368">
+            <img class="piece cloud cloud-b" src="/assets/scene/cloud-2.webp" alt="" style="--x:700;--y:520;--w:300" width="720" height="161">
+            <img class="piece cloud cloud-c" src="/assets/scene/cloud-3.webp" alt="" style="--x:1480;--y:470;--w:250" width="720" height="261">
+            <div class="birds"><i class="bird b1"><svg viewBox="0 0 24 10"><path d="M1 8C5 2 9 2 12 7C15 2 19 2 23 8"/></svg></i><i class="bird b2"><svg viewBox="0 0 24 10"><path d="M1 8C5 2 9 2 12 7C15 2 19 2 23 8"/></svg></i><i class="bird b3"><svg viewBox="0 0 24 10"><path d="M1 8C5 2 9 2 12 7C15 2 19 2 23 8"/></svg></i></div>
+          </div>
+          <div class="ly" data-d=".16">
+            <img class="piece" src="/assets/scene/hills-far.webp" alt="" style="--x:800;--y:660;--w:1840" width="2000" height="283">
+            <img class="piece" src="/assets/scene/city.webp" alt="" style="--x:255;--y:612;--w:360" width="900" height="179">
+          </div>
+          <div class="ly" data-d=".3">
+            <img class="piece" src="/assets/scene/hills-mid.webp" alt="" style="--x:800;--y:905;--w:2000" width="2000" height="385">
+            <img class="piece" src="/assets/scene/college.webp" alt="" style="--x:420;--y:716;--w:250" width="720" height="415">
+            <button type="button" class="hpin hp-wide" style="--px:420;--py:590;--c:#2348a6" data-hsheet="calicut" aria-label="University of Calicut"><span class="hp-tag"><img class="hp-ico" src="/assets/edu/calicut.webp" alt="" width="40" height="40">Calicut</span><i class="hp-dot"></i></button>
+          </div>
+          <div class="ly" data-d=".42">
+            <img class="piece" src="/assets/scene/home.webp" alt="" style="--x:604;--y:800;--w:150" width="640" height="606">
+            <button type="button" class="hpin" style="--px:622;--py:676;--c:#f26b47" data-hsheet="home" aria-label="Home, Kannur"><span class="hp-tag"><span class="hp-ico hp-glyph"><svg class="i" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1Z"/></svg></span>Home</span><i class="hp-dot"></i></button>
+          </div>
+          <div class="ly" data-d=".5">
+            <img class="piece water" src="/assets/scene/water.webp" alt="" style="--x:1330;--y:930;--w:1000" width="2000" height="386">
+            <img class="piece boat" src="/assets/scene/houseboat.webp" alt="" style="--x:1320;--y:872;--w:170" width="560" height="171">
+          </div>
+          <div class="ly" data-d=".56">
+            <img class="piece day-only" src="/assets/scene/studio.webp" alt="" style="--x:905;--y:748;--w:240" width="720" height="416">
+            <img class="piece night-only" src="/assets/scene/studio-night.webp" alt="" style="--x:905;--y:748;--w:240" width="720" height="416" loading="lazy">
+            <button type="button" class="hpin" style="--px:905;--py:628;--c:#2a7afe" data-hsheet="studio" aria-label="SkiFi studio"><span class="hp-tag"><span class="hp-ico hp-skifi"><img src="/assets/skifi/skifi-logo.svg" alt="" width="30" height="12"></span>SkiFi studio</span><i class="hp-dot"></i></button>
+          </div>
+          <div class="ly" data-d=".85"><img class="piece" src="/assets/scene/ground-front.webp" alt="" style="--x:800;--y:1004;--w:1840" width="2000" height="667"></div>
+          <div class="ly" data-d=".95">
+            <img class="piece me" src="/assets/scene/me.webp" alt="" style="--x:735;--y:985;--w:118" width="520" height="1131">
+            <button type="button" class="hpin" style="--px:735;--py:724;--c:#f5b82e" data-hsheet="me" aria-label="That's me"><span class="hp-tag"><img class="hp-ico hp-face" src="/assets/portfolio/ishaque-headshot.jpg" alt="" width="40" height="40">That's me</span><i class="hp-dot"></i></button>
+          </div>
         </div>
-        <div class="hpins">
-          <button type="button" class="hpin hp-wide" style="--x:420;--y:590;--c:#2348a6" data-hsheet="calicut" aria-label="University of Calicut"><span class="hp-tag"><img class="hp-ico" src="/assets/edu/calicut.webp" alt="" width="40" height="40">Calicut</span><i class="hp-dot"></i></button>
-          <button type="button" class="hpin" style="--x:622;--y:676;--c:#f26b47" data-hsheet="home" aria-label="Home, Kannur"><span class="hp-tag"><span class="hp-ico hp-glyph"><svg class="i" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1Z"/></svg></span>Home</span><i class="hp-dot"></i></button>
-          <button type="button" class="hpin" style="--x:905;--y:628;--c:#2a7afe" data-hsheet="studio" aria-label="SkiFi studio"><span class="hp-tag"><span class="hp-ico hp-skifi"><img src="/assets/skifi/skifi-logo.svg" alt="" width="30" height="12"></span>SkiFi studio</span><i class="hp-dot"></i></button>
-          <button type="button" class="hpin" style="--x:735;--y:724;--c:#f5b82e" data-hsheet="me" aria-label="That's me"><span class="hp-tag"><img class="hp-ico hp-face" src="/assets/portfolio/ishaque-headshot.jpg" alt="" width="40" height="40">That's me</span><i class="hp-dot"></i></button>
+        <div class="shade" data-shade aria-hidden="true"></div>
+        <div class="hero-copy" data-hero-copy>
+          <p class="hey"><svg class="i wave" viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M18 11V6a2 2 0 0 0-4 0M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-6-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>hey, I'm Ishaque</p>
+          <h1 id="hero-title">I design products, and the pitch decks that sell them.</h1>
+          <p class="sub">Founder of SkiFi, a design and code studio in Kerala.</p>
         </div>
-        <div class="hsheet" data-hsheet-panel role="dialog" aria-labelledby="hs-title" hidden>
+        <p class="scroll-cue" data-cue aria-hidden="true"><i></i>Scroll to fly in</p>
+        <div class="hsheet" data-hsheet-panel data-lenis-prevent role="dialog" aria-labelledby="hs-title" hidden>
           <button class="x" type="button" data-hsheet-close aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
           <div class="hs-body" data-hsheet-body></div>
         </div>
@@ -114,11 +148,6 @@
           <p class="hs-text">I studied Arabic, not design. Languages first; the slides came later.</p>
           <a class="btn-ink hs-cta" href="#journey" data-hsheet-close><svg class="i" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5v14m-7-7 7 7 7-7"/></svg>Walk the journey</a>
         </template>
-        <div class="hero-copy">
-          <p class="hey"><svg class="i wave" viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M18 11V6a2 2 0 0 0-4 0M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-6-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>hey, I'm Ishaque</p>
-          <h1 id="hero-title">I design products, and the pitch decks that sell them.</h1>
-          <p class="sub">Founder of SkiFi, a design and code studio in Kerala.</p>
-        </div>
       </div>
     </section>
 
@@ -264,18 +293,13 @@
           <h2 id="work-title">Work that <span class="hl hl-sun">did its job.</span></h2>
         </div>
         <div class="cbox" data-cbox>
-          <div class="cbox-scene">
-            <div class="cbox-3d">
-              <div class="cb-pivot">
-                <div class="cb-lid"></div>
-                <div class="cb-floor"></div>
-                <div class="cb-wall cb-left"></div>
-                <div class="cb-wall cb-right"></div>
-                <div class="cb-wall cb-back"></div>
+          <div class="cbox-scene" data-cbox-scene>
+            <div class="box-fit">
+              <div class="box3" data-box3>
 <!--@work-box-->
-                <div class="cb-front"><span>Things I designed</span></div>
               </div>
             </div>
+            <p class="box-cap" data-box-cap>Pick a card from the box.</p>
           </div>
           <ol class="clist" data-clist>
 <!--@work-list-->
@@ -303,7 +327,10 @@
           <h2 id="stack-title">What I open <span class="hl hl-coral">every day.</span></h2>
         </div>
         <div class="gift" data-gift>
+          <div class="gift-burst" aria-hidden="true"></div>
           <div class="gift-beam" aria-hidden="true"></div>
+          <svg class="gift-strings" data-strings aria-hidden="true"></svg>
+          <div class="confetti" data-confetti aria-hidden="true"></div>
           <ul class="tools">
             <li class="tool"><span class="tm tm-img"><img src="/assets/tools/powerpoint.webp" alt="" width="40" height="40" loading="lazy"></span><b>PowerPoint</b></li>
             <li class="tool"><span class="tm tm-img"><img src="/assets/tools/keynote.webp" alt="" width="40" height="40" loading="lazy"></span><b>Keynote</b></li>
