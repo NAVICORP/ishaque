@@ -9,6 +9,13 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     ...(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {})
   });
   const results = [];
+  /* a few project covers live on other CDNs; with PORTFOLIO_OFFLINE=1 (a sandbox
+     with no internet) they are answered with a blank 16:9 image instead */
+  const offlineCover = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAABAAAAAJCAIAAACGFWkWAAAAEUlEQVR42mP8z8BQz0AEYBxVSF8AAJ0mD/VH8uq3AAAAAElFTkSuQmCC', 'base64');
+  const offline = async page => {
+    if (!process.env.PORTFOLIO_OFFLINE) return;
+    await page.route(url => !url.href.startsWith(testUrl), route => route.fulfill({ contentType: 'image/png', body: offlineCover }));
+  };
 
   for (const viewport of [
     { name: 'desktop', width: 1440, height: 1000 },
@@ -17,6 +24,7 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
   ]) {
     const isMobile = viewport.width <= 620;
     const page = await browser.newPage({ viewport });
+    await offline(page);
     await page.route('https://api.web3forms.com/submit', route => route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -188,6 +196,7 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
   ]) {
     const isMobile = viewport.width <= 620;
     const page = await browser.newPage({ viewport });
+    await offline(page);
     const errors = [];
     page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
     page.on('pageerror', error => errors.push(error.message));
@@ -235,13 +244,13 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     const horizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
     const projectCount = await page.locator('.portfolio-card').count();
     const uniqueLinks = await page.locator('.portfolio-card').evaluateAll(cards => new Set(cards.map(card => card.href)).size);
-    const missingImages = await page.locator('.portfolio-image img').evaluateAll(images => images.filter(image => !image.complete || image.naturalWidth === 0).length);
-    const portfolioImagesWidescreen = await page.locator('.portfolio-image').evaluateAll(elements => elements.length === 55 && elements.every(element => getComputedStyle(element).aspectRatio === '16 / 9') && elements.filter(element => !element.closest('.portfolio-card').hidden).every(element => {
+    const missingImages = await page.locator('.portfolio-image img').evaluateAll(images => images.filter(image => new URL(image.currentSrc || image.src, location.href).origin === location.origin && (!image.complete || image.naturalWidth === 0)).length);
+    const portfolioImagesWidescreen = await page.locator('.portfolio-image').evaluateAll(elements => elements.length === 76 && elements.every(element => getComputedStyle(element).aspectRatio === '16 / 9') && elements.filter(element => !element.closest('.portfolio-card').hidden).every(element => {
       const rect = element.getBoundingClientRect();
       return Math.abs(rect.width / rect.height - 16 / 9) < .02;
     }));
     const whatsappHref = await page.locator('.whatsapp-float').getAttribute('href');
-    const portfolioIconsValid = await page.locator('.portfolio-meta i').evaluateAll(elements => elements.length === 55 && elements.every(element => {
+    const portfolioIconsValid = await page.locator('.portfolio-meta i').evaluateAll(elements => elements.length === 76 && elements.every(element => {
       const style = getComputedStyle(element);
       return getComputedStyle(element, '::before').maskImage !== 'none' && style.display === 'flex' && style.alignItems === 'center' && style.justifyContent === 'center';
     }));
@@ -270,8 +279,8 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     const categoryOrder = await page.locator('[data-project-filter]').evaluateAll(buttons => buttons.map(button => button.dataset.projectFilter));
     const desktopFilterLabels = await page.locator('[data-project-filter]').evaluateAll(buttons => buttons.map(button => buttons.length ? button.childNodes[0].textContent.trim() : ''));
     const mobileFilterLabels = await page.locator('[data-project-filter-option] > span').allTextContents();
-    const expectedDesktopFilterLabels = ['All', 'Pitch Decks', 'Presentations', 'Websites', 'One-Pagers', 'Brochures', 'Visual Design', 'Fiverr Picks'];
-    const expectedMobileFilterLabels = ['All Projects', 'Pitch Decks', 'Presentations', 'Websites', 'One-Pagers', 'Brochures', 'Visual Design', 'Fiverr Picks'];
+    const expectedDesktopFilterLabels = ['All', 'Product Design', 'Pitch Decks', 'Websites', 'Branding', 'One-Pagers', 'Brochures', 'Visual Design'];
+    const expectedMobileFilterLabels = ['All Projects', 'Product Design', 'Pitch Decks', 'Websites', 'Branding', 'One-Pagers', 'Brochures', 'Visual Design'];
     const filterLabelsTitleCase = expectedDesktopFilterLabels.every((label, index) => desktopFilterLabels[index] === label)
       && expectedMobileFilterLabels.every((label, index) => mobileFilterLabels[index] === label);
     const startProjectTargets = await page.locator('a').filter({ hasText: 'Start a project' }).evaluateAll(links => links.map(link => link.getAttribute('href')));
@@ -303,15 +312,15 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
     }
     await chooseProjectFilter('pitch');
     const initialPitchCount = await page.locator('.portfolio-card:not([hidden])').count();
-    const pitchPaginationHidden = !(await page.locator('[data-project-pagination]').isVisible());
+    const pitchPaginationHidden = await page.locator('[data-project-pagination]').isVisible();
     await chooseProjectFilter('website');
     const initialWebsiteCount = await page.locator('.portfolio-card:not([hidden])').count();
     await page.locator('[data-project-pagination] [aria-label="Page 2"]').click();
     const secondWebsitePageCount = await page.locator('.portfolio-card:not([hidden])').count();
-    await chooseProjectFilter('fiverr');
+    await chooseProjectFilter('brochure');
     const visibleFiverrCount = await page.locator('.portfolio-card:not([hidden])').count();
     const fiverrPaginationHidden = !(await page.locator('[data-project-pagination]').isVisible());
-    const mobileFilterLabelUpdates = !isMobile || await page.locator('[data-project-filter-label]').evaluate(element => element.textContent.trim() === 'Fiverr Picks 7');
+    const mobileFilterLabelUpdates = !isMobile || await page.locator('[data-project-filter-label]').evaluate(element => element.textContent.trim() === 'Brochures 3');
     results.push({ page: 'projects', viewport: viewport.name, errors, headingVisible, projectsContentImmediate, projectDisplayTitleScale, horizontalOverflow, projectCount, uniqueLinks, missingImages, portfolioImagesWidescreen, initialVisibleCount, visibleProjectImagesEager, initialProjectStatus, paginationVisibleInitially, initialPageCount, paginationGroups, initialCurrentPage, secondPageVisibleCount, secondPageCurrent, initialPitchCount, pitchPaginationHidden, initialWebsiteCount, secondWebsitePageCount, visibleFiverrCount, fiverrPaginationHidden, whatsappHref, ogImage, ogImageWidth, ogImageHeight, twitterCard, twitterImage, behanceButtonValid, portfolioIconsValid, projectsLayoutAlignment, categoryOrder, filterLabelsTitleCase, startProjectTargetsForm, projectCategoryGroupOrder, mobileFilterTriggerVisible, nativeFilterSelectAbsent, desktopFilterButtonsVisible, filterSheetAccessible, filterSheetTouchTargets, filterSheetFocusReturn, mobileFilterLabelUpdates });
 
     await chooseProjectFilter('all');
@@ -334,7 +343,7 @@ const testUrl = process.env.PORTFOLIO_URL || 'http://127.0.0.1:5173';
       : { url: 'https://ishaquenv.com/assets/portfolio/og-image.png?v=20260826', width: '1290', height: '731' };
     if (result.ogImage !== expectedOgImage.url || result.ogImageWidth !== expectedOgImage.width || result.ogImageHeight !== expectedOgImage.height || result.twitterImage !== result.ogImage || result.twitterCard !== 'summary_large_image') return true;
     if (result.page === 'home') return result.heroRoleLabel?.trim() !== 'Creative Designer & Developer' || result.projectCount !== 6 || !result.projectImagesWidescreen || !result.mobileContentImmediate || !result.mobileProjectImagesEager || !result.statusOpenToWork || !result.servicesCollapsedInitially || !result.mobileFontScale || result.mobileQuoteLineCount !== 3 || result.mobileContactHeadlineLineCount !== 2 || !result.mobileContactLandEmphasis || result.menuOpen === false || result.secondServiceOpen === false || !result.whatsappPosition.visible || !result.whatsappPosition.rightAligned || !result.whatsappPosition.fixed || !result.whatsappPosition.withinViewport || !result.whatsappPosition.dynamicViewportAnchored || !result.whatsappIconOnly || result.whatsappScrollStability.range > 1 || !result.whatsappScrollStability.composited || !result.whatsappScrollStability.mobileShadowCompact || !result.exploreWorksVisible || !result.exploreIconIsFile || !result.viewAllProjectsIsButton || !result.projectIconsValid || result.cvHref !== '/assets/portfolio/Muhammed-Ishaque-CV.pdf' || result.cvDownload !== 'Muhammed-Ishaque-CV.pdf' || !result.cvAvailable || !result.contactFormConnected || !result.contactFormAnchorValid || !result.startProjectTargetsForm || !result.contactFormLabelsValid || !result.contactFormTouchFriendly || !result.contactDesktopSideBySide || !result.contactMobileStacked || (result.viewport === 'desktop' && result.contactSectionHeight > 820) || !result.contactSubmissionFeedback || (result.viewport !== 'desktop' ? !result.viewAllProjectsWidthMatches || result.overallRatingVisible || result.heroLedeVisible || result.heroEyebrowVisible || result.heroStageHeight > 502 || result.heroActionGap < 22 || result.heroActionGap > 26 || result.heroBottomGap < 16 || result.heroBottomGap > 20 || !result.heroImageCurrentSrc.endsWith('/assets/portfolio/ishaque-hero-mobile.png') : !result.overallRatingVisible || !result.heroLedeVisible || !result.heroEyebrowVisible || !result.heroImageCurrentSrc.endsWith('/assets/portfolio/ishaque-hero.png'));
-    return result.projectCount !== 55 || result.uniqueLinks < 50 || result.missingImages !== 0 || !result.portfolioImagesWidescreen || !result.projectsContentImmediate || result.projectDisplayTitleScale.hero > (result.viewport === 'desktop' ? 92 : 46) || result.projectDisplayTitleScale.cta > (result.viewport === 'desktop' ? 92 : 46) || result.initialVisibleCount !== 12 || !result.visibleProjectImagesEager || result.initialProjectStatus?.trim() !== 'Showing 1 to 12 of 55 projects' || !result.paginationVisibleInitially || result.initialPageCount !== 5 || result.paginationGroups !== 3 || result.initialCurrentPage !== '1' || result.secondPageVisibleCount !== 12 || result.secondPageCurrent !== '2' || result.initialPitchCount !== 12 || !result.pitchPaginationHidden || result.initialWebsiteCount !== 12 || result.secondWebsitePageCount !== 7 || result.visibleFiverrCount !== 7 || !result.fiverrPaginationHidden || !result.behanceButtonValid || !result.portfolioIconsValid || !result.projectsLayoutAlignment.withinViewport || result.projectsLayoutAlignment.leftDelta > 1 || result.projectsLayoutAlignment.rightDelta > 1 || result.categoryOrder.slice(0, 4).join(',') !== 'all,pitch,presentation,website' || !result.filterLabelsTitleCase || !result.startProjectTargetsForm || result.projectCategoryGroupOrder.slice(0, 3).join(',') !== 'pitch,presentation,one-pager' || !result.mobileFilterTriggerVisible || !result.nativeFilterSelectAbsent || !result.desktopFilterButtonsVisible || !result.filterSheetAccessible || !result.filterSheetTouchTargets || !result.filterSheetFocusReturn || !result.mobileFilterLabelUpdates;
+    return result.projectCount !== 76 || result.uniqueLinks < 50 || result.missingImages !== 0 || !result.portfolioImagesWidescreen || !result.projectsContentImmediate || result.projectDisplayTitleScale.hero > (result.viewport === 'desktop' ? 92 : 46) || result.projectDisplayTitleScale.cta > (result.viewport === 'desktop' ? 92 : 46) || result.initialVisibleCount !== 12 || !result.visibleProjectImagesEager || result.initialProjectStatus?.trim() !== 'Showing 1 to 12 of 76 projects' || !result.paginationVisibleInitially || result.initialPageCount !== (result.viewport === 'desktop' ? 7 : 4) || result.paginationGroups !== 3 || result.initialCurrentPage !== '1' || result.secondPageVisibleCount !== 12 || result.secondPageCurrent !== '2' || result.initialPitchCount !== 12 || !result.pitchPaginationHidden || result.initialWebsiteCount !== 12 || result.secondWebsitePageCount !== 8 || result.visibleFiverrCount !== 3 || !result.fiverrPaginationHidden || !result.behanceButtonValid || !result.portfolioIconsValid || !result.projectsLayoutAlignment.withinViewport || result.projectsLayoutAlignment.leftDelta > 1 || result.projectsLayoutAlignment.rightDelta > 1 || result.categoryOrder.slice(0, 4).join(',') !== 'all,product,pitch,website' || !result.filterLabelsTitleCase || !result.startProjectTargetsForm || result.projectCategoryGroupOrder.slice(0, 3).join(',') !== 'product,pitch,website' || !result.mobileFilterTriggerVisible || !result.nativeFilterSelectAbsent || !result.desktopFilterButtonsVisible || !result.filterSheetAccessible || !result.filterSheetTouchTargets || !result.filterSheetFocusReturn || !result.mobileFilterLabelUpdates;
   });
   if (failed) process.exit(1);
 })().catch(error => { console.error(error); process.exit(1); });
